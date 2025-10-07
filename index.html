@@ -57,6 +57,12 @@ html = r"""<!DOCTYPE html>
   .ireland{background:linear-gradient(90deg,#169b62 33.33%,#fff 33.33%,#fff 66.66%,#ff883e 66.66%)}
 </style>
 </head>
+ <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+ 
 <body>
 <header>
   <div class="logo" aria-label="Ceol Gan Eagla"><span>CGE</span></div>
@@ -529,4 +535,5 @@ with open(path, "w", encoding="utf-8") as f:
     f.write(html)
 
 path
+
 
