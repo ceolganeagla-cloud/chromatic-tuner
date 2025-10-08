@@ -1,535 +1,241 @@
-# Create a downloadable HTML file for a Ceol Gan Eagla chromatic tuner with instrument presets and active SVGs
-html = r"""<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#006400">
-  
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Ceol Gan Eagla — Chromatic Tuner</title>
-<meta name="theme-color" content="#0b1420"/>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#006400">
+
 <style>
   :root{
-    --bg:#0b1420; --panel:#111b2b; --ink:#eaf2ff; --muted:#9fb3c8; --accent:#00d084;
-    --danger:#ff6b6b; --gold:#f1c40f;
+    --bg:#0b0f12; --panel:#111820; --ink:#eaf1f8; --muted:#9fb4c6;
+    --accent:#22c55e; --warn:#ef4444; --gold:#ffd700; --green:#006400;
   }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#0b1420,#0c1826);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Inter,Arial,sans-serif}
-  header{
-    display:flex;align-items:center;gap:.75rem;padding:12px 16px;border-bottom:1px solid #1f2a3d;background:linear-gradient(180deg,#0e1a2b,#0b1420);
-    position:sticky;top:0;z-index:5
-  }
-  .logo{width:40px;height:40px;border-radius:50%;background:#0b2e1d;display:grid;place-items:center;border:1px solid #1c4632; box-shadow:0 0 0 2px #0a2216 inset}
-  .logo span{font-weight:800;color:#00d084}
-  header h1{font-size:1.05rem;margin:0;line-height:1.1}
-  header small{display:block;color:var(--muted);font-weight:500}
-  .wrap{max-width:980px;margin:0 auto;padding:12px}
-  .grid{display:grid;gap:12px}
-  @media(min-width:860px){ .grid{grid-template-columns: 380px 1fr} }
-  .card{background:var(--panel);border:1px solid #1f2a3d;border-radius:16px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .controls > *{flex:1 1 auto;min-width:120px}
-  .btn{
-    background:#0e2535;border:1px solid #1e3246;color:var(--ink);padding:10px 12px;border-radius:12px;cursor:pointer;
-  }
-  .btn.primary{background:var(--accent);border-color:#0f6a4d;color:#06261b;font-weight:700}
-  .btn.ghost{background:transparent;border-color:#2b3f58}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  select, input[type="number"]{
-    background:#0c2030;border:1px solid #1f2a3d;color:var(--ink);padding:10px;border-radius:12px;width:100%
-  }
-  .status{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px
-  }
-  .status .box{background:#0a1c2a;border:1px solid #1f2a3d;border-radius:12px;padding:10px;text-align:center}
-  .status b{display:block;font-size:1.35rem}
-  canvas{width:100%;height:140px;background:#0a1522;border-radius:12px;border:1px solid #1f2a3d}
-  .svgwrap{display:grid;place-items:center;height:360px;background:#0a1522;border-radius:16px;border:1px solid #1f2a3d}
-  .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  .pill{padding:6px 10px;border-radius:999px;border:1px solid #1f2a3d;background:#0c2030;color:var(--muted);font-size:.9rem}
-  .pill.active{background:#123d2f;color:#bff7e2;border-color:#21644d}
-  .note-needle{color:var(--gold);font-weight:800}
-  details{border-top:1px dashed #28415f;margin-top:8px;padding-top:8px}
-  summary{cursor:pointer;color:var(--muted)}
-  .footer{color:#8bb0ff33;text-align:center;font-size:.85rem;margin-top:10px}
-  .flag{width:16px;height:10px;border-radius:2px;box-shadow:0 0 0 1px #1f2a3d inset}
-  .ireland{background:linear-gradient(90deg,#169b62 33.33%,#fff 33.33%,#fff 66.66%,#ff883e 66.66%)}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif}
+  header{display:flex;align-items:center;gap:.75rem;padding:1rem;border-bottom:1px solid #1f2a36;background:linear-gradient(180deg,#0d141c,#0b0f12)}
+  header img{width:42px;height:42px;border-radius:12px;border:2px solid rgba(255,255,255,.2)}
+  h1{font-size:1.1rem;margin:0;letter-spacing:.3px}
+  main{max-width:900px;margin:0 auto;padding:1rem;display:grid;gap:1rem}
+  .card{background:var(--panel);border:1px solid #1f2a36;border-radius:16px;padding:1rem;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+  .controls{display:grid;gap:.75rem;grid-template-columns:1fr;align-items:center}
+  .row{display:flex;gap:.75rem;flex-wrap:wrap}
+  button,.selectlike{appearance:none;background:#12202b;color:var(--ink);border:1px solid #1f2a36;border-radius:12px;padding:.8rem 1rem;font-weight:600;cursor:pointer}
+  button:hover{outline:2px solid rgba(34,197,94,.25)}
+  .selectlike{display:flex;align-items:center;gap:.5rem}
+  select{background:transparent;color:var(--ink);border:none;outline:none;font-weight:600}
+  .meter{height:10px;background:#0c141b;border-radius:999px;border:1px solid #1f2a36;overflow:hidden}
+  .meter > div{height:100%;width:50%;background:linear-gradient(90deg,#f87171,#fde047,#34d399);transform-origin:left center;transition:width .12s linear}
+  .note{display:flex;align-items:baseline;gap:1rem}
+  .note .big{font-size:4rem;font-weight:800;line-height:1}
+  .note .cents{font-variant-numeric:tabular-nums;font-weight:700}
+  .status{min-height:1.5rem;color:var(--muted)}
+  .strings{display:flex;gap:.5rem;flex-wrap:wrap}
+  .chip{padding:.45rem .7rem;border-radius:999px;border:1px solid #263445;background:#0f1720;color:var(--muted);font-weight:700}
+  .chip.active{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,.08)}
+  footer{opacity:.8;text-align:center;padding:1rem;color:var(--muted)}
+  @media(min-width:720px){ .controls{grid-template-columns:2fr 1fr} }
 </style>
 </head>
- <script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js");
-  }
-</script>
- 
 <body>
 <header>
-  <div class="logo" aria-label="Ceol Gan Eagla"><span>CGE</span></div>
+<img src="icons/icon-192.png" alt="Ceol Gan Eagla Logo">
   <div>
-    <h1>Ceol Gan Eagla <small>Tuner</small></h1>
-    <small>Chromatic &amp; String-by-String • Mobile-friendly</small>
+    <h1>Ceol Gan Eagla — Chromatic Tuner</h1>
+    <small style="color:var(--muted)">Mic access required • Works offline after first load</small>
   </div>
 </header>
 
-<div class="wrap">
-  <div class="grid">
-    <!-- Left: Instrument SVG & string selector -->
-    <section class="card">
-      <div class="controls" style="margin-bottom:8px">
-        <select id="instrumentSelect" title="Choose instrument">
-          <option value="fiddle">Fiddle / Violin (G D A E)</option>
-          <option value="mandolin">Mandolin (G D A E)</option>
-          <option value="tenorBanjo">Tenor Banjo (G D A E)</option>
-          <option value="bouzouki">Irish Bouzouki (G D A D)</option>
-          <option value="guitar">Guitar (E A D G B E)</option>
-          <option value="bass">Bass (E A D G)</option>
-          <option value="custom">Custom…</option>
+<main>
+  <section class="card controls">
+    <div class="row">
+      <button id="startBtn">🎤 Start Tuner</button>
+      <div class="selectlike">
+        <span>Instrument:</span>
+        <select id="instrument">
+          <option value="chromatic">Chromatic (Any)</option>
+          <option value="fiddle">Fiddle / Mandolin (G–D–A–E)</option>
+          <option value="guitar">Guitar Standard (E–A–D–G–B–E)</option>
+          <option value="banjo4">Tenor Banjo GDAE</option>
+          <option value="uke">Ukulele (G–C–E–A)</option>
         </select>
-        <select id="modeSelect" title="Tuning mode">
-          <option value="auto">Auto (Chromatic)</option>
-          <option value="string">String Mode (Tap a string)</option>
+      </div>
+      <div class="selectlike">
+        <span>Ref A:</span>
+        <select id="refA">
+          <option>440</option>
+          <option>442</option>
+          <option>415</option>
+          <option>432</option>
         </select>
-        <button id="micBtn" class="btn primary">Start Mic</button>
       </div>
+    </div>
 
-      <div class="svgwrap">
-        <!-- Inline SVGs for instruments; we toggle visibility -->
-        <div id="svgStage" style="width:100%;max-width:320px"></div>
+    <div class="row">
+      <div class="note">
+        <div class="big" id="noteName">--</div>
+        <div class="cents"><span id="cents">0</span> cents</div>
       </div>
+    </div>
 
-      <div id="stringLegend" class="legend" aria-live="polite"></div>
+    <div class="meter"><div id="bar"></div></div>
+    <div class="status" id="status">Waiting for input…</div>
+    <div class="strings" id="strings"></div>
+  </section>
 
-      <details>
-        <summary>Custom tuning</summary>
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px" id="customInputs"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn" id="applyCustom">Apply Custom</button>
-          <button class="btn ghost" id="clearCustom">Clear</button>
-        </div>
-      </details>
+  <section class="card">
+    <strong>Tips</strong>
+    <ul>
+      <li>Pluck a single string or play a sustained note close to the mic.</li>
+      <li>Use the Instrument menu to highlight target strings.</li>
+      <li>Green = in tune, Red = flat, Yellow = sharp.</li>
+    </ul>
+  </section>
+</main>
 
-      <details>
-        <summary>Settings</summary>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px">
-          <label>Concert A (Hz)<br/><input id="a4Input" type="number" step="0.1" min="400" max="480" value="440"/></label>
-          <label>Noise Gate (dB)<br/><input id="gateInput" type="number" step="1" min="-120" max="-20" value="-70"/></label>
-          <label>Smoothing (0–0.99)<br/><input id="smoothInput" type="number" step="0.01" min="0" max="0.99" value="0.6"/></label>
-        </div>
-      </details>
-
-      <div class="footer">Made for Ireland <span class="flag ireland"></span> • Ceol Gan Eagla</div>
-    </section>
-
-    <!-- Right: Meter & readouts -->
-    <section class="card">
-      <div class="controls">
-        <div class="btn ghost" style="pointer-events:none">Mic: <span id="micState">Off</span></div>
-        <div class="btn ghost" style="pointer-events:none">Mode: <span id="modeState">Auto</span></div>
-        <div class="btn ghost" style="pointer-events:none">Instrument: <span id="instState">Fiddle</span></div>
-      </div>
-
-      <div style="margin-top:10px">
-        <canvas id="meter" width="900" height="220" aria-label="Needle meter"></canvas>
-      </div>
-
-      <div class="status">
-        <div class="box">
-          <small>Note</small>
-          <b id="noteName">—</b>
-          <small id="octave"> </small>
-        </div>
-        <div class="box">
-          <small>Detune</small>
-          <b><span id="detune">—</span> <span class="note-needle">¢</span></b>
-          <small id="tendency"> </small>
-        </div>
-        <div class="box">
-          <small>Frequency</small>
-          <b id="freq">—</b>
-          <small>Hz</small>
-        </div>
-      </div>
-
-      <details open>
-        <summary>Tips</summary>
-        <ul>
-          <li>Tap <b>String Mode</b> and then tap a string on the instrument to tune that string.</li>
-          <li>In <b>Auto</b> mode, the tuner finds the nearest note; when a preset is selected, the nearest string is highlighted.</li>
-          <li>Use a quiet space. Raise the <b>Noise Gate</b> (less negative) if it triggers too easily.</li>
-          <li>Adjust <b>Concert A</b> if you play with ensembles using a different reference (e.g., 442).</li>
-        </ul>
-      </details>
-    </section>
-  </div>
-</div>
+<footer>© Ceol Gan Eagla — Be fearless, play in tune.</footer>
 
 <script>
-/* ----------------------------- Data ---------------------------------- */
-const TUNINGS = {
+// --- Utility: tuning + pitch detection (auto-correlation) ---
+const A4 = () => parseFloat(document.getElementById('refA').value) || 440;
+function noteFromFrequency(freq){ return Math.round(12 * Math.log2(freq / A4()) + 69); }
+function frequencyFromNoteNumber(note){ return A4() * Math.pow(2, (note-69)/12); }
+function centsOffFromPitch(freq, note){ return Math.floor(1200 * Math.log2(freq / frequencyFromNoteNumber(note))); }
+
+// Simple auto-correlation pitch detector
+function autoCorrelate(buf, sampleRate) {
+  let size = buf.length;
+  let rms = 0;
+  for (let i=0;i<size;i++){ let val = buf[i]; rms += val*val; }
+  rms = Math.sqrt(rms/size);
+  if (rms < 0.008) return -1; // too quiet
+
+  let r1=0, r2=size-1, thres=0.2;
+  for (let i=0; i<size/2; i++) if (Math.abs(buf[i])<thres) { r1=i; break; }
+  for (let i=1; i<size/2; i++) if (Math.abs(buf[size-i])<thres){ r2=size-i; break; }
+  buf = buf.slice(r1, r2);
+  size = buf.length;
+
+  let c = new Array(size).fill(0);
+  for (let i=0; i<size; i++) for (let j=0; j<size-i; j++) c[i] = c[i] + buf[j]*buf[j+i];
+  let d=0; while (c[d] > c[d+1]) d++;
+  let maxval=-1, maxpos=-1;
+  for (let i=d; i<size; i++){ if (c[i] > maxval){ maxval = c[i]; maxpos = i; } }
+  let T0 = maxpos;
+  if (T0 > 0){
+    let x1=c[T0-1], x2=c[T0], x3=c[T0+1];
+    let a = (x1 + x3 - 2*x2)/2;
+    let b = (x3 - x1)/2;
+    if (a) T0 = T0 - b/(2*a);
+  }
+  return sampleRate/T0;
+}
+
+// Instrument presets
+const PRESETS = {
+  chromatic: [],
   fiddle: ["G3","D4","A4","E5"],
-  mandolin: ["G3","D4","A4","E5"],
-  tenorBanjo: ["G3","D4","A4","E5"],
-  bouzouki: ["G2","D3","A3","D4"],
   guitar: ["E2","A2","D3","G3","B3","E4"],
-  bass: ["E1","A1","D2","G2"],
-  custom: []
+  banjo4: ["G3","D4","A4","E5"],
+  uke: ["G4","C4","E4","A4"]
 };
-
-// Simple SVG blueprints for each instrument (front view stylised). Strings are interactive lines.
-function makeInstrumentSVG(type, strings){
-  const strokeBase = '#3b516e';
-  const strokeActive = '#00d084';
-  const w = 320, h = 320, pad = 32;
-  const body = `<rect x="${pad}" y="${pad}" width="${w-2*pad}" height="${h-2*pad}" rx="22" ry="22" fill="#0e1a2b" stroke="#1f2a3d"/>`;
-  // string positions evenly spaced
-  const gap = (w-2*pad)/(strings.length-1 || 1);
-  let lines = '';
-  for(let i=0;i<strings.length;i++){
-    const x = pad + i*gap;
-    lines += `<line class="cge-string" data-idx="${i}" x1="${x}" y1="${pad}" x2="${x}" y2="${h-pad}" stroke="${strokeBase}" stroke-width="${Math.max(2, 5 - i*0.4)}" />`;
-  }
-  // nut & bridge cues
-  const nut = `<rect x="${pad-4}" y="${pad-2}" width="${w-2*pad+8}" height="6" fill="#203247"/>`;
-  const bridge = `<rect x="${pad-4}" y="${h-pad-4}" width="${w-2*pad+8}" height="6" fill="#203247"/>`;
-  // label
-  const label = `<text x="${w/2}" y="${h-8}" fill="#7fa2c5" font-family="ui-sans-serif,system-ui" font-size="12" text-anchor="middle">${type.toUpperCase()}</text>`;
-  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" data-strings="${strings.length}" data-type="${type}" xmlns="http://www.w3.org/2000/svg" style="touch-action:manipulation">
-    ${body}${nut}${bridge}${lines}${label}
-  </svg>`;
+function midiToName(n){
+  const names = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const name = names[n % 12];
+  const oct = Math.floor(n/12)-1;
+  return name + oct;
+}
+function nameToMidi(name){
+  const re = /^([A-G]#?)(-?\\d)$/i;
+  const idx = {"C":0,"C#":1,"D":2,"D#":3,"E":4,"F":5,"F#":6,"G":7,"G#":8,"A":9,"A#":10,"B":11};
+  const m = name.match(re); if(!m) return null;
+  return (parseInt(m[2])+1)*12 + idx[m[1].toUpperCase()];
 }
 
-// MIDI & note helpers
-const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-function noteToFreq(note, A4=440){
-  // note string like "G3"
-  const m = note.match(/^([A-G]#?)(-?\d+)$/);
-  if(!m) return NaN;
-  const [_, n, oct] = m;
-  const semitoneIndex = NOTE_NAMES.indexOf(n);
-  const midi = (parseInt(oct)+1)*12 + semitoneIndex; // MIDI where C-1 = 0
-  const a4midi = 69;
-  return A4 * Math.pow(2, (midi - a4midi)/12);
-}
-function freqToNoteData(freq, A4=440){
-  if(!isFinite(freq) || freq<=0) return null;
-  const midi = Math.round(69 + 12*Math.log2(freq/A4));
-  const noteIndex = (midi % 12 + 12) % 12;
-  const octave = Math.floor(midi/12)-1;
-  const name = NOTE_NAMES[noteIndex];
-  const ref = A4 * Math.pow(2,(midi-69)/12);
-  const cents = 1200*Math.log2(freq/ref);
-  return {midi,note:name,octave,ref,cents};
-}
-function nearestString(freq, strings, A4){
-  let best = {idx:-1, diff: Infinity, targetHz:null, name:null};
-  strings.forEach((s, i)=>{
-    const hz = noteToFreq(s, A4);
-    const cents = 1200*Math.log2(freq/hz);
-    const diff = Math.abs(cents);
-    if(diff < best.diff){
-      best = {idx:i, diff, targetHz:hz, name:s};
-    }
-  });
-  return best;
-}
-
-/* --------------------------- UI Rendering ---------------------------- */
-const svgStage = document.getElementById('svgStage');
-const stringLegend = document.getElementById('stringLegend');
-const instrumentSelect = document.getElementById('instrumentSelect');
-const modeSelect = document.getElementById('modeSelect');
-const micBtn = document.getElementById('micBtn');
-const micState = document.getElementById('micState');
-const modeState = document.getElementById('modeState');
-const instState = document.getElementById('instState');
-const a4Input = document.getElementById('a4Input');
-const gateInput = document.getElementById('gateInput');
-const smoothInput = document.getElementById('smoothInput');
-const customInputs = document.getElementById('customInputs');
-
-let currentInstrument = 'fiddle';
-let currentStrings = TUNINGS[currentInstrument].slice();
-let targetStringIdx = null; // for string mode selection
-
-function renderInstrument(){
-  svgStage.innerHTML = makeInstrumentSVG(currentInstrument, currentStrings);
-  // build legend
-  stringLegend.innerHTML = '';
-  currentStrings.forEach((s, i)=>{
-    const pill = document.createElement('div');
-    pill.className = 'pill';
-    pill.textContent = s;
-    pill.dataset.idx = i;
-    stringLegend.appendChild(pill);
-  });
-  // attach events
-  svgStage.querySelectorAll('.cge-string').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      if(modeSelect.value !== 'string') return;
-      targetStringIdx = parseInt(el.dataset.idx);
-      highlightString(targetStringIdx);
-    });
-  });
-  highlightString(targetStringIdx);
-  instState.textContent = toTitle(currentInstrument);
-}
-function highlightString(idx){
-  svgStage.querySelectorAll('.cge-string').forEach((el,i)=>{
-    if(idx===i){
-      el.setAttribute('stroke','#00d084');
-      el.setAttribute('stroke-width','6');
-    } else {
-      el.setAttribute('stroke','#3b516e');
-      el.setAttribute('stroke-width', String(Math.max(2, 5 - i*0.4)));
-    }
-  });
-  stringLegend.querySelectorAll('.pill').forEach((el,i)=>{
-    el.classList.toggle('active', i===idx);
+function renderStrings(){
+  const el = document.getElementById('strings');
+  el.innerHTML = "";
+  const preset = PRESETS[document.getElementById('instrument').value] || [];
+  preset.forEach(n => {
+    const d = document.createElement('div');
+    d.className = "chip";
+    d.dataset.midi = nameToMidi(n);
+    d.textContent = n;
+    el.appendChild(d);
   });
 }
-function toTitle(id){ return id.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase()); }
+renderStrings();
+document.getElementById('instrument').addEventListener('change', renderStrings);
 
-// Custom tuning UI
-function renderCustomInputs(){
-  customInputs.innerHTML = '';
-  const maxStrings = 6;
-  for(let i=0;i<maxStrings;i++){
-    const input = document.createElement('input');
-    input.placeholder = 'e.g., G3';
-    input.value = TUNINGS.custom[i] || '';
-    input.dataset.idx = i;
-    input.style.textTransform='uppercase';
-    customInputs.appendChild(input);
-  }
+let audioCtx, analyser, buf, source, rafId;
+const NOTE_NAMES=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+
+async function start(){
+  if (audioCtx) return;
+  document.getElementById('status').textContent = "Requesting microphone…";
+  const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false}});
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 2048;
+  source = audioCtx.createMediaStreamSource(stream);
+  source.connect(analyser);
+  buf = new Float32Array(analyser.fftSize);
+  document.getElementById('status').textContent = "Listening…";
+  tick();
 }
-renderCustomInputs();
-document.getElementById('applyCustom').onclick = ()=>{
-  const vals = Array.from(customInputs.querySelectorAll('input')).map(i=>i.value.trim()).filter(Boolean);
-  if(vals.length){
-    TUNINGS.custom = vals;
-    currentInstrument = 'custom';
-    instrumentSelect.value = 'custom';
-    currentStrings = vals.slice();
-    targetStringIdx = null;
-    renderInstrument();
-  }
-};
-document.getElementById('clearCustom').onclick = ()=>{
-  TUNINGS.custom = [];
-  renderCustomInputs();
-};
+document.getElementById('startBtn').addEventListener('click', start);
 
-/* --------------------------- Audio & Pitch --------------------------- */
-let audioCtx, analyser, micSource;
-let _buf = new Float32Array(2048);
-let running = false;
-let lastFreq = 0;
-
-async function startMic(){
-  try{
-    const stream = await navigator.mediaDevices.getUserMedia({audio:{
-      echoCancellation:false, noiseSuppression:false, autoGainControl:false
-    }});
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 4096;
-    analyser.smoothingTimeConstant = parseFloat(smoothInput.value) || 0.6;
-    micSource = audioCtx.createMediaStreamSource(stream);
-    micSource.connect(analyser);
-    running = true;
-    micState.textContent = 'On';
-    micBtn.textContent = 'Stop Mic';
-    tick();
-  }catch(err){
-    alert('Microphone permission denied or unavailable.');
-    console.error(err);
-  }
-}
-function stopMic(){
-  if(micSource && micSource.mediaStream){
-    micSource.mediaStream.getTracks().forEach(t=>t.stop());
-  }
-  running = false;
-  micState.textContent = 'Off';
-  micBtn.textContent = 'Start Mic';
-}
-
-micBtn.addEventListener('click', ()=> running ? stopMic() : startMic());
-modeSelect.addEventListener('change', ()=>{
-  modeState.textContent = modeSelect.value==='auto' ? 'Auto' : 'String';
-  if(modeSelect.value==='auto') targetStringIdx = null, highlightString(null);
-});
-instrumentSelect.addEventListener('change', ()=>{
-  currentInstrument = instrumentSelect.value;
-  currentStrings = TUNINGS[currentInstrument].slice();
-  targetStringIdx = null;
-  renderInstrument();
-});
-a4Input.addEventListener('change', ()=>{});
-gateInput.addEventListener('change', ()=>{});
-smoothInput.addEventListener('change', ()=>{
-  if(analyser) analyser.smoothingTimeConstant = parseFloat(smoothInput.value)||0.6;
-});
-
-/* YIN pitch detection (simplified) */
-function yinPitch(buf, sampleRate){
-  const threshold = 0.1;
-  const buffer = buf;
-  const bufSize = buffer.length;
-  const tauMin = Math.floor(sampleRate/1000 * 2); // ~2ms
-  const tauMax = Math.floor(sampleRate/50); // 50 Hz
-  const yin = new Float32Array(tauMax);
-
-  // Step 1: difference function
-  for(let tau=tauMin; tau<tauMax; tau++){
-    let sum=0;
-    for(let i=0;i<bufSize - tau;i++){
-      const d = buffer[i]-buffer[i+tau];
-      sum += d*d;
+function highlightClosest(targetMidi){
+  const chips = document.querySelectorAll('.chip');
+  chips.forEach(c=>c.classList.remove('active'));
+  if (targetMidi==null) return;
+  let closest=null,closestEl=null;
+  chips.forEach(c=>{
+    const m = parseInt(c.dataset.midi,10);
+    if (closest===null || Math.abs(m-targetMidi) < Math.abs(closest-targetMidi)){
+      closest = m; closestEl = c;
     }
-    yin[tau] = sum;
-  }
-  // Step 2: cumulative mean normalized difference
-  let runningSum = 0;
-  for(let tau=tauMin; tau<tauMax; tau++){
-    runningSum += yin[tau];
-    yin[tau] = yin[tau] * tau / runningSum;
-  }
-  // Step 3: absolute threshold
-  let tauEstimate = -1;
-  for(let tau=tauMin; tau<tauMax; tau++){
-    if(yin[tau] < threshold){
-      while(tau+1<tauMax && yin[tau+1] < yin[tau]) tau++;
-      tauEstimate = tau;
-      break;
-    }
-  }
-  if(tauEstimate === -1) return null;
-
-  // Step 4: parabolic interpolation for better estimate
-  const x0 = (tauEstimate<1)? tauEstimate : tauEstimate-1;
-  const x2 = (tauEstimate+1<tauMax)? tauEstimate+1 : tauEstimate;
-  if(x0 === tauEstimate || x2 === tauEstimate){
-    return sampleRate / tauEstimate;
-  }
-  const s0 = yin[x0], s1 = yin[tauEstimate], s2 = yin[x2];
-  const betterTau = tauEstimate + ( (s2 - s0) / (2*(2*s1 - s2 - s0)) );
-  return sampleRate / betterTau;
-}
-
-/* --------------------------- Meter Drawing --------------------------- */
-const meter = document.getElementById('meter');
-const ctx = meter.getContext('2d');
-function drawMeter(cents=0, stable=false){
-  const w = meter.width, h = meter.height;
-  ctx.clearRect(0,0,w,h);
-  // background
-  ctx.fillStyle = '#0b1420'; ctx.fillRect(0,0,w,h);
-  // center line
-  ctx.strokeStyle = '#1f2a3d'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(w/2, 20); ctx.lineTo(w/2, h-20); ctx.stroke();
-
-  // scale marks (-50 to +50 cents)
-  ctx.strokeStyle = '#28415f'; ctx.lineWidth = 1;
-  for(let i=-50;i<=50;i+=5){
-    const x = w/2 + i* (w/260); // scale
-    const len = (i%10===0)? 14 : 8;
-    ctx.beginPath(); ctx.moveTo(x, h-40); ctx.lineTo(x, h-40-len); ctx.stroke();
-    if(i%10===0){
-      ctx.fillStyle = '#7fa2c5';
-      ctx.font = '12px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText(String(i), x, h-20);
-    }
-  }
-  // needle
-  const clamped = Math.max(-50, Math.min(50, cents||0));
-  const x = w/2 + clamped*(w/260);
-  ctx.strokeStyle = stable ? '#00d084' : '#f1c40f';
-  ctx.lineWidth = 4;
-  ctx.beginPath(); ctx.moveTo(x, 30); ctx.lineTo(x, h-60); ctx.stroke();
-  // center glow
-  ctx.fillStyle = '#0e2535'; ctx.fillRect(0,0,w,26);
-  ctx.fillStyle = '#7fa2c5';
-  ctx.font = '12px system-ui'; ctx.textAlign='center';
-  ctx.fillText('-50¢', 20, 20);
-  ctx.fillText('0', w/2, 20);
-  ctx.fillText('+50¢', w-30, 20);
-}
-drawMeter(0,false);
-
-/* ----------------------------- Main Loop ---------------------------- */
-const noteNameEl = document.getElementById('noteName');
-const octaveEl = document.getElementById('octave');
-const detuneEl = document.getElementById('detune');
-const tendencyEl = document.getElementById('tendency');
-const freqEl = document.getElementById('freq');
-
-function energyDB(buf){
-  let sum=0;
-  for(let i=0;i<buf.length;i++){ sum += buf[i]*buf[i]; }
-  const rms = Math.sqrt(sum/buf.length);
-  return 20*Math.log10(rms + 1e-9);
+  });
+  if (closestEl) closestEl.classList.add('active');
 }
 
 function tick(){
-  if(!running) return;
-  analyser.getFloatTimeDomainData(_buf);
-  const db = energyDB(_buf);
-  const gate = parseFloat(gateInput.value)||-70;
-  let freq = null;
-  if(db > gate){
-    freq = yinPitch(_buf, audioCtx.sampleRate);
-  }
-  if(freq){
-    // smooth
-    lastFreq = lastFreq ? (0.8*lastFreq + 0.2*freq) : freq;
-    const A4 = parseFloat(a4Input.value)||440;
-    const data = freqToNoteData(lastFreq, A4);
-    if(data){
-      noteNameEl.textContent = data.note;
-      octaveEl.textContent = 'Oct ' + data.octave;
-      detuneEl.textContent = data.cents.toFixed(1);
-      tendencyEl.textContent = data.cents>1 ? 'Sharp' : (data.cents<-1 ? 'Flat' : 'In tune');
-      freqEl.textContent = lastFreq.toFixed(2);
+  analyser.getFloatTimeDomainData(buf);
+  const pitch = autoCorrelate(buf, audioCtx.sampleRate);
+  const noteEl = document.getElementById('noteName');
+  const centsEl = document.getElementById('cents');
+  const bar = document.getElementById('bar');
+  const status = document.getElementById('status');
 
-      // String highlighting
-      if(currentStrings.length){
-        if(modeSelect.value==='auto'){
-          const near = nearestString(lastFreq, currentStrings, A4);
-          highlightString(near.idx);
-        } else if(modeSelect.value==='string' && targetStringIdx!=null){
-          // compare to target
-          const targetHz = noteToFreq(currentStrings[targetStringIdx], A4);
-          const cents = 1200*Math.log2(lastFreq/targetHz);
-          detuneEl.textContent = cents.toFixed(1);
-          tendencyEl.textContent = cents>1 ? 'Sharp' : (cents<-1 ? 'Flat' : 'In tune');
-        }
-      }
-      drawMeter(parseFloat(detuneEl.textContent), Math.abs(parseFloat(detuneEl.textContent)) < 2.0);
-    }
-  } else {
-    drawMeter(0,false);
+  if (pitch === -1 || !isFinite(pitch)){
+    status.textContent = "Too quiet / no pitch detected…";
+    bar.style.width = "50%";
+    requestAnimationFrame(tick);
+    return;
   }
-  requestAnimationFrame(tick);
+
+  const note = noteFromFrequency(pitch);
+  const name = NOTE_NAMES[note % 12] + (Math.floor(note/12)-1);
+  const cents = centsOffFromPitch(pitch, note);
+
+  noteEl.textContent = name;
+  centsEl.textContent = (cents>0?"+":"") + cents;
+
+  const clamped = Math.max(-50, Math.min(50, cents));
+  bar.style.width = (50 + clamped) + "%";
+  bar.style.background = Math.abs(cents) < 5 ? "linear-gradient(90deg,#34d399,#10b981)" : (cents<0 ? "#f87171" : "#fde047");
+
+  status.textContent = "Pitch ≈ " + pitch.toFixed(2) + " Hz";
+  highlightClosest(note);
+  rafId = requestAnimationFrame(tick);
 }
 
-/* --------------------------- Bootstrapping -------------------------- */
-renderInstrument();
-modeState.textContent = 'Auto';
-instState.textContent = 'Fiddle';
-// Accessibility: allow legend tap to pick string in String Mode
-stringLegend.addEventListener('click', (e)=>{
-  const pill = e.target.closest('.pill'); if(!pill) return;
-  if(modeSelect.value!=='string') return;
-  targetStringIdx = parseInt(pill.dataset.idx);
-  highlightString(targetStringIdx);
-});
+// Register service worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
+}
 </script>
 </body>
 </html>
-"""
-
-
-
