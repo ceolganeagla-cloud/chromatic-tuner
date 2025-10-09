@@ -3,45 +3,31 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
-<title>Ceol Gan Eagla — Tuner v2.7</title>
+<title>Ceol Gan Eagla — Tuner v2.7.1</title>
 <meta name="theme-color" content="#0b1117"/>
 <link rel="icon" href="logo.png" type="image/png">
 <link rel="manifest" href="manifest.json">
 <style>
 :root{
-  /* brand */
   --brand-green:#144e2a; --brand-green-2:#0e3a20; --brand-gold:#d7b54a;
   --flag-g:#169b62; --flag-o:#ff883e;
-
-  /* bright but still CGE */
   --bg:#0d1621; --panel:#0f1f2e; --ink:#f4f8fb; --muted:#a9bbcf; --line:#24394d;
   --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
 }
 *{box-sizing:border-box}html,body{height:100%}
-body{
-  margin:0;color:var(--ink);
-  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
-  background:radial-gradient(120% 120% at 10% 0%,#142437 0,var(--bg) 40%,#09121b 100%);
-}
-header{
-  position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:10px 12px;
-  background:rgba(10,16,24,.65);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
-}
-.badge{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;
-  background:linear-gradient(180deg,var(--brand-green),var(--brand-green-2));border:1px solid #23673f}
-.logo{width:36px;height:36px;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.35);
-  background:#0a2415;border:1px solid #2a7446;display:grid;place-items:center}
+body{margin:0;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
+background:radial-gradient(120% 120% at 10% 0%,#142437 0,var(--bg) 40%,#09121b 100%)}
+header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(10,16,24,.65);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.badge{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:linear-gradient(180deg,var(--brand-green),var(--brand-green-2));border:1px solid #23673f}
+.logo{width:36px;height:36px;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.35);background:#0a2415;border:1px solid #2a7446;display:grid;place-items:center}
 .logo img{width:100%;height:100%;object-fit:cover;display:block}
 .name{font-weight:800;letter-spacing:.4px;background:linear-gradient(180deg,#fff7c0,var(--brand-gold));-webkit-background-clip:text;color:transparent}
-.flag{display:inline-block;width:22px;height:14px;border-radius:3px;border:1px solid #2b3d4d;margin-left:2px;
-  background:linear-gradient(90deg,var(--flag-g) 0 33%,#fff 33% 66%,var(--flag-o) 66% 100%)}
+.flag{display:inline-block;width:22px;height:14px;border-radius:3px;border:1px solid #2b3d4d;margin-left:2px;background:linear-gradient(90deg,var(--flag-g) 0 33%,#fff 33% 66%,var(--flag-o) 66% 100%)}
 header .grow{flex:1}
 button{background:#0a1622;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:800}
 button.primary{background:linear-gradient(180deg,#1b8a45,#176e39);border-color:#2b7b4b}
-button.ghost{background:transparent}
 main{max-width:1100px;margin:0 auto;padding:14px;display:grid;gap:14px}
-.board{display:grid;grid-template-columns:1fr;gap:14px}
-@media(min-width:980px){.board{grid-template-columns:1.3fr .7fr}}
+.board{display:grid;grid-template-columns:1fr;gap:14px}@media(min-width:980px){.board{grid-template-columns:1.3fr .7fr}}
 .card{background:linear-gradient(180deg,var(--panel),#0c1a28);border:1px solid var(--line);border-radius:20px;padding:14px}
 .stage{width:100%;aspect-ratio:16/11;background:#0a1722;border:1px solid var(--line);border-radius:16px}
 
@@ -49,29 +35,25 @@ main{max-width:1100px;margin:0 auto;padding:14px;display:grid;gap:14px}
 .a4row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .a4pill{border:1px solid var(--line);background:#0a1622;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:800}
 .a4pill.active{background:rgba(34,197,94,.12);border-color:#2a5f3b}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.row .grow{flex:1 1 auto;min-width:200px}
 label{color:var(--muted);font-size:.9rem}
 
-.strchip{border:1px solid var(--line);background:#0a1622;color:var(--ink);padding:6px 10px;border-radius:10px;font-weight:800}
-.hidden{display:none}
-
-/* Dial status chips */
 .legend{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px;flex-wrap:wrap}
 .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#0a1622;color:#a9bbcf;font-weight:800}
 .pill.ok{color:var(--ok);border-color:#2a5f3b;background:rgba(34,197,94,.12)}
 .pill.flat{color:var(--warn);border-color:#745a19;background:rgba(245,158,11,.08)}
 .pill.sharp{color:var(--bad);border-color:#6a1f1f;background:rgba(239,68,68,.08)}
 
-/* Tap overlay for iOS autoplay policy */
+/* Tap overlay */
 #tapOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
-#tapOverlay .inner{background:linear-gradient(180deg,#0f2232,#0a1824);border:1px solid var(--line);color:var(--ink);
-  padding:18px 16px;border-radius:16px;text-align:center;max-width:90%}
+#tapOverlay .inner{background:linear-gradient(180deg,#0f2232,#0a1824);border:1px solid var(--line);color:var(--ink);padding:18px 16px;border-radius:16px;text-align:center;max-width:90%}
 #tapOverlay .inner b{color:var(--brand-gold)}
 
-/* In-tune dial glow */
+/* In-tune dial glow — force on when class applied */
 #tuneGlow{opacity:0;transition:opacity .18s ease}
-.inTune #tuneGlow{opacity:1}
+#gauge.inTune #tuneGlow{opacity:1 !important}
+
+/* Ensure needle is always visible */
+#needle{vector-effect:non-scaling-stroke}
 </style>
 </head>
 <body>
@@ -96,14 +78,20 @@ label{color:var(--muted);font-size:.9rem}
         <!-- instrument -->
         <g id="silhouette"></g>
         <g id="strings"></g>
+
         <!-- dial -->
         <g id="gauge" transform="translate(600,610)">
           <!-- green glow arc shown when in tune -->
-          <path id="tuneGlow" d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#22c55e" stroke-opacity="0.8" stroke-width="22" filter="url(#glowG)"/>
+          <path id="tuneGlow" d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#22c55e" stroke-opacity="0.9" stroke-width="22" filter="url(#glowG)"/>
           <!-- base arc -->
           <path d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#20394f" stroke-width="18"/>
           <g id="ticks"></g>
+
+          <!-- needle + hub (hub ensures visibility even when not moving) -->
           <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="#22c55e" stroke-width="8" stroke-linecap="round" filter="url(#glowG)"/>
+          <circle cx="0" cy="0" r="10" fill="#0a1722" stroke="#2a4862" stroke-width="3"/>
+          <circle cx="0" cy="0" r="5" fill="#22c55e" filter="url(#glowG)"/>
+
           <text id="noteLabel" x="0" y="90" text-anchor="middle" fill="#f4f8fb" font-size="64" font-weight="900">—</text>
           <text id="freqLabel" x="0" y="132" text-anchor="middle" fill="#9fb2c8" font-size="26" font-weight="800">0.00 Hz</text>
         </g>
@@ -115,7 +103,6 @@ label{color:var(--muted);font-size:.9rem}
     </div>
 
     <div class="card controls">
-      <!-- A4 discrete options 440..444 -->
       <div class="a4row" id="a4row">
         <label>Reference A4</label>
         <button class="a4pill" data-a4="440">440</button>
@@ -124,7 +111,6 @@ label{color:var(--muted);font-size:.9rem}
         <button class="a4pill" data-a4="443">443</button>
         <button class="a4pill" data-a4="444">444</button>
       </div>
-      <!-- Instrument select kept minimal -->
       <div class="row">
         <label class="grow" for="instrument">Instrument</label>
         <select id="instrument" class="grow">
@@ -150,14 +136,11 @@ label{color:var(--muted);font-size:.9rem}
 </div>
 
 <script>
-/* ===== Basics ===== */
-const root=document.documentElement;
-const a4Read=document.getElementById('a4read');
+/* ===== Setup ===== */
 const statusPill=document.getElementById('status');
-const btnStart=document.getElementById('btnStart');
-const btnStop=document.getElementById('btnStop');
+const btnStart=document.getElementById('btnStart'); const btnStop=document.getElementById('btnStop');
 const selInstrument=document.getElementById('instrument');
-
+const a4Read=document.getElementById('a4read');
 const NOTE_NAMES=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
 function f2n(f,A4=440){return 69+12*Math.log2(f/A4)}
 function n2f(n,A4=440){return A4*Math.pow(2,(n-69)/12)}
@@ -165,9 +148,11 @@ function nameOf(n){const i=((Math.round(n)%12)+12)%12;return NOTE_NAMES[i]}
 const TUNINGS={guitar:()=>[64,59,55,50,45,40],violin:()=>[76,69,62,55],mandolin:()=>[76,69,62,55],banjo5:()=>[67,62,59,55,50],bouzouki:()=>[62,57,50,43],bass:()=>[43,38,33,28]};
 function tuningHz(name,A4){return TUNINGS[name]().map(m=>({midi:m,name:NOTE_NAMES[m%12]+(Math.floor(m/12)-1),freq:n2f(m,A4)}))}
 
-/* ===== SVG handles ===== */
+/* ===== SVG refs ===== */
 const gSil=document.getElementById('silhouette'), gStr=document.getElementById('strings'), gTicks=document.getElementById('ticks');
+const gGauge=document.getElementById('gauge');
 const gNeedle=document.getElementById('needle'), noteLabel=document.getElementById('noteLabel'), freqLabel=document.getElementById('freqLabel');
+
 function buildTicks(){
   gTicks.innerHTML='';
   for(let i=-50;i<=50;i+=5){
@@ -180,7 +165,7 @@ function buildTicks(){
 }
 buildTicks();
 
-/* ===== Instrument drawing (kept) ===== */
+/* ===== Instrument drawing ===== */
 let A4=440, currentInstrument=selInstrument.value, currentStrings=tuningHz(currentInstrument,A4), activeIdx=0;
 function drawInstrument(){
   gSil.innerHTML=''; gStr.innerHTML='';
@@ -226,7 +211,7 @@ function rebuildInstrument(){currentStrings=tuningHz(currentInstrument,A4);drawI
 selInstrument.addEventListener('change',()=>{currentInstrument=selInstrument.value;activeIdx=0;rebuildInstrument()});
 rebuildInstrument();
 
-/* ===== A4 pills (440..444) ===== */
+/* ===== A4 pills ===== */
 const a4row=document.getElementById('a4row');
 function setA4(v){A4=v; a4Read.textContent='A4: '+v+' Hz'; rebuildInstrument(); highlightA4()}
 function highlightA4(){a4row.querySelectorAll('.a4pill').forEach(b=>b.classList.toggle('active',+b.dataset.a4===A4))}
@@ -235,7 +220,7 @@ setA4(440);
 
 /* ===== Pitch engine ===== */
 let audioCtx, analyser, source, stream, running=false, buf;
-const MAXF=5000, MIN_RMS=0.006, MIN_CONF=0.78, BIAS_SEMITONES=2;
+const MAXF=5000, MIN_RMS=0.006, MIN_CONF=0.78, BIAS_SEMITONES=2, TUNE_WINDOW=5; // cents
 
 function initAnalyser(){
   analyser=audioCtx.createAnalyser();
@@ -297,25 +282,21 @@ function rotateNeedle(cents){
   const lim=50, c=Math.max(-lim,Math.min(lim,cents||0));
   const ang=(-160)+(c+50)*320/100;
   gNeedle.setAttribute('transform','rotate('+ang+')');
-  if(c>5) gNeedle.setAttribute('stroke','#ef4444');
-  else if(c<-5) gNeedle.setAttribute('stroke','#f59e0b');
+  if(c> TUNE_WINDOW) gNeedle.setAttribute('stroke','#ef4444');
+  else if(c< -TUNE_WINDOW) gNeedle.setAttribute('stroke','#f59e0b');
   else gNeedle.setAttribute('stroke','#22c55e');
 }
 function setStatus(cents, f){
-  // dial green glow state
-  const dial=document.getElementById('gauge').parentNode; // svg
-  const rootNode=document.getElementById('gauge'); // group
-  if(cents===null){ statusPill.textContent='Listening'; rootNode.classList.remove('inTune'); return; }
-
+  if(cents===null){ statusPill.textContent='Listening'; gGauge.classList.remove('inTune'); return; }
   let delta=cents;
   if(activeIdx!==null){ const target=currentStrings[activeIdx].freq; delta=Math.round(1200*Math.log2((f||1)/target)); }
   const abs=Math.abs(delta);
-  if(abs<=5){ statusPill.textContent='In tune'; rootNode.classList.add('inTune'); }
-  else if(delta<-5){ statusPill.textContent='Flat'; rootNode.classList.remove('inTune'); }
-  else { statusPill.textContent='Sharp'; rootNode.classList.remove('inTune'); }
+  if(abs<=TUNE_WINDOW){ statusPill.textContent='In tune'; gGauge.classList.add('inTune'); }
+  else if(delta< -TUNE_WINDOW){ statusPill.textContent='Flat'; gGauge.classList.remove('inTune'); }
+  else { statusPill.textContent='Sharp'; gGauge.classList.remove('inTune'); }
 }
 
-/* ===== Mobile-safe mic start/stop ===== */
+/* ===== Mobile-safe Start/Stop ===== */
 const tapOverlay=document.getElementById('tapOverlay'), overlayStart=document.getElementById('overlayStart');
 ['click','touchend'].forEach(evt=>{
   btnStart.addEventListener(evt,start,{passive:true});
@@ -329,10 +310,8 @@ async function start(){
     if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:44100});
     if(audioCtx.state==='suspended') await audioCtx.resume();
 
-    // quick permission prompt improves labels/availability (ignore if blocked)
     try{ const t=await navigator.mediaDevices.getUserMedia({audio:true,video:false}); t.getTracks().forEach(x=>x.stop()); }catch{}
 
-    // main stream (always-on while running)
     const streamOpts={audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false,sampleRate:44100},video:false};
     stream=await navigator.mediaDevices.getUserMedia(streamOpts);
     source=audioCtx.createMediaStreamSource(stream);
@@ -340,10 +319,11 @@ async function start(){
 
     running=true; btnStart.disabled=true; btnStop.disabled=false;
     statusPill.textContent='Listening';
+    // ensure needle visible at start
+    rotateNeedle(0);
     loop();
   }catch(err){
     console.error(err);
-    // show overlay if gesture needed
     if((/NotAllowedError|SecurityError/.test(err.name))&&(audioCtx && audioCtx.state!=='running')){
       tapOverlay.style.display='flex';
     }else{
@@ -359,8 +339,10 @@ function stop(){
   statusPill.textContent='Stopped';
 }
 
-/* show overlay on first touch if not running (iOS) */
-document.addEventListener('touchend',()=>{ if(!running) tapOverlay.style.display='flex'; },{passive:true});
+/* first paint */
+(function init(){
+  drawInstrument(); buildTicks();
+})();
 </script>
 </body>
 </html>
