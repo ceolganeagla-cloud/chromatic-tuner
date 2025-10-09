@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
-<title>Ceol Gan Eagla — Tuner v2.11</title>
+<title>Ceol Gan Eagla — Tuner v2.12</title>
 <meta name="theme-color" content="#0b1117"/>
 <link rel="icon" href="logo.png" type="image/png">
 <link rel="manifest" href="manifest.json">
@@ -42,7 +42,7 @@ label{color:var(--muted);font-size:.9rem}
 .pill.ok{color:var(--ok);border-color:#2a5f3b;background:rgba(34,197,94,.12)}
 .pill.flat{color:var(--warn);border-color:#745a19;background:rgba(245,158,11,.08)}
 .pill.sharp{color:var(--bad);border-color:#6a1f1f;background:rgba(239,68,68,.08)}
-/* Overlay tint for global state */
+/* Global tint for state */
 #tint{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .2s ease;z-index:10}
 body.stopped #tint{background:rgba(34,197,94,.14);opacity:1}
 body.recording #tint{background:transparent;opacity:0}
@@ -134,10 +134,7 @@ footer .ft{padding:10px 14px;border:1px solid var(--line);border-radius:14px;bac
   <div class="ft">© Gearóid MacUaid — Ceol Gan Eagla — 2025</div>
 </footer>
 
-<!-- Hidden audio element (Android quirk: detaching this helps release mic) -->
-<audio id="shadowIn" autoplay muted playsinline class="hidden" style="display:none"></audio>
-
-<!-- tap gate -->
+<!-- Tap gate -->
 <div id="tapOverlay"><div class="inner">
   <div style="font-size:18px;margin-bottom:6px"><b>Tap to start the tuner</b></div>
   <div>Unlocks your microphone on mobile.</div>
@@ -145,13 +142,11 @@ footer .ft{padding:10px 14px;border:1px solid var(--line);border-radius:14px;bac
 </div></div>
 
 <script>
-/* ===== Helpers ===== */
+/* ===== Basics ===== */
 const statusPill=document.getElementById('status');
 const btnStart=document.getElementById('btnStart'), btnStop=document.getElementById('btnStop');
 const selInstrument=document.getElementById('instrument');
 const a4Read=document.getElementById('a4read');
-const shadowIn=document.getElementById('shadowIn');
-
 const NOTE_NAMES=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
 function f2n(f,A4=440){return 69+12*Math.log2(f/A4)}
 function n2f(n,A4=440){return A4*Math.pow(2,(n-69)/12)}
@@ -215,10 +210,11 @@ function highlightA4(){a4row.querySelectorAll('.a4pill').forEach(b=>b.classList.
 a4row.addEventListener('click',(e)=>{const b=e.target.closest('.a4pill'); if(!b) return; setA4(+b.dataset.a4)});
 setA4(440);
 
-/* ===== Pitch engine (with Android-stop safeguards) ===== */
+/* ===== Pitch engine ===== */
 let audioCtx=null, analyser=null, source=null, stream=null, running=false, buf=null, rafId=null;
 const MAXF=5000, MIN_RMS=0.006, MIN_CONF=0.78, BIAS_SEMITONES=2, TUNE_WINDOW=5;
-let displayedAngle = 0, lastHeard = 0, havePitch = false;
+let displayedAngle = 0, havePitch = false;
+const isAndroid = /Android/i.test(navigator.userAgent);
 
 function initAnalyser(){analyser=audioCtx.createAnalyser();analyser.fftSize=2048;analyser.minDecibels=-90;analyser.maxDecibels=-10;analyser.smoothingTimeConstant=0.85;buf=new Float32Array(analyser.fftSize)}
 function detectPitch(buf,sr){
@@ -243,12 +239,9 @@ function median(a){const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2
 function nearestTarget(f){let best=null,bd=1e9;currentStrings.forEach(s=>{const d=Math.abs(1200*Math.log2(f/s.freq));if(d<bd){bd=d;best=s}});return {t:best,d:bd}}
 
 function loop(){
-  if(!running) return;                 // do NOT reschedule when stopped
+  if(!running) return;
   analyser.getFloatTimeDomainData(buf);
   const d=detectPitch(buf,audioCtx.sampleRate);
-  const now=performance.now();
-  if(d.rms>=MIN_RMS) lastHeard=now;
-
   if(d.f>0 && d.f<MAXF && d.conf>=MIN_CONF){
     havePitch = true;
     let f=d.f; const near=nearestTarget(f);
@@ -273,17 +266,8 @@ function loop(){
     if(c > TUNE_WINDOW) gTip.setAttribute('fill','#ff7a7a');
     else if(c < -TUNE_WINDOW) gTip.setAttribute('fill','#ffd07a');
     else gTip.setAttribute('fill','#22ff8a');
-
-    if(running) rafId = requestAnimationFrame(loop);
-  }else{
-    if(!havePitch){
-      const wobble = Math.sin(now/600)*6;
-      displayedAngle = wobble;
-      gNeedle.setAttribute('transform','rotate('+displayedAngle+')');
-      gTip.setAttribute('transform','rotate('+displayedAngle+')');
-    }
-    if(running) rafId = requestAnimationFrame(loop);
   }
+  rafId = requestAnimationFrame(loop);
 }
 
 function setRunningUI(on){
@@ -298,7 +282,7 @@ function setRunningUI(on){
   }
 }
 
-/* ===== Start/Stop with HARD kill + Android detach ===== */
+/* ===== Start/Stop with Android workarounds ===== */
 const tapOverlay=document.getElementById('tapOverlay'), overlayStart=document.getElementById('overlayStart');
 ['click','touchend'].forEach(evt=>{
   btnStart.addEventListener(evt,start,{passive:true});
@@ -308,51 +292,54 @@ btnStop.addEventListener('click', stop);
 ['beforeunload','pagehide','freeze'].forEach(ev=>window.addEventListener(ev, stop, {passive:true}));
 document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stop(); }, {passive:true});
 
+let shadowAudioEl=null;
 async function start(){
   try{
     tapOverlay.style.display='none';
-    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:44100});
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:44100});
     if(audioCtx.state==='suspended') await audioCtx.resume();
 
-    // get stream and attach to analyser + hidden <audio> (so Android will fully detach later)
     const streamOpts={audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false,sampleRate:44100},video:false};
     stream=await navigator.mediaDevices.getUserMedia(streamOpts);
-    shadowIn.srcObject = stream;   // <-- attach
+
+    // Ephemeral hidden audio element (created fresh each start)
+    shadowAudioEl=document.createElement('audio');
+    shadowAudioEl.autoplay=true; shadowAudioEl.muted=true; shadowAudioEl.playsInline=true; shadowAudioEl.style.display='none';
+    document.body.appendChild(shadowAudioEl);
+    shadowAudioEl.srcObject=stream;
+
     source=audioCtx.createMediaStreamSource(stream);
     initAnalyser(); source.connect(analyser);
 
     running=true; havePitch=false; displayedAngle=0; setRunningUI(true);
     gNeedle.setAttribute('transform','rotate(0)'); gTip.setAttribute('transform','rotate(0)');
     rafId = requestAnimationFrame(loop);
-  }catch(err){
-    console.error(err);
-    statusPill.textContent='Mic error';
-  }
+  }catch(err){ console.error(err); statusPill.textContent='Mic error'; }
 }
-function stop(){
-  // avoid duplicate work
-  if(!running && !stream && !audioCtx) { setRunningUI(false); return; }
 
+async function stop(){
+  if(!running && !stream && !audioCtx){ setRunningUI(false); return; }
   running=false;
   if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
 
-  // 1) Stop & null every track
-  try{
-    if(stream){
-      stream.getTracks().forEach(t=>{ try{t.stop();}catch{} });
-    }
-  }catch{}
-  // 2) Detach hidden <audio> (Android sometimes keeps mic until element is detached)
-  try{ if(shadowIn){ shadowIn.pause(); shadowIn.srcObject=null; } }catch{}
-  // 3) Disconnect nodes
+  try{ if(stream){ stream.getTracks().forEach(t=>{ try{t.stop();}catch{} }); } }catch{}
   try{ if(source){ source.disconnect(); } }catch{}
   try{ if(analyser){ analyser.disconnect(); } }catch{}
-  // 4) Close AudioContext
-  try{ if(audioCtx){ audioCtx.close(); } }catch{}
-  // 5) Null refs
-  stream=null; source=null; analyser=null; audioCtx=null; buf=null; havePitch=false;
+  try{ if(audioCtx){ await audioCtx.close(); } }catch{}
 
+  // Detach and remove the hidden audio element
+  try{ if(shadowAudioEl){ shadowAudioEl.pause(); shadowAudioEl.srcObject=null; shadowAudioEl.remove(); shadowAudioEl=null; } }catch{}
+
+  stream=null; source=null; analyser=null; audioCtx=null; buf=null; havePitch=false;
   setRunningUI(false);
+
+  // Android-only: reacquire-and-immediately-stop to reset OS mic ownership
+  if(isAndroid && navigator.mediaDevices?.getUserMedia){
+    try{
+      const tmp=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+      tmp.getTracks().forEach(t=>t.stop());
+    }catch(e){ /* ignore */ }
+  }
 }
 </script>
 </body>
