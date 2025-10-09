@@ -3,470 +3,287 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Tuner (Instrument UI)</title>
+<title>Ceol Gan Eagla — Tuner</title>
 <meta name="theme-color" content="#0b1117"/>
-
-<!--
-Create these files next to index.html:
-
-manifest.json
-{
-  "name": "Ceol Gan Eagla Tuner",
-  "short_name": "CGE Tuner",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#081018",
-  "theme_color": "#0b1117",
-  "icons": [
-    { "src": "logo-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "logo-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}
--->
-
-<link rel="manifest" href="manifest.json">
 <link rel="icon" href="logo.png" type="image/png">
-
+<link rel="manifest" href="manifest.json">
 <style>
 :root{
   --bg:#081018;--panel:#0e1724;--ink:#e9f1f7;--muted:#9fb2c8;--line:#223243;
-  --green:#1db954;--gold:#e0b84a;--accent:#22c55e;--danger:#ef4444;--warn:#f59e0b;
+  --ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;
 }
-*{box-sizing:border-box}html,body{height:100%}
-body{margin:0;background:radial-gradient(120% 120% at 10% 0%,#0d1622 0,#081018 40%,#060c12 100%);
-color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:radial-gradient(120% 120% at 10% 0%,#0d1622 0,#081018 40%,#060c12 100%);
+color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial}
 header{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line);
-background:rgba(10,16,24,.65);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10;}
-.badge{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:999px;
-background:linear-gradient(180deg,#144e2a,#0e3a20);border:1px solid #23673f;box-shadow:0 2px 14px rgba(0,0,0,.35);}
-.badge .mark{width:34px;height:34px;border-radius:999px;display:grid;place-items:center;background:#0a2415;
-color:#ffd54a;font-weight:900;letter-spacing:.4px;border:1px solid #2a7446;overflow:hidden}
-.badge .name{font-weight:800;letter-spacing:.4px;background:linear-gradient(180deg,#ffe08a,#d7b54a);
--webkit-background-clip:text;color:transparent}
-.tri{display:inline-block;width:20px;height:12px;background:linear-gradient(90deg,#169b62 0 33%,#fff 33% 66%,#ff883e 66% 100%);
-border-radius:3px;border:1px solid #2b3d4d}
-.mark img{width:100%;height:100%;object-fit:cover}
+background:rgba(10,16,24,.65);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
+.badge{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:999px;background:#0f2a1b;border:1px solid #23673f}
+.badge .mark{width:34px;height:34px;border-radius:999px;overflow:hidden;border:1px solid #2a7446;background:#0a2415;display:grid;place-items:center}
+.badge .mark img{width:100%;height:100%;object-fit:cover}
+.badge .name{font-weight:800;letter-spacing:.4px;background:linear-gradient(180deg,#ffe08a,#d7b54a);-webkit-background-clip:text;color:transparent}
 header .grow{flex:1}
-button,select,input[type="range"]{background:#0a1622;color:var(--ink);border:1px solid var(--line);border-radius:12px;
-padding:10px 12px;font-weight:700}button.primary{background:linear-gradient(180deg,#1b8a45,#176e39);border-color:#2b7b4b}
+button,select,input[type="range"]{background:#0a1622;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-weight:700}
+button.primary{background:linear-gradient(180deg,#1b8a45,#176e39);border-color:#2b7b4b}
 main{max-width:1100px;margin:0 auto;padding:16px;display:grid;gap:16px}
 .board{display:grid;grid-template-columns:1fr;gap:16px}@media(min-width:980px){.board{grid-template-columns:1.3fr .7fr}}
-.instrument-card,.controls-card{background:linear-gradient(180deg,#0e1623,#0c1420);border:1px solid var(--line);
-border-radius:20px;padding:16px}
-.controls-card{display:grid;gap:12px}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row .grow{flex:1 1 auto;min-width:200px}
-label{color:var(--muted);font-size:.9rem}
+.card{background:linear-gradient(180deg,#0e1623,#0c1420);border:1px solid var(--line);border-radius:20px;padding:16px}
 .stage{width:100%;aspect-ratio:16/11;background:#09131c;border:1px solid var(--line);border-radius:16px}
-.legend{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:10px;flex-wrap:wrap}
-.pill{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#0a1622;color:var(--muted);font-weight:700}
-.pill.ok{color:#22c55e;border-color:#2a5f3b;background:rgba(34,197,94,.1)}
-.pill.flat{color:#f59e0b;border-color:#745a19;background:rgba(245,158,11,.08)}
-.pill.sharp{color:#ef4444;border-color:#6a1f1f;background:rgba(239,68,68,.08)}
-.string-chip{border:1px solid var(--line);background:#0a1622;color:var(--ink);padding:8px 12px;border-radius:10px;
-cursor:pointer;font-weight:800}.string-chip.active{background:rgba(34,197,94,.12);border-color:#2a5f3b}
-footer{text-align:center;color:var(--muted);padding:12px;font-size:.85rem}
+.legend{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.pill{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#0a1622;color:#9fb2c8;font-weight:700}
+.pill.ok{color:var(--ok);border-color:#2a5f3b;background:rgba(34,197,94,.1)}
+.pill.flat{color:var(--warn);border-color:#745a19;background:rgba(245,158,11,.08)}
+.pill.sharp{color:var(--bad);border-color:#6a1f1f;background:rgba(239,68,68,.08)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row .grow{flex:1 1 auto;min-width:200px}
+label{color:#9fb2c8;font-size:.9rem}
+.string-chip{border:1px solid var(--line);background:#0a1622;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:800}
+.string-chip.active{background:rgba(34,197,94,.12);border-color:#2a5f3b}
 .mini{font-size:12px;color:#7f93aa;margin-top:-6px;text-align:center}
 </style>
 </head>
 <body>
 <header>
   <div class="badge">
-    <div class="mark" id="logoSlot">
-      <!-- If logo.png exists, it's shown below; otherwise fallback text CGE -->
-      <img src="logo.png" alt="Ceol Gan Eagla" onerror="this.remove(); document.getElementById('logoSlot').textContent='CGE'">
-    </div>
-    <div class="name">Ceol Gan Eagla</div><span class="tri" title="Éire"></span>
+    <div class="mark" id="logoSlot"><img src="logo.png" alt="Ceol Gan Eagla" onerror="this.remove();document.getElementById('logoSlot').textContent='CGE'"></div>
+    <div class="name">Ceol Gan Eagla</div>
   </div>
-  <div class="grow"></div><button id="btnStart" class="primary">Start</button><button id="btnStop" disabled>Stop</button>
+  <div class="grow"></div>
+  <button id="btnStart" class="primary">Start</button>
+  <button id="btnStop" disabled>Stop</button>
 </header>
 
 <main>
-<section class="board">
-  <div class="instrument-card">
-    <svg id="stage" class="stage" viewBox="0 0 1200 825" xmlns="http://www.w3.org/2000/svg" aria-label="Instrument tuner">
-      <defs><filter id="glowG"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-      <rect x="0" y="0" width="1200" height="825" rx="16" ry="16" fill="#09131c" stroke="#223243"/>
-      <g id="silhouette"></g><g id="strings"></g>
-      <g id="gauge" transform="translate(600,610)">
-        <path d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#203447" stroke-width="20"/>
-        <g id="ticks"></g>
-        <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="#22c55e" stroke-width="8" stroke-linecap="round" filter="url(#glowG)"/>
-        <text id="centsLabel" x="0" y="42" text-anchor="middle" fill="#9fb2c8" font-size="28" font-weight="700">0¢</text>
-        <text id="noteLabel" x="0" y="88" text-anchor="middle" fill="#e9f1f7" font-size="64" font-weight="900">—</text>
-        <text id="freqLabel" x="0" y="130" text-anchor="middle" fill="#9fb2c8" font-size="26" font-weight="700">0.00 Hz</text>
-      </g>
-    </svg>
-    <div class="legend">
-      <div id="status" class="pill">Mic idle</div>
-      <div class="pill" id="a4pill">A4: <span id="a4val">440</span> Hz</div>
-      <button id="btnRetry" class="pill">Try again</button>
+  <section class="board">
+    <div class="card">
+      <svg id="stage" class="stage" viewBox="0 0 1200 825" xmlns="http://www.w3.org/2000/svg" aria-label="Instrument tuner">
+        <defs>
+          <filter id="glowG"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect x="0" y="0" width="1200" height="825" rx="16" ry="16" fill="#09131c" stroke="#223243"/>
+        <g id="silhouette"></g><g id="strings"></g>
+        <g id="gauge" transform="translate(600,610)">
+          <path d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#203447" stroke-width="20"/>
+          <g id="ticks"></g>
+          <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="#22c55e" stroke-width="8" stroke-linecap="round" filter="url(#glowG)"/>
+          <text id="centsLabel" x="0" y="42" text-anchor="middle" fill="#9fb2c8" font-size="28" font-weight="700">0¢</text>
+          <text id="noteLabel" x="0" y="88" text-anchor="middle" fill="#e9f1f7" font-size="64" font-weight="900">—</text>
+          <text id="freqLabel" x="0" y="130" text-anchor="middle" fill="#9fb2c8" font-size="26" font-weight="700">0.00 Hz</text>
+        </g>
+      </svg>
+      <div class="legend">
+        <div id="status" class="pill">Mic idle</div>
+        <div class="pill">A4: <span id="a4val">440</span> Hz</div>
+        <button id="btnRetry" class="pill">Try again</button>
+      </div>
+      <div id="diag" class="mini"></div>
     </div>
-    <div id="diag" class="mini"></div>
-  </div>
 
-  <div class="controls-card">
-    <div class="row"><label class="grow" for="device">Microphone</label><select id="device" class="grow"></select><button id="btnRefresh">↻</button></div>
-    <div class="row"><label class="grow" for="instrument">Instrument</label>
-      <select id="instrument" class="grow"><option value="guitar">Guitar</option><option value="violin">Violin</option>
-      <option value="mandolin">Mandolin</option><option value="banjo5">Banjo (5-string)</option>
-      <option value="bouzouki">Irish Bouzouki</option><option value="bass">Bass</option></select></div>
-    <div id="stringChips" class="row"></div>
-    <div class="row"><label class="grow" for="a4">Reference A4</label><input id="a4" class="grow" type="range" min="430" max="450" step="1" value="440"/></div>
-  </div>
-</section>
+    <div class="card">
+      <div class="row">
+        <label class="grow" for="device">Microphone</label>
+        <select id="device" class="grow"></select>
+        <button id="btnRefresh">↻</button>
+      </div>
+      <div class="row">
+        <label class="grow" for="instrument">Instrument</label>
+        <select id="instrument" class="grow">
+          <option value="guitar">Guitar</option>
+          <option value="violin">Violin</option>
+          <option value="mandolin">Mandolin</option>
+          <option value="banjo5">Banjo (5-string)</option>
+          <option value="bouzouki">Irish Bouzouki</option>
+          <option value="bass">Bass</option>
+        </select>
+      </div>
+      <div id="stringChips" class="row"></div>
+      <div class="row">
+        <label class="grow" for="a4">Reference A4</label>
+        <input id="a4" class="grow" type="range" min="430" max="450" step="1" value="440"/>
+      </div>
+    </div>
+  </section>
 </main>
 
-<footer>© <span id="year"></span> Ceol Gan Eagla — Offline tuner</footer>
+<footer class="mini">© <span id="year"></span> Ceol Gan Eagla — Offline tuner</footer>
 
 <script>
 document.getElementById('year').textContent=new Date().getFullYear();
-
-// ===== Musical helpers =====
 const NOTE_NAMES=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
-function freqToNoteNumber(f,A4=440){return 69+12*Math.log2(f/A4)}
-function noteNumberToFreq(n,A4=440){return A4*Math.pow(2,(n-69)/12)}
-function roundNoteName(n){const i=((Math.round(n)%12)+12)%12;return NOTE_NAMES[i]}
+function f2n(f,A4=440){return 69+12*Math.log2(f/A4)} function n2f(n,A4=440){return A4*Math.pow(2,(n-69)/12)}
+function roundName(n){const i=((Math.round(n)%12)+12)%12;return NOTE_NAMES[i]}
+// tunings top->bottom
+const TUNINGS={guitar:()=>[64,59,55,50,45,40],violin:()=>[76,69,62,55],mandolin:()=>[76,69,62,55],banjo5:()=>[67,62,59,55,50],bouzouki:()=>[62,57,50,43],bass:()=>[43,38,33,28]};
+function tuningHz(name,A4){return TUNINGS[name]().map(m=>({midi:m,name:NOTE_NAMES[m%12]+(Math.floor(m/12)-1),freq:n2f(m,A4)}))}
 
-// Tunings (MIDI top-to-bottom)
-const TUNINGS={guitar:A4=>[64,59,55,50,45,40],violin:A4=>[76,69,62,55],mandolin:A4=>[76,69,62,55],
-banjo5:A4=>[67,62,59,55,50],bouzouki:A4=>[62,57,50,43],bass:A4=>[43,38,33,28]};
-function tuningHz(name,A4){return TUNINGS[name](A4).map(m=>({midi:m,name:NOTE_NAMES[m%12]+(Math.floor(m/12)-1),freq:noteNumberToFreq(m,A4)}))}
-
-// ===== SVG build =====
 const gSil=document.getElementById('silhouette'),gStr=document.getElementById('strings'),gTicks=document.getElementById('ticks'),
-gNeedle=document.getElementById('needle'),centsLabel=document.getElementById('centsLabel'),noteLabel=document.getElementById('noteLabel'),
-freqLabel=document.getElementById('freqLabel'),statusPill=document.getElementById('status');
+gNeedle=document.getElementById('needle'),centsLabel=document.getElementById('centsLabel'),
+noteLabel=document.getElementById('noteLabel'),freqLabel=document.getElementById('freqLabel'),statusPill=document.getElementById('status'),
+diag=document.getElementById('diag');
 
-function buildTicks(){
-  gTicks.innerHTML='';
-  for(let i=-50;i<=50;i+=5){
-    const a=(-160)+(i+50)*320/100,r=a*Math.PI/180,inn=320,out=350;
-    const x1=Math.sin(r)*inn,y1=-Math.cos(r)*inn,x2=Math.sin(r)*(i%10===0?out:out-10),y2=-Math.cos(r)*(i%10===0?out:out-10);
-    const t=document.createElementNS('http://www.w3.org/2000/svg','line');
-    t.setAttribute('x1',x1);t.setAttribute('y1',y1);t.setAttribute('x2',x2);t.setAttribute('y2',y2);
-    t.setAttribute('stroke','#2a3b4f');t.setAttribute('stroke-width',i%10===0?3:2);gTicks.appendChild(t);
-    if(i%20===0){
-      const tx=Math.sin(r)*(out+22),ty=-Math.cos(r)*(out+22);
-      const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-      txt.setAttribute('x',tx);txt.setAttribute('y',ty+8);txt.setAttribute('text-anchor','middle');
-      txt.setAttribute('fill','#7f93aa');txt.setAttribute('font-size','20');txt.setAttribute('font-weight','700');
-      txt.textContent=i+'¢';gTicks.appendChild(txt);
-    }
-  }
-}
+function buildTicks(){gTicks.innerHTML='';for(let i=-50;i<=50;i+=5){const a=(-160)+(i+50)*320/100,r=a*Math.PI/180,iR=320,oR=350;
+const x1=Math.sin(r)*iR,y1=-Math.cos(r)*iR,x2=Math.sin(r)*(i%10===0?oR:oR-10),y2=-Math.cos(r)*(i%10===0?oR:oR-10);
+const t=document.createElementNS('http://www.w3.org/2000/svg','line');t.setAttribute('x1',x1);t.setAttribute('y1',y1);t.setAttribute('x2',x2);t.setAttribute('y2',y2);
+t.setAttribute('stroke','#2a3b4f');t.setAttribute('stroke-width',i%10===0?3:2);gTicks.appendChild(t);
+if(i%20===0){const tx=Math.sin(r)*(oR+22),ty=-Math.cos(r)*(oR+22);const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+txt.setAttribute('x',tx);txt.setAttribute('y',ty+8);txt.setAttribute('text-anchor','middle');txt.setAttribute('fill','#7f93aa');txt.setAttribute('font-size','20');txt.setAttribute('font-weight','700');txt.textContent=i+'¢';gTicks.appendChild(txt);}}}
 buildTicks();
 
-function drawSilhouette(kind,strings){
+let A4=parseInt(document.getElementById('a4').value,10);
+let currentInstrument=document.getElementById('instrument').value;
+let currentStrings=tuningHz(currentInstrument,A4);
+let activeIdx=0; // auto-select first string so highlight is always visible
+
+function drawInstrument(){
   gSil.innerHTML='';gStr.innerHTML='';
   const p=document.createElementNS('http://www.w3.org/2000/svg','path');
   p.setAttribute('fill','#0a1a28');p.setAttribute('stroke','#223243');p.setAttribute('stroke-width','3');
-  if(kind==='guitar'||kind==='bass'||kind==='bouzouki'||kind==='mandolin'){
-    p.setAttribute('d','M120 160 q40 -50 120 -70 h300 q70 20 120 70 v240 q-50 60 -120 80 H240 q-80 -18 -120 -80z');
-  }else if(kind==='banjo5'){
-    p.setAttribute('d','M120 170 q40 -45 120 -60 h280 q90 18 130 70 v210 q-40 70 -130 95 H240 q-80 -20 -120 -85 z M320 240 h40 v40 h-40z');
-  }else{
-    p.setAttribute('d','M150 150 q60 -60 140 -70 h260 q60 15 110 60 v250 q-50 55 -110 80 H290 q-80 -14 -140 -70z');
-  }
+  const k=currentInstrument;
+  if(k==='guitar'||k==='bass'||k==='bouzouki'||k==='mandolin'){p.setAttribute('d','M120 160 q40 -50 120 -70 h300 q70 20 120 70 v240 q-50 60 -120 80 H240 q-80 -18 -120 -80z')}
+  else if(k==='banjo5'){p.setAttribute('d','M120 170 q40 -45 120 -60 h280 q90 18 130 70 v210 q-40 70 -130 95 H240 q-80 -20 -120 -85 z M320 240 h40 v40 h-40z')}
+  else{p.setAttribute('d','M150 150 q60 -60 140 -70 h260 q60 15 110 60 v250 q-50 55 -110 80 H290 q-80 -14 -140 -70z')}
   gSil.appendChild(p);
 
-  const N=strings.length,tY=210,bY=360;
+  const N=currentStrings.length,tY=210,bY=360;
   for(let i=0;i<N;i++){
     const y=tY+(i*(bY-tY)/(N-1||1));
     const peg=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    peg.setAttribute('cx','560');peg.setAttribute('cy',y);peg.setAttribute('r','12');
-    peg.setAttribute('fill','#1b2a3a');peg.setAttribute('stroke','#2f4357');peg.style.cursor='pointer';
-    peg.addEventListener('click',()=>setActiveString(i));gSil.appendChild(peg);
+    peg.setAttribute('cx','560');peg.setAttribute('cy',y);peg.setAttribute('r','12');peg.setAttribute('fill','#1b2a3a');peg.setAttribute('stroke','#2f4357');
+    peg.style.cursor='pointer';peg.addEventListener('click',()=>setActiveString(i));gSil.appendChild(peg);
 
     const sL=document.createElementNS('http://www.w3.org/2000/svg','line');
     sL.setAttribute('x1','190');sL.setAttribute('y1',y);sL.setAttribute('x2','560');sL.setAttribute('y2',y);
-    sL.setAttribute('stroke','#607b97');sL.setAttribute('stroke-width',i===0?3:2);
-    sL.setAttribute('data-idx',i);sL.style.cursor='pointer';
-    sL.addEventListener('click',()=>setActiveString(i));gStr.appendChild(sL);
+    sL.setAttribute('stroke','#8aa5c1');sL.setAttribute('stroke-width',i===0?3:2);sL.setAttribute('data-idx',i);
+    sL.style.cursor='pointer';sL.addEventListener('click',()=>setActiveString(i));gStr.appendChild(sL);
 
     const lab=document.createElementNS('http://www.w3.org/2000/svg','text');
     lab.setAttribute('x','180');lab.setAttribute('y',y+7);lab.setAttribute('text-anchor','end');
-    lab.setAttribute('fill','#9fb2c8');lab.setAttribute('font-weight','800');lab.setAttribute('font-size','20');
-    lab.textContent=strings[i].name;lab.style.cursor='pointer';
+    lab.setAttribute('fill','#bccbe0');lab.setAttribute('font-weight','800');lab.setAttribute('font-size','20');
+    lab.textContent=currentStrings[i].name;lab.style.cursor='pointer';
     lab.addEventListener('click',()=>setActiveString(i));gStr.appendChild(lab);
   }
-  const nut=document.createElementNS('http://www.w3.org/2000/svg','rect');
-  nut.setAttribute('x','188');nut.setAttribute('y',tY-18);nut.setAttribute('width','6');nut.setAttribute('height',(bY-tY)+36);
-  nut.setAttribute('fill','#2e3f52');gStr.appendChild(nut);
+  const nut=document.createElementNS('http://www.w3.org/2000/svg','rect');nut.setAttribute('x','188');nut.setAttribute('y',tY-18);
+  nut.setAttribute('width','6');nut.setAttribute('height',(bY-tY)+36);nut.setAttribute('fill','#2e3f52');gStr.appendChild(nut);
+  highlightSVGString();
 }
-
-// ===== Controls & state =====
-const selInstrument=document.getElementById('instrument'),chipsWrap=document.getElementById('stringChips'),
-a4Slider=document.getElementById('a4'),a4Val=document.getElementById('a4val');
-let A4=parseInt(a4Slider.value,10),currentInstrument=selInstrument.value,currentStrings=tuningHz(currentInstrument,A4),activeIdx=null;
 
 function renderChips(){
-  chipsWrap.innerHTML='';
-  currentStrings.forEach((s,i)=>{
-    const b=document.createElement('button');
-    b.type='button';b.className='string-chip';b.textContent=s.name;
-    b.addEventListener('click',()=>setActiveString(i));
-    chipsWrap.appendChild(b);
-  });
+  const wrap=document.getElementById('stringChips'); wrap.innerHTML='';
+  currentStrings.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.className='string-chip';b.textContent=s.name;b.addEventListener('click',()=>setActiveString(i));wrap.appendChild(b);});
   highlightChip();
 }
-function setActiveString(i){ activeIdx=i; highlightChip(); highlightSVGString(); }
-function highlightChip(){ chipsWrap.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===activeIdx)); }
-function highlightSVGString(){
-  gStr.querySelectorAll('line[data-idx]').forEach((ln,i)=>{
-    if(i===activeIdx){ln.setAttribute('stroke','#22c55e');ln.setAttribute('stroke-width','4');ln.setAttribute('filter','url(#glowG)')}
-    else {ln.setAttribute('stroke','#607b97');ln.setAttribute('stroke-width',i===0?3:2);ln.removeAttribute('filter')}
-  });
-}
-function rebuildInstrument(){
-  currentStrings=tuningHz(currentInstrument,A4);
-  drawSilhouette(currentInstrument,currentStrings);
-  renderChips();
-  activeIdx=null;
-}
-selInstrument.addEventListener('change',()=>{ currentInstrument=selInstrument.value; rebuildInstrument(); });
-a4Slider.addEventListener('input',()=>{ A4=parseInt(a4Slider.value,10); a4Val.textContent=A4; rebuildInstrument(); });
-rebuildInstrument();
+function setActiveString(i){activeIdx=i;highlightChip();highlightSVGString();}
+function highlightChip(){document.querySelectorAll('#stringChips button').forEach((b,i)=>b.classList.toggle('active',i===activeIdx))}
+function highlightSVGString(){gStr.querySelectorAll('line[data-idx]').forEach((ln,i)=>{if(i===activeIdx){ln.setAttribute('stroke','#22c55e');ln.setAttribute('stroke-width','4');ln.setAttribute('filter','url(#glowG)')}else{ln.setAttribute('stroke','#8aa5c1');ln.setAttribute('stroke-width',i===0?3:2);ln.removeAttribute('filter')}})}
 
-// ===== Audio + Pitch (stabilized) =====
-let audioCtx,analyser,source,stream,running=false;let buf;
-const btnStart=document.getElementById('btnStart'),btnStop=document.getElementById('btnStop'),selDevice=document.getElementById('device');
-const diag=document.getElementById('diag');
+function rebuild(){currentStrings=tuningHz(currentInstrument,A4);drawInstrument();renderChips()}
+document.getElementById('instrument').addEventListener('change',e=>{currentInstrument=e.target.value;activeIdx=0;rebuild()});
+document.getElementById('a4').addEventListener('input',e=>{A4=parseInt(e.target.value,10);document.getElementById('a4val').textContent=A4;rebuild()});
+document.addEventListener('DOMContentLoaded',rebuild);
 
-function initAnalyser(){analyser=audioCtx.createAnalyser();analyser.fftSize=2048;analyser.minDecibels=-90;analyser.maxDecibels=-10;
-analyser.smoothingTimeConstant=0.85;buf=new Float32Array(analyser.fftSize);}
+// ===== Mic + pitch (stabilized) =====
+let audioCtx,analyser,source,stream,running=false,buf;
+const selDevice=document.getElementById('device'),btnStart=document.getElementById('btnStart'),btnStop=document.getElementById('btnStop');
 
-// Improved autocorrelation: returns {freq, rms, corr}
-function autoCorrelateFloat32(arr, sr){
-  const S=arr.length;
-  // RMS for signal gate
-  let rms=0; for(let i=0;i<S;i++){ const v=arr[i]; rms+=v*v; } rms=Math.sqrt(rms/S);
-  if(rms<0.006) return {freq:-1,rms,corr:0}; // more conservative gate
+function initAnalyser(){analyser=audioCtx.createAnalyser();analyser.fftSize=2048;analyser.minDecibels=-90;analyser.maxDecibels=-10;analyser.smoothingTimeConstant=0.85;buf=new Float32Array(analyser.fftSize)}
 
-  // Trim head/tail near zero (reduce reverb/noise influence)
-  let r1=0,r2=S-1,th=0.2;
-  for(let i=0;i<S/2;i++){ if(Math.abs(arr[i])<th){ r1=i; break; } }
-  for(let i=1;i<S/2;i++){ if(Math.abs(arr[S-i])<th){ r2=S-i; break; } }
-  const buf=arr.slice(r1,r2);
-  const N=buf.length;
-  if(N<32) return {freq:-1,rms,corr:0};
-
-  // Autocorrelation
-  const c=new Array(N).fill(0);
-  for(let i=0;i<N;i++){ let sum=0; for(let j=0;j<N-i;j++){ sum+=buf[j]*buf[j+i]; } c[i]=sum; }
-
-  // Peak picking
-  let d=0; while(d+1<N && c[d]>c[d+1]) d++;
-  let maxv=-1,maxp=-1;
-  for(let i=d;i<N;i++){ if(c[i]>maxv){ maxv=c[i]; maxp=i; } }
-  if(maxp<=0) return {freq:-1,rms,corr:0};
-
-  // Parabolic interpolation
-  let T0=maxp;
-  const x1=c[T0-1]||0,x2=c[T0]||0,x3=c[T0+1]||0;
-  const a=(x1+x3-2*x2)/2, b=(x3-x1)/2;
-  if(a){ T0=T0 - b/(2*a); }
-
-  const freq=sr/T0;
-  // Normalized correlation (peak divided by zero-lag)
-  const corr = x2 / c[0];
-  return {freq, rms, corr: isFinite(corr)?corr:0};
+// better autocorrelation with gates
+function acorr(arr,sr){
+  const S=arr.length;let rms=0;for(let i=0;i<S;i++){rms+=arr[i]*arr[i]}rms=Math.sqrt(rms/S);if(rms<0.006)return{f:-1,r:rms,c:0};
+  let r1=0,r2=S-1,th=0.2;for(let i=0;i<S/2;i++){if(Math.abs(arr[i])<th){r1=i;break}}for(let i=1;i<S/2;i++){if(Math.abs(arr[S-i])<th){r2=S-i;break}}
+  const a=arr.slice(r1,r2);const N=a.length;if(N<32)return{f:-1,r:rms,c:0};
+  const c=new Array(N).fill(0);for(let i=0;i<N;i++){let s=0;for(let j=0;j<N-i;j++){s+=a[j]*a[j+i]}c[i]=s}
+  let d=0;while(d+1<N&&c[d]>c[d+1])d++;let mv=-1,mp=-1;for(let i=d;i<N;i++){if(c[i]>mv){mv=c[i];mp=i}}if(mp<=0)return{f:-1,r:rms,c:0};
+  let T0=mp;const x1=c[T0-1]||0,x2=c[T0]||0,x3=c[T0+1]||0;const A=(x1+x3-2*x2)/2,B=(x3-x1)/2;if(A){T0=T0-B/(2*A)}
+  const f=sr/T0;const corr=x2/c[0];return{f,r:rms,c:isFinite(corr)?corr:0}
 }
 
-// Device helpers
-async function refreshDevices(){
-  try{
-    const devices=await navigator.mediaDevices.enumerateDevices();
-    const mics=devices.filter(d=>d.kind==='audioinput');
-    selDevice.innerHTML='';
-    mics.forEach((m,i)=>{ const opt=document.createElement('option'); opt.value=m.deviceId; opt.textContent=m.label||('Microphone '+(i+1)); selDevice.appendChild(opt); });
-  }catch(e){ console.error(e); }
-}
-document.getElementById('btnRefresh').addEventListener('click', refreshDevices);
-document.getElementById('btnRetry').addEventListener('click', start);
+// smoothing + bias
+const HN=7,STABLE_MS=180,MIN_CORR=0.78,MIN_RMS=0.006,BIAS_SEMITONES=2,MAXF=5000;
+let hist=[],lastStable=0,disp={f:0,c:0,n:'—'};
 
-// Start/Stop
-async function start(){
-  if(!window.isSecureContext){
-    statusPill.textContent='Needs HTTPS (GitHub Pages)'; statusPill.className='pill flat';
+function nearestTarget(f){
+  if(!currentStrings.length)return null;
+  const pool=currentStrings;let best=null,bd=1e9;
+  for(const s of pool){const d=Math.abs(1200*Math.log2(f/s.freq));if(d<bd){bd=d;best=s}}
+  return {t:best,d:bd}
+}
+function med(a){const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2}
+function avg(a){return a.reduce((p,v)=>p+v,0)/a.length}
+
+function loop(){
+  if(!running)return;
+  analyser.getFloatTimeDomainData(buf);
+  const {f,r,c}=acorr(buf,audioCtx.sampleRate);
+  if(f>0&&f<MAXF&&r>=MIN_RMS&&c>=MIN_CORR){
+    let ff=f;const near=nearestTarget(f);if(near&&near.t&&near.d<=BIAS_SEMITONES*100){ff=near.t.freq*0.2+f*0.8}
+    hist.push(ff);if(hist.length>HN)hist.shift();const sf=hist.length>=3?med(hist):ff;
+    const nn=f2n(sf,A4),nR=Math.round(nn),nName=roundName(nR)+(Math.floor(nR/12)-1),nFreq=n2f(nR,A4),cents=Math.round(1200*Math.log2(sf/nFreq));
+    const a=avg(hist),spread=hist.reduce((p,v)=>p+Math.abs(v-a),0)/hist.length,stable=spread/a<0.01;
+    updateDisplay(nName,sf,cents,!stable);
+  }else{
+    hist.length=0;centsLabel.textContent='0¢';noteLabel.textContent='—';freqLabel.textContent='0.00 Hz';rotate(0);
+    statusPill.textContent='Listening…';statusPill.className='pill';
   }
+  requestAnimationFrame(loop);
+}
+
+function updateDisplay(nm,f,ct,soft){
+  freqLabel.textContent=f.toFixed(2)+' Hz';noteLabel.textContent=nm;
+  const eased=soft?(disp.c*0.7+ct*0.3):ct;centsLabel.textContent=(eased>0?'+':'')+Math.round(eased)+'¢';rotate(eased);
+  let delta=eased;if(activeIdx!==null){const t=currentStrings[activeIdx].freq;delta=Math.round(1200*Math.log2(f/t))}
+  const abs=Math.abs(delta);if(abs<=5){statusPill.textContent='In tune';statusPill.className='pill ok'}
+  else if(delta<-5){statusPill.textContent='Flat '+abs+'¢';statusPill.className='pill flat'}
+  else{statusPill.textContent='Sharp '+abs+'¢';statusPill.className='pill sharp'}
+  disp={f,c:eased,n:nm}
+}
+function rotate(ct){const lim=50,c=Math.max(-lim,Math.min(lim,ct));const ang=(-160)+(c+50)*320/100;gNeedle.setAttribute('transform','rotate('+ang+')');
+if(c>5)gNeedle.setAttribute('stroke','#ef4444');else if(c<-5)gNeedle.setAttribute('stroke','#f59e0b');else gNeedle.setAttribute('stroke','#22c55e')}
+
+// device helpers: enumerate AFTER mic permission for reliable labels
+async function populateDevices(){
+  try{
+    const devs=await navigator.mediaDevices.enumerateDevices();const mics=devs.filter(d=>d.kind==='audioinput');
+    selDevice.innerHTML='';mics.forEach((m,i)=>{const o=document.createElement('option');o.value=m.deviceId;o.textContent=m.label||('Microphone '+(i+1));selDevice.appendChild(o)});
+  }catch(e){console.error(e)}
+}
+
+async function start(){
+  if(!window.isSecureContext){statusPill.textContent='Needs HTTPS (GitHub Pages)';statusPill.className='pill flat'}
   if(running) return;
   try{
+    // request permission first (unconstrained) so labels/devices populate
+    const pre=await navigator.mediaDevices.getUserMedia({audio:true,video:false}); pre.getTracks().forEach(t=>t.stop());
+    await populateDevices();
     const deviceId=selDevice.value||undefined;
     stream=await navigator.mediaDevices.getUserMedia({
-      audio:{deviceId:deviceId?{exact:deviceId}:undefined,echoCancellation:false,noiseSuppression:false,autoGainControl:false},
-      video:false
+      audio:{
+        deviceId:deviceId?{exact:deviceId}:undefined,
+        channelCount:1,
+        echoCancellation:false,noiseSuppression:false,autoGainControl:false,
+        sampleRate:44100
+      }, video:false
     });
-    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    source=audioCtx.createMediaStreamSource(stream);
-    initAnalyser(); source.connect(analyser);
-    running=true; btnStart.disabled=true; btnStop.disabled=false;
-    statusPill.textContent='Listening…'; statusPill.className='pill';
-    loop();
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:44100});
+    source=audioCtx.createMediaStreamSource(stream); initAnalyser(); source.connect(analyser);
+    running=true; btnStart.disabled=true; btnStop.disabled=false; diag.textContent='';
+    statusPill.textContent='Listening…'; statusPill.className='pill'; loop();
   }catch(err){
     console.error(err);
-    let msg=!window.isSecureContext?'Needs HTTPS/localhost: open on GitHub Pages':
-            (err.name==='NotAllowedError'||err.name==='SecurityError')?'Permission denied: allow mic':
+    let msg=!window.isSecureContext?'Needs HTTPS/localhost':
+            (err.name==='NotAllowedError'||err.name==='SecurityError')?'Permission denied (allow mic)':
             (err.name==='NotFoundError')?'No microphone found':'Mic blocked';
     statusPill.textContent=msg; statusPill.className='pill flat';
     diag.textContent=(err.name+': '+(err.message||''))||'';
   }
 }
-function stop(){
-  running=false;
-  if(stream) stream.getTracks().forEach(t=>t.stop());
-  if(audioCtx) audioCtx.close();
-  btnStart.disabled=false; btnStop.disabled=true;
-  statusPill.textContent='Mic stopped'; statusPill.className='pill';
-}
-btnStart.addEventListener('click', ()=>{ if(!window.isSecureContext){ statusPill.textContent='Needs HTTPS'; statusPill.className='pill flat'; } start(); });
-btnStop.addEventListener('click', stop);
+function stopAll(){running=false;if(stream)stream.getTracks().forEach(t=>t.stop());if(audioCtx)audioCtx.close();
+btnStart.disabled=false;btnStop.disabled=true;statusPill.textContent='Mic stopped';statusPill.className='pill'}
 
-// ===== Stabilization: smoothing + gating + “stickiness” + instrument bias =====
-const FREQ_HISTORY_SIZE=7;        // smoothing window
-const STABLE_TIME_MS=180;         // must be stable for this long
-const MIN_CORR=0.78;              // correlation gate (0..1)
-const MIN_RMS=0.006;              // signal gate
-const BIAS_SEMITONES=2;           // pull towards selected string if within +/- this many semitones
-const MAX_TRACK_FREQ=5000;
-
-let freqHistory=[];               // recent raw freqs
-let lastStableTime=0;             // timestamp when stable started
-let displayed = { freq:0, cents:0, note:'—' };
-
-function median(arr){ const s=[...arr].sort((a,b)=>a-b); const m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
-function movingAverage(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
-
-function nearestStringTarget(f){
-  if(!currentStrings || currentStrings.length===0) return null;
-  // If user selected a string, bias to that only; else bias to nearest of all strings
-  const pool = (activeIdx!==null) ? [currentStrings[activeIdx]] : currentStrings;
-  let best=null, bestDiff=Infinity;
-  pool.forEach(s=>{
-    const diff=Math.abs(1200*Math.log2(f/s.freq)); // semitone cents diff
-    if(diff<bestDiff){ bestDiff=diff; best=s; }
-  });
-  return {target:best, centsDiff:bestDiff};
-}
-
-function loop(){
-  if(!running) return;
-  analyser.getFloatTimeDomainData(buf);
-  const {freq, rms, corr} = autoCorrelateFloat32(buf, audioCtx.sampleRate);
-
-  // Gate: must exceed RMS & correlation, and within sane range
-  if(freq>0 && freq<MAX_TRACK_FREQ && rms>=MIN_RMS && corr>=MIN_CORR){
-    // Bias towards instrument target
-    let f = freq;
-    const near = nearestStringTarget(freq);
-    if(near && near.target){
-      // if within BIAS_SEMITONES in either direction, gently pull 20% towards target
-      if(near.centsDiff <= BIAS_SEMITONES*100){
-        f = near.target.freq*0.2 + freq*0.8;
-      }
-    }
-
-    // Smoothing (median of window to resist outliers)
-    freqHistory.push(f);
-    if(freqHistory.length>FREQ_HISTORY_SIZE) freqHistory.shift();
-    const smoothFreq = (freqHistory.length>=3) ? median(freqHistory) : f;
-
-    // Convert to note/cents
-    const nn=freqToNoteNumber(smoothFreq,A4);
-    const nRound=Math.round(nn);
-    const noteName=roundNoteName(nRound)+(Math.floor(nRound/12)-1);
-    const noteFreq=noteNumberToFreq(nRound,A4);
-    const cents=Math.round(1200*Math.log2(smoothFreq/noteFreq));
-
-    // Stability: require small variance over window
-    const avg = movingAverage(freqHistory);
-    const varSum = freqHistory.reduce((a,v)=>a+Math.abs(v-avg),0)/freqHistory.length;
-    const stable = varSum/avg < 0.01; // <1% spread
-
-    if(stable){
-      if(performance.now()-lastStableTime < STABLE_TIME_MS){
-        // Hold until minimum stable time, but still update visuals smoothly
-        updateDisplay(noteName, smoothFreq, cents);
-      }else{
-        lastStableTime = performance.now();
-        updateDisplay(noteName, smoothFreq, cents);
-      }
-    }else{
-      // Getting there; nudge needle but don't flip status wildly
-      updateDisplay(noteName, smoothFreq, cents, true);
-      lastStableTime = performance.now();
-    }
-  }else{
-    // No reliable pitch: gently relax to center, show listening
-    freqHistory.length=0;
-    centsLabel.textContent='0¢'; noteLabel.textContent='—'; freqLabel.textContent='0.00 Hz';
-    rotateNeedle(0);
-    statusPill.textContent='Listening…'; statusPill.className='pill';
-  }
-
-  requestAnimationFrame(loop);
-}
-
-function updateDisplay(noteName, freq, cents, soft=false){
-  // Needle & labels
-  freqLabel.textContent=freq.toFixed(2)+' Hz';
-  noteLabel.textContent=noteName;
-
-  // Ease needle a bit if soft update
-  const eased = soft ? (displayed.cents*0.7 + cents*0.3) : cents;
-  centsLabel.textContent=(eased>0?'+':'')+Math.round(eased)+'¢';
-  rotateNeedle(eased);
-
-  // Status vs target (if active string picked, use that as target)
-  let delta=eased;
-  if(activeIdx!==null){
-    const target=currentStrings[activeIdx].freq;
-    delta=Math.round(1200*Math.log2(freq/target));
-  }
-  setStatus(delta);
-
-  displayed = {freq, cents:eased, note:noteName};
-}
-
-function rotateNeedle(cents){
-  const lim=50; const c=Math.max(-lim,Math.min(lim,cents));
-  const ang=(-160)+(c+50)*320/100;
-  gNeedle.setAttribute('transform','rotate('+ang+')');
-  if(c>5){gNeedle.setAttribute('stroke','#ef4444');}
-  else if(c<-5){gNeedle.setAttribute('stroke','#f59e0b');}
-  else{gNeedle.setAttribute('stroke','#22c55e');}
-}
-
-function setStatus(delta){
-  const abs=Math.abs(delta);
-  if(abs<=5){statusPill.textContent='In tune';statusPill.className='pill ok';}
-  else if(delta<-5){statusPill.textContent='Flat '+abs+'¢';statusPill.className='pill flat';}
-  else{statusPill.textContent='Sharp '+abs+'¢';statusPill.className='pill sharp';}
-}
-
-// Init devices + wire buttons
-const selDevice=document.getElementById('device');
-async function refreshDevices(){
-  try{
-    const devices=await navigator.mediaDevices.enumerateDevices();
-    const mics=devices.filter(d=>d.kind==='audioinput');
-    selDevice.innerHTML='';
-    mics.forEach((m,i)=>{ const opt=document.createElement('option'); opt.value=m.deviceId; opt.textContent=m.label||('Microphone '+(i+1)); selDevice.appendChild(opt); });
-  }catch(e){ console.error(e); }
-}
-document.getElementById('btnRefresh').addEventListener('click', refreshDevices);
+document.getElementById('btnRefresh').addEventListener('click', populateDevices);
 document.getElementById('btnRetry').addEventListener('click', start);
+btnStart.addEventListener('click', start);
+btnStop.addEventListener('click', stopAll);
 
-btnStart.addEventListener('click', ()=>{ if(!window.isSecureContext){ statusPill.textContent='Needs HTTPS'; statusPill.className='pill flat'; } start(); });
-btnStop.addEventListener('click', ()=>{
-  running=false;
-  if(stream) stream.getTracks().forEach(t=>t.stop());
-  if(audioCtx) audioCtx.close();
-  btnStart.disabled=false; btnStop.disabled=true;
-  statusPill.textContent='Mic stopped'; statusPill.className='pill';
-});
-
-// Kick off
-refreshDevices();
+// initial paint
+rebuild(); populateDevices();
 </script>
 </body>
 </html>
