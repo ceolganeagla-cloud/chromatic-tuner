@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
-<title>Ceol Gan Eagla — Tuner v2.7.1</title>
+<title>Ceol Gan Eagla — Tuner v2.8</title>
 <meta name="theme-color" content="#0b1117"/>
 <link rel="icon" href="logo.png" type="image/png">
 <link rel="manifest" href="manifest.json">
@@ -17,7 +17,7 @@
 *{box-sizing:border-box}html,body{height:100%}
 body{margin:0;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial;
 background:radial-gradient(120% 120% at 10% 0%,#142437 0,var(--bg) 40%,#09121b 100%)}
-header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(10,16,24,.65);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(10,16,24,.65);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .badge{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:linear-gradient(180deg,var(--brand-green),var(--brand-green-2));border:1px solid #23673f}
 .logo{width:36px;height:36px;border-radius:6px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.35);background:#0a2415;border:1px solid #2a7446;display:grid;place-items:center}
 .logo img{width:100%;height:100%;object-fit:cover;display:block}
@@ -30,33 +30,36 @@ main{max-width:1100px;margin:0 auto;padding:14px;display:grid;gap:14px}
 .board{display:grid;grid-template-columns:1fr;gap:14px}@media(min-width:980px){.board{grid-template-columns:1.3fr .7fr}}
 .card{background:linear-gradient(180deg,var(--panel),#0c1a28);border:1px solid var(--line);border-radius:20px;padding:14px}
 .stage{width:100%;aspect-ratio:16/11;background:#0a1722;border:1px solid var(--line);border-radius:16px}
-
 .controls{display:grid;gap:12px}
 .a4row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .a4pill{border:1px solid var(--line);background:#0a1622;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:800}
 .a4pill.active{background:rgba(34,197,94,.12);border-color:#2a5f3b}
 label{color:var(--muted);font-size:.9rem}
-
 .legend{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px;flex-wrap:wrap}
 .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#0a1622;color:#a9bbcf;font-weight:800}
 .pill.ok{color:var(--ok);border-color:#2a5f3b;background:rgba(34,197,94,.12)}
 .pill.flat{color:var(--warn);border-color:#745a19;background:rgba(245,158,11,.08)}
 .pill.sharp{color:var(--bad);border-color:#6a1f1f;background:rgba(239,68,68,.08)}
-
 /* Tap overlay */
-#tapOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
+#tapOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);z-index:30}
 #tapOverlay .inner{background:linear-gradient(180deg,#0f2232,#0a1824);border:1px solid var(--line);color:var(--ink);padding:18px 16px;border-radius:16px;text-align:center;max-width:90%}
 #tapOverlay .inner b{color:var(--brand-gold)}
-
-/* In-tune dial glow — force on when class applied */
+/* Full-screen green when in-tune */
+#tint{position:fixed;inset:0;pointer-events:none;background:rgba(34,197,94,.18);opacity:0;transition:opacity .2s ease;z-index:10}
+body.tuned #tint{opacity:1}
+/* Dial colouring: orange below, green centre, red above */
+.arc-warn{stroke:#f59e0b}
+.arc-ok{stroke:#22c55e}
+.arc-bad{stroke:#ef4444}
+/* Glow-on-in-tune ring */
 #tuneGlow{opacity:0;transition:opacity .18s ease}
 #gauge.inTune #tuneGlow{opacity:1 !important}
-
-/* Ensure needle is always visible */
-#needle{vector-effect:non-scaling-stroke}
+/* Needle: thicker & visible */
+#needle{vector-effect:non-scaling-stroke;stroke-width:14}
 </style>
 </head>
 <body>
+<div id="tint"></div>
 <header>
   <div class="badge">
     <div class="logo"><img src="logo.png" alt="Ceol Gan Eagla" onerror="this.remove()"></div>
@@ -76,22 +79,23 @@ label{color:var(--muted);font-size:.9rem}
         </defs>
         <rect x="0" y="0" width="1200" height="825" rx="16" ry="16" fill="#0a1722" stroke="#223a53"/>
         <!-- instrument -->
-        <g id="silhouette"></g>
-        <g id="strings"></g>
-
+        <g id="silhouette"></g><g id="strings"></g>
         <!-- dial -->
         <g id="gauge" transform="translate(600,610)">
-          <!-- green glow arc shown when in tune -->
-          <path id="tuneGlow" d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#22c55e" stroke-opacity="0.9" stroke-width="22" filter="url(#glowG)"/>
-          <!-- base arc -->
-          <path d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#20394f" stroke-width="18"/>
+          <!-- zone arcs: -50..-6=orange, -5..+5=green, +6..+50=red -->
+          <path class="arc-warn" d="M -380 0 A 380 380 0 0 1 -40 -375" fill="none" stroke-width="18" stroke-opacity=".85"/>
+          <path class="arc-ok"   d="M -40 -375 A 380 380 0 0 1  40 -375" fill="none" stroke-width="20" stroke-opacity="1"/>
+          <path class="arc-bad"  d="M  40 -375 A 380 380 0 0 1  380  0" fill="none" stroke-width="18" stroke-opacity=".85"/>
+          <!-- subtle base -->
+          <path d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#1a3348" stroke-width="6"/>
           <g id="ticks"></g>
-
-          <!-- needle + hub (hub ensures visibility even when not moving) -->
-          <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="#22c55e" stroke-width="8" stroke-linecap="round" filter="url(#glowG)"/>
-          <circle cx="0" cy="0" r="10" fill="#0a1722" stroke="#2a4862" stroke-width="3"/>
-          <circle cx="0" cy="0" r="5" fill="#22c55e" filter="url(#glowG)"/>
-
+          <!-- green glow arc -->
+          <path id="tuneGlow" d="M -60 -372 A 380 380 0 0 1 60 -372" fill="none" stroke="#22c55e" stroke-opacity="0.9" stroke-width="24" filter="url(#glowG)"/>
+          <!-- needle + hub (thicker) -->
+          <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="#22c55e" stroke-linecap="round" filter="url(#glowG)"/>
+          <circle cx="0" cy="0" r="12" fill="#0a1722" stroke="#2a4862" stroke-width="4"/>
+          <circle cx="0" cy="0" r="6" fill="#22c55e" filter="url(#glowG)"/>
+          <!-- readouts -->
           <text id="noteLabel" x="0" y="90" text-anchor="middle" fill="#f4f8fb" font-size="64" font-weight="900">—</text>
           <text id="freqLabel" x="0" y="132" text-anchor="middle" fill="#9fb2c8" font-size="26" font-weight="800">0.00 Hz</text>
         </g>
@@ -136,9 +140,9 @@ label{color:var(--muted);font-size:.9rem}
 </div>
 
 <script>
-/* ===== Setup ===== */
+/* ===== Basics ===== */
 const statusPill=document.getElementById('status');
-const btnStart=document.getElementById('btnStart'); const btnStop=document.getElementById('btnStop');
+const btnStart=document.getElementById('btnStart'), btnStop=document.getElementById('btnStop');
 const selInstrument=document.getElementById('instrument');
 const a4Read=document.getElementById('a4read');
 const NOTE_NAMES=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
@@ -150,20 +154,13 @@ function tuningHz(name,A4){return TUNINGS[name]().map(m=>({midi:m,name:NOTE_NAME
 
 /* ===== SVG refs ===== */
 const gSil=document.getElementById('silhouette'), gStr=document.getElementById('strings'), gTicks=document.getElementById('ticks');
-const gGauge=document.getElementById('gauge');
-const gNeedle=document.getElementById('needle'), noteLabel=document.getElementById('noteLabel'), freqLabel=document.getElementById('freqLabel');
+const gGauge=document.getElementById('gauge'), gNeedle=document.getElementById('needle'), noteLabel=document.getElementById('noteLabel'), freqLabel=document.getElementById('freqLabel');
 
-function buildTicks(){
-  gTicks.innerHTML='';
-  for(let i=-50;i<=50;i+=5){
-    const a=(-160)+(i+50)*320/100, r=a*Math.PI/180, inn=320, out=350;
-    const x1=Math.sin(r)*inn, y1=-Math.cos(r)*inn, x2=Math.sin(r)*(i%10===0?out:out-10), y2=-Math.cos(r)*(i%10===0?out:out-10);
-    const L=document.createElementNS('http://www.w3.org/2000/svg','line');
-    L.setAttribute('x1',x1);L.setAttribute('y1',y1);L.setAttribute('x2',x2);L.setAttribute('y2',y2);
-    L.setAttribute('stroke','#2a3b4f');L.setAttribute('stroke-width',i%10===0?3:2);gTicks.appendChild(L);
-  }
-}
-buildTicks();
+/* Build ticks (no numbers to keep clean) */
+(function buildTicks(){gTicks.innerHTML='';for(let i=-50;i<=50;i+=5){const a=(-160)+(i+50)*320/100,r=a*Math.PI/180,inn=320,out=350;
+const x1=Math.sin(r)*inn,y1=-Math.cos(r)*inn,x2=Math.sin(r)*(i%10===0?out:out-10),y2=-Math.cos(r)*(i%10===0?out:out-10);
+const L=document.createElementNS('http://www.w3.org/2000/svg','line');L.setAttribute('x1',x1);L.setAttribute('y1',y1);L.setAttribute('x2',x2);L.setAttribute('y2',y2);
+L.setAttribute('stroke','#253a4f');L.setAttribute('stroke-width',i%10===0?3:2);gTicks.appendChild(L);}})();
 
 /* ===== Instrument drawing ===== */
 let A4=440, currentInstrument=selInstrument.value, currentStrings=tuningHz(currentInstrument,A4), activeIdx=0;
@@ -179,19 +176,16 @@ function drawInstrument(){
     p.setAttribute('d','M150 150 q60 -60 140 -70 h260 q60 15 110 60 v250 q-50 55 -110 80 H290 q-80 -14 -140 -70z');
   }
   gSil.appendChild(p);
-
   const N=currentStrings.length, topY=210, botY=360;
   for(let i=0;i<N;i++){
     const y=topY+(i*(botY-topY)/(N-1||1));
     const peg=document.createElementNS('http://www.w3.org/2000/svg','circle');
     peg.setAttribute('cx','560'); peg.setAttribute('cy',y); peg.setAttribute('r','12'); peg.setAttribute('fill','#1b2a3a'); peg.setAttribute('stroke','#2f4357');
     peg.style.cursor='pointer'; peg.addEventListener('click',()=>setActive(i)); gSil.appendChild(peg);
-
     const s=document.createElementNS('http://www.w3.org/2000/svg','line');
     s.setAttribute('x1','190'); s.setAttribute('y1',y); s.setAttribute('x2','560'); s.setAttribute('y2',y);
     s.setAttribute('stroke','#95b2cc'); s.setAttribute('stroke-width',i===0?3:2); s.setAttribute('data-idx',i);
     s.style.cursor='pointer'; s.addEventListener('click',()=>setActive(i)); gStr.appendChild(s);
-
     const lab=document.createElementNS('http://www.w3.org/2000/svg','text');
     lab.setAttribute('x','180'); lab.setAttribute('y',y+7); lab.setAttribute('text-anchor','end'); lab.setAttribute('fill','#cfe0f3'); lab.setAttribute('font-weight','800'); lab.setAttribute('font-size','20');
     lab.textContent=currentStrings[i].name; lab.style.cursor='pointer'; lab.addEventListener('click',()=>setActive(i)); gStr.appendChild(lab);
@@ -201,39 +195,30 @@ function drawInstrument(){
   highlightString();
 }
 function setActive(i){activeIdx=i;highlightString()}
-function highlightString(){
-  gStr.querySelectorAll('line[data-idx]').forEach((ln,i)=>{
-    if(i===activeIdx){ln.setAttribute('stroke','#22c55e'); ln.setAttribute('stroke-width','4'); ln.setAttribute('filter','url(#glowG)')}
-    else {ln.setAttribute('stroke','#95b2cc'); ln.setAttribute('stroke-width',i===0?3:2); ln.removeAttribute('filter')}
-  });
-}
+function highlightString(){gStr.querySelectorAll('line[data-idx]').forEach((ln,i)=>{if(i===activeIdx){ln.setAttribute('stroke','#22c55e');ln.setAttribute('stroke-width','4');ln.setAttribute('filter','url(#glowG)')}else{ln.setAttribute('stroke','#95b2cc');ln.setAttribute('stroke-width',i===0?3:2);ln.removeAttribute('filter')}})}
 function rebuildInstrument(){currentStrings=tuningHz(currentInstrument,A4);drawInstrument()}
 selInstrument.addEventListener('change',()=>{currentInstrument=selInstrument.value;activeIdx=0;rebuildInstrument()});
 rebuildInstrument();
 
-/* ===== A4 pills ===== */
+/* ===== A4 pills (440..444) ===== */
 const a4row=document.getElementById('a4row');
 function setA4(v){A4=v; a4Read.textContent='A4: '+v+' Hz'; rebuildInstrument(); highlightA4()}
 function highlightA4(){a4row.querySelectorAll('.a4pill').forEach(b=>b.classList.toggle('active',+b.dataset.a4===A4))}
 a4row.addEventListener('click',(e)=>{const b=e.target.closest('.a4pill'); if(!b) return; setA4(+b.dataset.a4)});
 setA4(440);
 
-/* ===== Pitch engine ===== */
+/* ===== Pitch engine (slower needle + full-screen green on in-tune) ===== */
 let audioCtx, analyser, source, stream, running=false, buf;
 const MAXF=5000, MIN_RMS=0.006, MIN_CONF=0.78, BIAS_SEMITONES=2, TUNE_WINDOW=5; // cents
-
-function initAnalyser(){
-  analyser=audioCtx.createAnalyser();
-  analyser.fftSize=2048; analyser.minDecibels=-90; analyser.maxDecibels=-10; analyser.smoothingTimeConstant=0.85;
-  buf=new Float32Array(analyser.fftSize);
-}
+let displayedAngle = 0; // for slow needle
+let lastHeard = 0;      // timestamp when audio strong
+function initAnalyser(){analyser=audioCtx.createAnalyser();analyser.fftSize=2048;analyser.minDecibels=-90;analyser.maxDecibels=-10;analyser.smoothingTimeConstant=0.85;buf=new Float32Array(analyser.fftSize)}
 function detectPitch(buf,sr){
   const N=buf.length;
   let mean=0; for(let i=0;i<N;i++) mean+=buf[i]; mean/=N;
   let rms=0;
   for(let i=0;i<N;i++){ const w=0.5*(1-Math.cos(2*Math.PI*i/(N-1))); const v=(buf[i]-mean)*w; buf[i]=v; rms+=v*v; }
   rms=Math.sqrt(rms/N); if(rms<MIN_RMS) return {f:-1,conf:0,rms};
-
   const MIN_F=50, MAX_F=1500, minLag=Math.floor(sr/MAX_F), maxLag=Math.min(Math.floor(sr/MIN_F),N-3);
   let bestLag=-1, bestCorr=0;
   for(let lag=minLag;lag<=maxLag;lag++){
@@ -243,8 +228,7 @@ function detectPitch(buf,sr){
     if(c>bestCorr){bestCorr=c;bestLag=lag;}
   }
   if(bestLag<=0) return {f:-1,conf:0,rms};
-  const f=sr/bestLag;
-  return {f,conf:bestCorr,rms};
+  return {f:sr/bestLag,conf:bestCorr,rms};
 }
 const hist=[], HN=7;
 function median(a){const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2}
@@ -254,11 +238,11 @@ function loop(){
   if(!running) return;
   analyser.getFloatTimeDomainData(buf);
   const d=detectPitch(buf,audioCtx.sampleRate);
+  const now=performance.now();
+  if(d.rms>=MIN_RMS) lastHeard=now;
   if(d.f>0 && d.f<MAXF && d.conf>=MIN_CONF){
-    let f=d.f;
-    const near=nearestTarget(f);
+    let f=d.f; const near=nearestTarget(f);
     if(near && near.t && near.d <= BIAS_SEMITONES*100) f=near.t.freq*0.2 + f*0.8;
-
     hist.push(f); if(hist.length>HN) hist.shift();
     const smooth = hist.length>=3 ? median(hist) : f;
 
@@ -267,33 +251,52 @@ function loop(){
     const noteFreq=n2f(nR,A4);
     const cents=Math.round(1200*Math.log2(smooth/noteFreq));
 
-    // update UI
+    // readout
     noteLabel.textContent=noteName;
     freqLabel.textContent=smooth.toFixed(2)+' Hz';
-    rotateNeedle(cents);
-    setStatus(cents, smooth);
 
+    // target angle from cents
+    const lim=50, c=Math.max(-lim,Math.min(lim,cents));
+    const targetAngle = (-160)+(c+50)*320/100;
+
+    // slow needle (easing)
+    displayedAngle = displayedAngle*0.85 + targetAngle*0.15;   // slower = larger previous weight
+    gNeedle.setAttribute('transform','rotate('+displayedAngle+')');
+
+    // colour mapping: orange below, green center, red above
+    if(c > TUNE_WINDOW) gNeedle.setAttribute('stroke','#ef4444');
+    else if(c < -TUNE_WINDOW) gNeedle.setAttribute('stroke','#f59e0b');
+    else gNeedle.setAttribute('stroke','#22c55e');
+
+    setStatus(c, smooth, d);
   }else{
-    rotateNeedle(0); setStatus(null, 0);
+    // silence/unstable
+    rotateHome();
+    setStatus(null, 0, d);
   }
   requestAnimationFrame(loop);
 }
-function rotateNeedle(cents){
-  const lim=50, c=Math.max(-lim,Math.min(lim,cents||0));
-  const ang=(-160)+(c+50)*320/100;
-  gNeedle.setAttribute('transform','rotate('+ang+')');
-  if(c> TUNE_WINDOW) gNeedle.setAttribute('stroke','#ef4444');
-  else if(c< -TUNE_WINDOW) gNeedle.setAttribute('stroke','#f59e0b');
-  else gNeedle.setAttribute('stroke','#22c55e');
-}
-function setStatus(cents, f){
-  if(cents===null){ statusPill.textContent='Listening'; gGauge.classList.remove('inTune'); return; }
+function rotateHome(){displayedAngle = displayedAngle*0.9 + (-160+50*3.2)*0.1; gNeedle.setAttribute('transform','rotate('+displayedAngle+')')}
+function setStatus(cents, f, det){
+  const tunedClass='inTune';
+  const body=document.body;
+  if(cents===null){ statusPill.textContent='Listening'; gGauge.classList.remove(tunedClass); body.classList.remove('tuned'); return; }
   let delta=cents;
   if(activeIdx!==null){ const target=currentStrings[activeIdx].freq; delta=Math.round(1200*Math.log2((f||1)/target)); }
   const abs=Math.abs(delta);
-  if(abs<=TUNE_WINDOW){ statusPill.textContent='In tune'; gGauge.classList.add('inTune'); }
-  else if(delta< -TUNE_WINDOW){ statusPill.textContent='Flat'; gGauge.classList.remove('inTune'); }
-  else { statusPill.textContent='Sharp'; gGauge.classList.remove('inTune'); }
+  if(abs<=TUNE_WINDOW){
+    statusPill.textContent='In tune';
+    gGauge.classList.add(tunedClass);
+    // full-screen green while it still hears the plucked string
+    if(det && det.rms>=MIN_RMS) body.classList.add('tuned');
+    // fade back if no sound for 600ms
+    if(det && det.rms<MIN_RMS && (performance.now()-lastHeard)>600){ body.classList.remove('tuned'); }
+  }else{
+    statusPill.textContent= delta<0 ? 'Flat' : 'Sharp';
+    gGauge.classList.remove(tunedClass);
+    // if out of tune, but sound continues, remove tint
+    if((performance.now()-lastHeard)>150){ document.body.classList.remove('tuned'); }
+  }
 }
 
 /* ===== Mobile-safe Start/Stop ===== */
@@ -320,8 +323,8 @@ async function start(){
     running=true; btnStart.disabled=true; btnStop.disabled=false;
     statusPill.textContent='Listening';
     // ensure needle visible at start
-    rotateNeedle(0);
-    loop();
+    gNeedle.setAttribute('transform','rotate(-0.01)');
+    requestAnimationFrame(loop);
   }catch(err){
     console.error(err);
     if((/NotAllowedError|SecurityError/.test(err.name))&&(audioCtx && audioCtx.state!=='running')){
@@ -337,12 +340,13 @@ function stop(){
   if(audioCtx) audioCtx.close();
   btnStart.disabled=false; btnStop.disabled=true;
   statusPill.textContent='Stopped';
+  document.body.classList.remove('tuned');
 }
 
-/* first paint */
-(function init(){
-  drawInstrument(); buildTicks();
-})();
+/* ===== Init ===== */
+function rebuildAll(){currentStrings=tuningHz(currentInstrument,A4);drawInstrument()}
+selInstrument.addEventListener('change',()=>{currentInstrument=selInstrument.value;activeIdx=0;rebuildAll()});
+rebuildAll();
 </script>
 </body>
 </html>
