@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
-<title>Ceol Gan Eagla — Tuner v2.10</title>
+<title>Ceol Gan Eagla — Tuner v2.11</title>
 <meta name="theme-color" content="#0b1117"/>
 <link rel="icon" href="logo.png" type="image/png">
 <link rel="manifest" href="manifest.json">
@@ -26,7 +26,7 @@ header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px
 header .grow{flex:1}
 button{background:#0a1622;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:800;transition:filter .15s}
 button.primary{background:linear-gradient(180deg,#1b8a45,#176e39);border-color:#2b7b4b}
-button.live{background:linear-gradient(180deg,#ef4444,#c52828);border-color:#8f1d1d;color:#fff} /* red when listening */
+button.live{background:linear-gradient(180deg,#ef4444,#c52828);border-color:#8f1d1d;color:#fff}
 button:disabled{opacity:.6;filter:grayscale(.2);cursor:not-allowed}
 main{max-width:1100px;margin:0 auto;padding:14px;display:grid;gap:14px}
 .board{display:grid;grid-template-columns:1fr;gap:14px}@media(min-width:980px){.board{grid-template-columns:1.3fr .7fr}}
@@ -42,10 +42,10 @@ label{color:var(--muted);font-size:.9rem}
 .pill.ok{color:var(--ok);border-color:#2a5f3b;background:rgba(34,197,94,.12)}
 .pill.flat{color:var(--warn);border-color:#745a19;background:rgba(245,158,11,.08)}
 .pill.sharp{color:var(--bad);border-color:#6a1f1f;background:rgba(239,68,68,.08)}
-/* Overlay tint to show global state */
+/* Overlay tint for global state */
 #tint{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .2s ease;z-index:10}
-body.stopped #tint{background:rgba(34,197,94,.14);opacity:1}    /* green when stopped */
-body.recording #tint{background:transparent;opacity:0}          /* no tint while running */
+body.stopped #tint{background:rgba(34,197,94,.14);opacity:1}
+body.recording #tint{background:transparent;opacity:0}
 /* Tap overlay */
 #tapOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);z-index:30}
 #tapOverlay .inner{background:linear-gradient(180deg,#0f2232,#0a1824);border:1px solid var(--line);color:var(--ink);padding:18px 16px;border-radius:16px;text-align:center;max-width:90%}
@@ -59,9 +59,12 @@ body.recording #tint{background:transparent;opacity:0}          /* no tint while
 /* Needle */
 #needle{vector-effect:non-scaling-stroke;stroke-width:16}
 #needleTip{filter:url(#glowG)}
-/* Gentle pulse when in tune */
+/* Pulse when in tune */
 #gauge.inTune { animation: pulse 1.2s ease-in-out infinite; }
 @keyframes pulse { 0%,100%{transform:translate(600px,610px) scale(1)} 50%{transform:translate(600px,610px) scale(1.01)} }
+/* Footer */
+footer{margin:20px auto 40px;max-width:1100px;color:#a9bbcf;opacity:.9}
+footer .ft{padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--panel),#0c1a28);text-align:center}
 </style>
 </head>
 <body class="stopped">
@@ -84,8 +87,7 @@ body.recording #tint{background:transparent;opacity:0}          /* no tint while
         <defs>
           <filter id="glowG"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           <linearGradient id="needleGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"  stop-color="#f6d665"/>
-            <stop offset="100%" stop-color="#22ff8a"/>
+            <stop offset="0%"  stop-color="#f6d665"/><stop offset="100%" stop-color="#22ff8a"/>
           </linearGradient>
         </defs>
         <rect x="0" y="0" width="1200" height="825" rx="16" ry="16" fill="#0a1722" stroke="#223a53"/>
@@ -99,8 +101,7 @@ body.recording #tint{background:transparent;opacity:0}          /* no tint while
           <path id="tuneGlow" d="M -60 -372 A 380 380 0 0 1 60 -372" fill="none" stroke="#22c55e" stroke-opacity="0.9" stroke-width="24" filter="url(#glowG)"/>
           <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="url(#needleGrad)" stroke-linecap="round" filter="url(#glowG)"/>
           <circle id="needleTip" cx="0" cy="-340" r="7" fill="#22ff8a"/>
-          <circle cx="0" cy="0" r="12" fill="#0a1722" stroke="#2a4862" stroke-width="4"/>
-          <circle cx="0" cy="0" r="6" fill="#22ff8a" filter="url(#glowG)"/>
+          <circle cx="0" cy="0" r="12" fill="#0a1722" stroke="#2a4862" stroke-width="4"/><circle cx="0" cy="0" r="6" fill="#22ff8a" filter="url(#glowG)"/>
           <text id="noteLabel" x="0" y="90" text-anchor="middle" fill="#f4f8fb" font-size="64" font-weight="900">—</text>
           <text id="freqLabel" x="0" y="132" text-anchor="middle" fill="#9fb2c8" font-size="26" font-weight="800">0.00 Hz</text>
         </g>
@@ -114,34 +115,34 @@ body.recording #tint{background:transparent;opacity:0}          /* no tint while
     <div class="card controls">
       <div class="a4row" id="a4row">
         <label>Reference A4</label>
-        <button class="a4pill" data-a4="440">440</button>
-        <button class="a4pill" data-a4="441">441</button>
-        <button class="a4pill" data-a4="442">442</button>
-        <button class="a4pill" data-a4="443">443</button>
+        <button class="a4pill" data-a4="440">440</button><button class="a4pill" data-a4="441">441</button>
+        <button class="a4pill" data-a4="442">442</button><button class="a4pill" data-a4="443">443</button>
         <button class="a4pill" data-a4="444">444</button>
       </div>
       <div class="row">
         <label class="grow" for="instrument">Instrument</label>
         <select id="instrument" class="grow">
-          <option value="guitar">Guitar</option>
-          <option value="violin">Violin</option>
-          <option value="mandolin">Mandolin</option>
-          <option value="banjo5">Banjo (5-string)</option>
-          <option value="bouzouki">Irish Bouzouki</option>
-          <option value="bass">Bass</option>
+          <option value="guitar">Guitar</option><option value="violin">Violin</option><option value="mandolin">Mandolin</option>
+          <option value="banjo5">Banjo (5-string)</option><option value="bouzouki">Irish Bouzouki</option><option value="bass">Bass</option>
         </select>
       </div>
     </div>
   </section>
 </main>
 
-<div id="tapOverlay">
-  <div class="inner">
-    <div style="font-size:18px;margin-bottom:6px"><b>Tap to start the tuner</b></div>
-    <div>Unlocks your microphone on mobile.</div>
-    <div style="margin-top:10px"><button id="overlayStart" class="primary">Start</button></div>
-  </div>
-</div>
+<footer>
+  <div class="ft">© Gearóid MacUaid — Ceol Gan Eagla — 2025</div>
+</footer>
+
+<!-- Hidden audio element (Android quirk: detaching this helps release mic) -->
+<audio id="shadowIn" autoplay muted playsinline class="hidden" style="display:none"></audio>
+
+<!-- tap gate -->
+<div id="tapOverlay"><div class="inner">
+  <div style="font-size:18px;margin-bottom:6px"><b>Tap to start the tuner</b></div>
+  <div>Unlocks your microphone on mobile.</div>
+  <div style="margin-top:10px"><button id="overlayStart" class="primary">Start</button></div>
+</div></div>
 
 <script>
 /* ===== Helpers ===== */
@@ -149,6 +150,8 @@ const statusPill=document.getElementById('status');
 const btnStart=document.getElementById('btnStart'), btnStop=document.getElementById('btnStop');
 const selInstrument=document.getElementById('instrument');
 const a4Read=document.getElementById('a4read');
+const shadowIn=document.getElementById('shadowIn');
+
 const NOTE_NAMES=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
 function f2n(f,A4=440){return 69+12*Math.log2(f/A4)}
 function n2f(n,A4=440){return A4*Math.pow(2,(n-69)/12)}
@@ -212,7 +215,7 @@ function highlightA4(){a4row.querySelectorAll('.a4pill').forEach(b=>b.classList.
 a4row.addEventListener('click',(e)=>{const b=e.target.closest('.a4pill'); if(!b) return; setA4(+b.dataset.a4)});
 setA4(440);
 
-/* ===== Pitch engine ===== */
+/* ===== Pitch engine (with Android-stop safeguards) ===== */
 let audioCtx=null, analyser=null, source=null, stream=null, running=false, buf=null, rafId=null;
 const MAXF=5000, MIN_RMS=0.006, MIN_CONF=0.78, BIAS_SEMITONES=2, TUNE_WINDOW=5;
 let displayedAngle = 0, lastHeard = 0, havePitch = false;
@@ -240,7 +243,7 @@ function median(a){const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2
 function nearestTarget(f){let best=null,bd=1e9;currentStrings.forEach(s=>{const d=Math.abs(1200*Math.log2(f/s.freq));if(d<bd){bd=d;best=s}});return {t:best,d:bd}}
 
 function loop(){
-  if(!running){ return; }  // do NOT reschedule if not running
+  if(!running) return;                 // do NOT reschedule when stopped
   analyser.getFloatTimeDomainData(buf);
   const d=detectPitch(buf,audioCtx.sampleRate);
   const now=performance.now();
@@ -271,7 +274,7 @@ function loop(){
     else if(c < -TUNE_WINDOW) gTip.setAttribute('fill','#ffd07a');
     else gTip.setAttribute('fill','#22ff8a');
 
-    setStatus(c, smooth, d);
+    if(running) rafId = requestAnimationFrame(loop);
   }else{
     if(!havePitch){
       const wobble = Math.sin(now/600)*6;
@@ -279,30 +282,31 @@ function loop(){
       gNeedle.setAttribute('transform','rotate('+displayedAngle+')');
       gTip.setAttribute('transform','rotate('+displayedAngle+')');
     }
-    setStatus(null, 0, d);
+    if(running) rafId = requestAnimationFrame(loop);
   }
-  rafId = requestAnimationFrame(loop);
 }
 
-function setStatus(cents, f, det){
-  const body=document.body;
-  if(cents===null){ statusPill.textContent='Listening'; gGauge.classList.remove('inTune'); return; }
-  let delta=cents;
-  if(activeIdx!==null){ const target=currentStrings[activeIdx].freq; delta=Math.round(1200*Math.log2((f||1)/target)); }
-  const abs=Math.abs(delta);
-  if(abs<=TUNE_WINDOW){ statusPill.textContent='In tune'; gGauge.classList.add('inTune'); }
-  else { statusPill.textContent= delta<0 ? 'Flat' : 'Sharp'; gGauge.classList.remove('inTune'); }
+function setRunningUI(on){
+  if(on){
+    btnStart.disabled=true; btnStart.classList.add('live'); btnStart.textContent='Listening…';
+    btnStop.disabled=false; document.body.classList.remove('stopped'); document.body.classList.add('recording');
+    statusPill.textContent='Listening';
+  }else{
+    btnStart.disabled=false; btnStart.classList.remove('live'); btnStart.textContent='Start';
+    btnStop.disabled=true; document.body.classList.remove('recording'); document.body.classList.add('stopped');
+    statusPill.textContent='Stopped'; gGauge.classList.remove('inTune');
+  }
 }
 
-/* ===== Start/Stop with HARD kill and clear visual states ===== */
+/* ===== Start/Stop with HARD kill + Android detach ===== */
 const tapOverlay=document.getElementById('tapOverlay'), overlayStart=document.getElementById('overlayStart');
 ['click','touchend'].forEach(evt=>{
   btnStart.addEventListener(evt,start,{passive:true});
   overlayStart.addEventListener(evt,start,{passive:true});
 });
 btnStop.addEventListener('click', stop);
-window.addEventListener('beforeunload', stop);
-document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stop(); }); // release mic when tab is hidden
+['beforeunload','pagehide','freeze'].forEach(ev=>window.addEventListener(ev, stop, {passive:true}));
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stop(); }, {passive:true});
 
 async function start(){
   try{
@@ -310,48 +314,45 @@ async function start(){
     if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:44100});
     if(audioCtx.state==='suspended') await audioCtx.resume();
 
-    try{ const t=await navigator.mediaDevices.getUserMedia({audio:true,video:false}); t.getTracks().forEach(x=>x.stop()); }catch{}
-
+    // get stream and attach to analyser + hidden <audio> (so Android will fully detach later)
     const streamOpts={audio:{channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false,sampleRate:44100},video:false};
     stream=await navigator.mediaDevices.getUserMedia(streamOpts);
+    shadowIn.srcObject = stream;   // <-- attach
     source=audioCtx.createMediaStreamSource(stream);
     initAnalyser(); source.connect(analyser);
 
-    running=true; btnStart.disabled=true; btnStart.classList.add('live'); btnStart.textContent='Listening…';
-    btnStop.disabled=false;
-    document.body.classList.remove('stopped'); document.body.classList.add('recording');
-    statusPill.textContent='Listening';
-    havePitch=false; displayedAngle=0;
+    running=true; havePitch=false; displayedAngle=0; setRunningUI(true);
     gNeedle.setAttribute('transform','rotate(0)'); gTip.setAttribute('transform','rotate(0)');
     rafId = requestAnimationFrame(loop);
   }catch(err){
     console.error(err);
-    if((/NotAllowedError|SecurityError/.test(err.name))&&(audioCtx && audioCtx.state!=='running')){
-      tapOverlay.style.display='flex';
-    }else{
-      statusPill.textContent='Mic error';
-    }
+    statusPill.textContent='Mic error';
   }
 }
 function stop(){
-  // prevent repeated calls doing harm
-  if(!audioCtx && !stream && !running) return;
+  // avoid duplicate work
+  if(!running && !stream && !audioCtx) { setRunningUI(false); return; }
 
   running=false;
   if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
 
-  try{ if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }catch{}
-  try{ if(source){ source.disconnect(); source=null; } }catch{}
-  try{ if(analyser){ analyser.disconnect(); analyser=null; } }catch{}
-  try{ if(audioCtx){ audioCtx.close(); audioCtx=null; } }catch{}
-  buf=null; havePitch=false;
+  // 1) Stop & null every track
+  try{
+    if(stream){
+      stream.getTracks().forEach(t=>{ try{t.stop();}catch{} });
+    }
+  }catch{}
+  // 2) Detach hidden <audio> (Android sometimes keeps mic until element is detached)
+  try{ if(shadowIn){ shadowIn.pause(); shadowIn.srcObject=null; } }catch{}
+  // 3) Disconnect nodes
+  try{ if(source){ source.disconnect(); } }catch{}
+  try{ if(analyser){ analyser.disconnect(); } }catch{}
+  // 4) Close AudioContext
+  try{ if(audioCtx){ audioCtx.close(); } }catch{}
+  // 5) Null refs
+  stream=null; source=null; analyser=null; audioCtx=null; buf=null; havePitch=false;
 
-  btnStart.disabled=false; btnStart.classList.remove('live'); btnStart.textContent='Start';
-  btnStop.disabled=true;
-
-  document.body.classList.remove('recording'); document.body.classList.add('stopped');
-  statusPill.textContent='Stopped';
-  gGauge.classList.remove('inTune');
+  setRunningUI(false);
 }
 </script>
 </body>
