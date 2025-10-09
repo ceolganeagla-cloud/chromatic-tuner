@@ -2,221 +2,280 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Tuner (Instrument UI)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<title>Ceol Gan Eagla — Tuner</title>
 <meta name="theme-color" content="#0b1117"/>
 <link rel="icon" href="logo.png" type="image/png">
 <link rel="manifest" href="manifest.json">
 <style>
-  :root{
-    --bg:#081018; --panel:#0e1724; --ink:#e9f1f7; --muted:#9fb2c8; --line:#223243;
-    --accent:#22c55e; --danger:#ef4444; --warn:#f59e0b;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0; background:radial-gradient(120% 120% at 10% 0%,#0d1622 0,#081018 40%,#060c12 100%); color:var(--ink);
-       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;}
-  header{
-    display:flex; align-items:center; gap:12px; padding:10px 12px; border-bottom:1px solid var(--line);
-    background:rgba(10,16,24,.65); backdrop-filter: blur(8px); position:sticky; top:0; z-index:10;
-  }
-  .badge{
-    display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px;
-    background:linear-gradient(180deg,#144e2a,#0e3a20); border:1px solid #23673f; box-shadow:0 2px 14px rgba(0,0,0,.35);
-  }
-  .badge .mark{
-    width:34px; height:34px; border-radius:999px; display:grid; place-items:center;
-    background:#0a2415; border:1px solid #2a7446; overflow:hidden;
-  }
-  .badge .mark img{ width:100%; height:100%; object-fit:cover }
-  .badge .name{ font-weight:800; letter-spacing:.4px; background: linear-gradient(180deg,#ffe08a,#d7b54a); -webkit-background-clip:text; color:transparent }
-  .tri{ display:inline-block; width:20px; height:12px; background:linear-gradient(90deg,#169b62 0 33%, #fff 33% 66%, #ff883e 66% 100%);
-        border-radius:3px; border:1px solid #2b3d4d }
-  header .grow{flex:1}
-  button, select, input[type="range"]{
-    background:#0a1622; color:var(--ink); border:1px solid var(--line); border-radius:12px;
-    padding:10px 12px; font-weight:700;
-  }
-  button.primary{ background: linear-gradient(180deg,#1b8a45,#176e39); border-color:#2b7b4b }
-  main{ max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:16px }
-  .board{ display:grid; grid-template-columns: 1fr; gap:16px; }
-  @media(min-width: 980px){ .board{ grid-template-columns: 1.3fr .7fr } }
-  .instrument-card, .controls-card{
-    background:linear-gradient(180deg,#0e1623,#0c1420); border:1px solid var(--line);
-    border-radius:20px; padding:16px;
-  }
-  .controls-card{ display:grid; gap:12px; }
-  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
-  .row .grow{ flex:1 1 auto; min-width:200px }
-  label{ color:var(--muted); font-size:.9rem }
-  .stage{ width:100%; aspect-ratio: 16/11; background:#09131c; border:1px solid var(--line); border-radius:16px; }
-  .legend{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:10px; flex-wrap:wrap; }
-  .pill{ padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:#0a1622; color:var(--muted); font-weight:700 }
-  .pill.ok{ color:#22c55e; border-color:#2a5f3b; background:rgba(34,197,94,.1) }
-  .pill.flat{ color:#f59e0b; border-color:#745a19; background:rgba(245,158,11,.08) }
-  .pill.sharp{ color:#ef4444; border-color:#6a1f1f; background:rgba(239,68,68,.08) }
-  .string-chip{ border:1px solid var(--line); background:#0a1622; color:var(--ink); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:800 }
-  .string-chip.active{ background:rgba(34,197,94,.12); border-color:#2a5f3b }
-  footer{ text-align:center; color:var(--muted); padding:12px; font-size:.85rem }
-  .mini{ font-size:12px; color:#7f93aa; margin-top:-6px; text-align:center }
+/* --- Theme tokens (brand-fixed; brightness toggles) --- */
+:root{
+  /* brand */
+  --brand-green:#144e2a; --brand-green-2:#0e3a20; --brand-gold:#d7b54a;
+  --brand-flag-g:#169b62; --brand-flag-o:#ff883e;
+
+  /* bright (default) */
+  --bg:#0b141b;            /* slightly brighter than pure dark */
+  --panel:#0f1e2c;
+  --ink:#f4f8fb;
+  --muted:#a9bbcf;
+  --line:#24394d;
+  --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+}
+:root[data-theme="dark"]{
+  --bg:#081018;
+  --panel:#0d1724;
+  --ink:#e9f1f7;
+  --muted:#9fb2c8;
+  --line:#223243;
+}
+
+/* --- Base --- */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+  background:
+    radial-gradient(120% 120% at 10% 0%, #122233 0, var(--bg) 40%, #071018 100%);
+}
+
+/* --- Header --- */
+header{
+  position:sticky; top:0; z-index:10;
+  display:flex; align-items:center; gap:12px; padding:10px 12px;
+  background:rgba(10,16,24,.65);
+  backdrop-filter: blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.badge{
+  display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:999px;
+  background:linear-gradient(180deg,var(--brand-green),var(--brand-green-2));
+  border:1px solid #23673f;
+}
+.logo{
+  width:36px; height:36px; border-radius:6px; overflow:hidden;
+  box-shadow:0 2px 10px rgba(0,0,0,.35);
+  background:#0a2415; border:1px solid #2a7446; display:grid; place-items:center;
+}
+.logo img{width:100%;height:100%;object-fit:cover; display:block}
+.name{
+  font-weight:800; letter-spacing:.4px;
+  background: linear-gradient(180deg,#fff7c0,var(--brand-gold));
+  -webkit-background-clip:text; color:transparent
+}
+.flag{
+  display:inline-block; width:22px; height:14px; border-radius:3px; border:1px solid #2b3d4d; margin-left:2px;
+  background:linear-gradient(90deg, var(--brand-flag-g) 0 33%, #fff 33% 66%, var(--brand-flag-o) 66% 100%);
+}
+header .grow{flex:1}
+button, select, input[type="range"]{
+  background:#0a1622; color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-weight:700
+}
+button.primary{ background: linear-gradient(180deg,#1b8a45,#176e39); border-color:#2b7b4b }
+button.ghost{ background:transparent; border-color:var(--line) }
+
+/* --- Layout --- */
+main{ max-width:1100px; margin:0 auto; padding:14px; display:grid; gap:14px }
+.board{ display:grid; grid-template-columns: 1fr; gap:14px }
+@media(min-width:980px){ .board{ grid-template-columns: 1.3fr .7fr } }
+.card{ background:linear-gradient(180deg,var(--panel),#0c1a28); border:1px solid var(--line); border-radius:20px; padding:14px }
+
+/* --- Stage --- */
+.stage{ width:100%; aspect-ratio: 16/11; background:#0a1722; border:1px solid var(--line); border-radius:16px }
+.legend{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:10px; flex-wrap:wrap }
+.pill{ padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:#0a1622; color:var(--muted); font-weight:700 }
+.pill.ok{ color:var(--ok); border-color:#2a5f3b; background:rgba(34,197,94,.1) }
+.pill.flat{ color:var(--warn); border-color:#745a19; background:rgba(245,158,11,.08) }
+.pill.sharp{ color:var(--bad); border-color:#6a1f1f; background:rgba(239,68,68,.08) }
+.mini{ font-size:12px; color:#8fa2b8; text-align:center; margin-top:-6px }
+
+/* --- Controls --- */
+.row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center }
+.row .grow{ flex:1 1 auto; min-width:200px }
+label{ color:var(--muted); font-size:.9rem }
+.string-chip{ border:1px solid var(--line); background:#0a1622; color:var(--ink); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:800 }
+.string-chip.active{ background:rgba(34,197,94,.12); border-color:#2a5f3b }
+
+/* --- Tap overlay for iOS/Android autoplay policy --- */
+#tapOverlay{
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.55); backdrop-filter: blur(2px);
+}
+#tapOverlay .inner{
+  background: linear-gradient(180deg,#0f2232,#0a1824); border:1px solid var(--line); color:var(--ink);
+  padding:18px 16px; border-radius:16px; text-align:center; max-width:90%;
+}
+#tapOverlay .inner b{ color:var(--brand-gold) }
 </style>
 </head>
 <body>
-  <header>
-    <div class="badge">
-      <div class="mark" id="logoSlot">
-        <img src="logo.png" alt="Ceol Gan Eagla" onerror="this.remove();document.getElementById('logoSlot').textContent='CGE'">
+<header>
+  <div class="badge">
+    <div class="logo"><img src="logo.png" alt="Ceol Gan Eagla" onerror="this.remove()"></div>
+    <div class="name">Ceol Gan Eagla</div><span class="flag" title="Éire"></span>
+  </div>
+  <div class="grow"></div>
+  <button id="themeBtn" class="ghost" title="Toggle light/dark">☀️/🌙</button>
+  <button id="btnStart" class="primary">Start</button>
+  <button id="btnStop" disabled>Stop</button>
+</header>
+
+<main>
+  <section class="board">
+    <div class="card">
+      <svg id="stage" class="stage" viewBox="0 0 1200 825" xmlns="http://www.w3.org/2000/svg" aria-label="Instrument Tuner">
+        <defs>
+          <filter id="glowG"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect x="0" y="0" width="1200" height="825" rx="16" ry="16" fill="#0a1722" stroke="#223a53"/>
+        <g id="silhouette"></g>
+        <g id="strings"></g>
+        <g id="gauge" transform="translate(600, 610)">
+          <path d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#20394f" stroke-width="20"/>
+          <g id="ticks"></g>
+          <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="#22c55e" stroke-width="8" stroke-linecap="round" filter="url(#glowG)"/>
+          <text id="centsLabel" x="0" y="42" text-anchor="middle" fill="#9fb2c8" font-size="28" font-weight="700">0¢</text>
+          <text id="noteLabel" x="0" y="88" text-anchor="middle" fill="#f4f8fb" font-size="64" font-weight="900">—</text>
+          <text id="freqLabel" x="0" y="130" text-anchor="middle" fill="#9fb2c8" font-size="26" font-weight="700">0.00 Hz</text>
+        </g>
+      </svg>
+      <div class="legend">
+        <div id="status" class="pill">Mic idle</div>
+        <div class="pill">A4: <span id="a4val">440</span> Hz</div>
+        <button id="btnRetry" class="pill">Try again</button>
       </div>
-      <div class="name">Ceol Gan Eagla</div>
-      <span class="tri" title="Éire"></span>
+      <div id="diag" class="mini"></div>
     </div>
-    <div class="grow"></div>
-    <button id="btnStart" class="primary">Start</button>
-    <button id="btnStop" disabled>Stop</button>
-  </header>
 
-  <main>
-    <section class="board">
-      <div class="instrument-card">
-        <svg id="stage" class="stage" viewBox="0 0 1200 825" xmlns="http://www.w3.org/2000/svg" aria-label="Instrument Tuner">
-          <defs>
-            <filter id="glowG"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <rect x="0" y="0" width="1200" height="825" rx="16" ry="16" fill="#09131c" stroke="#223243"/>
-          <g id="silhouette"></g>
-          <g id="strings"></g>
-          <g id="gauge" transform="translate(600, 610)">
-            <path d="M -380 0 A 380 380 0 0 1 380 0" fill="none" stroke="#203447" stroke-width="20"/>
-            <g id="ticks"></g>
-            <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="#22c55e" stroke-width="8" stroke-linecap="round" filter="url(#glowG)"/>
-            <text id="centsLabel" x="0" y="42" text-anchor="middle" fill="#9fb2c8" font-size="28" font-weight="700">0¢</text>
-            <text id="noteLabel" x="0" y="88" text-anchor="middle" fill="#e9f1f7" font-size="64" font-weight="900">—</text>
-            <text id="freqLabel" x="0" y="130" text-anchor="middle" fill="#9fb2c8" font-size="26" font-weight="700">0.00 Hz</text>
-          </g>
-        </svg>
-        <div class="legend">
-          <div id="status" class="pill">Mic idle</div>
-          <div class="pill">A4: <span id="a4val">440</span> Hz</div>
-          <button id="btnRetry" class="pill">Try again</button>
-        </div>
-        <div id="diag" class="mini"></div>
+    <div class="card">
+      <div class="row">
+        <label class="grow" for="device">Microphone</label>
+        <select id="device" class="grow"></select>
+        <button id="btnRefresh" title="Refresh devices">↻</button>
       </div>
 
-      <div class="controls-card">
-        <div class="row">
-          <label class="grow" for="device">Microphone</label>
-          <select id="device" class="grow"></select>
-          <button id="btnRefresh" title="Refresh devices">↻</button>
-        </div>
-
-        <div class="row">
-          <label class="grow" for="instrument">Instrument</label>
-          <select id="instrument" class="grow">
-            <option value="guitar">Guitar</option>
-            <option value="violin">Violin</option>
-            <option value="mandolin">Mandolin</option>
-            <option value="banjo5">Banjo (5-string)</option>
-            <option value="bouzouki">Irish Bouzouki</option>
-            <option value="bass">Bass</option>
-          </select>
-        </div>
-
-        <div id="stringChips" class="row"></div>
-
-        <div class="row">
-          <label class="grow" for="a4">Reference A4</label>
-          <input id="a4" class="grow" type="range" min="430" max="450" step="1" value="440"/>
-        </div>
+      <div class="row">
+        <label class="grow" for="instrument">Instrument</label>
+        <select id="instrument" class="grow">
+          <option value="guitar">Guitar</option>
+          <option value="violin">Violin</option>
+          <option value="mandolin">Mandolin</option>
+          <option value="banjo5">Banjo (5-string)</option>
+          <option value="bouzouki">Irish Bouzouki</option>
+          <option value="bass">Bass</option>
+        </select>
       </div>
-    </section>
-  </main>
 
-  <footer>© <span id="year"></span> Ceol Gan Eagla — Offline tuner</footer>
+      <div id="stringChips" class="row"></div>
+
+      <div class="row">
+        <label class="grow" for="a4">Reference A4</label>
+        <input id="a4" class="grow" type="range" min="430" max="450" step="1" value="440"/>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="tapOverlay">
+  <div class="inner">
+    <div style="font-size:18px;margin-bottom:6px"><b>Tap to start the tuner</b></div>
+    <div>This unlocks your microphone on mobile (Safari & Chrome).</div>
+    <div style="margin-top:10px"><button id="overlayStart" class="primary">Start</button></div>
+  </div>
+</div>
+
+<footer class="mini">© <span id="year"></span> Ceol Gan Eagla — Offline tuner</footer>
 
 <script>
+/* ------------ Theming ------------ */
 document.getElementById('year').textContent=new Date().getFullYear();
+const themeBtn=document.getElementById('themeBtn');
+const root=document.documentElement;
+themeBtn.addEventListener('click',()=>{
+  const next=root.getAttribute('data-theme')==='dark'?'': 'dark';
+  if(next){ root.setAttribute('data-theme','dark'); } else { root.removeAttribute('data-theme'); }
+});
 
-/* ===== Helpers (unchanged UI) ===== */
+/* ------------ Music helpers ------------ */
 const NOTE_NAMES=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
 function freqToNoteNumber(f,A4=440){return 69+12*Math.log2(f/A4)}
 function noteNumberToFreq(n,A4=440){return A4*Math.pow(2,(n-69)/12)}
 function roundNoteName(n){const i=((Math.round(n)%12)+12)%12;return NOTE_NAMES[i]}
 const TUNINGS={guitar:()=>[64,59,55,50,45,40],violin:()=>[76,69,62,55],mandolin:()=>[76,69,62,55],banjo5:()=>[67,62,59,55,50],bouzouki:()=>[62,57,50,43],bass:()=>[43,38,33,28]};
 function tuningHz(name,A4){return TUNINGS[name]().map(m=>({midi:m,name:NOTE_NAMES[m%12]+(Math.floor(m/12)-1),freq:noteNumberToFreq(m,A4)}))}
-const stage=document.getElementById('stage'),gSil=document.getElementById('silhouette'),gStr=document.getElementById('strings'),gTicks=document.getElementById('ticks'),
-gNeedle=document.getElementById('needle'),centsLabel=document.getElementById('centsLabel'),noteLabel=document.getElementById('noteLabel'),
-freqLabel=document.getElementById('freqLabel'),statusPill=document.getElementById('status');
-function buildTicks(){gTicks.innerHTML='';for(let i=-50;i<=50;i+=5){const a=(-160)+(i+50)*320/100,r=a*Math.PI/180,inn=320,out=350,
-x1=Math.sin(r)*inn,y1=-Math.cos(r)*inn,x2=Math.sin(r)*(i%10===0?out:out-10),y2=-Math.cos(r)*(i%10===0?out:out-10),
-t=document.createElementNS('http://www.w3.org/2000/svg','line');t.setAttribute('x1',x1);t.setAttribute('y1',y1);t.setAttribute('x2',x2);t.setAttribute('y2',y2);
-t.setAttribute('stroke','#2a3b4f');t.setAttribute('stroke-width',i%10===0?3:2);gTicks.appendChild(t);
-if(i%20===0){const tx=Math.sin(r)*(out+22),ty=-Math.cos(r)*(out+22),txt=document.createElementNS('http://www.w3.org/2000/svg','text');
-txt.setAttribute('x',tx);txt.setAttribute('y',ty+8);txt.setAttribute('text-anchor','middle');txt.setAttribute('fill','#7f93aa');txt.setAttribute('font-size','20');txt.setAttribute('font-weight','700');txt.textContent=i+'¢';gTicks.appendChild(txt)}}}
+
+/* ------------ SVG + UI ------------ */
+const gSil=document.getElementById('silhouette'), gStr=document.getElementById('strings'), gTicks=document.getElementById('ticks');
+const gNeedle=document.getElementById('needle'), centsLabel=document.getElementById('centsLabel'), noteLabel=document.getElementById('noteLabel'), freqLabel=document.getElementById('freqLabel'), statusPill=document.getElementById('status');
+function buildTicks(){gTicks.innerHTML='';for(let i=-50;i<=50;i+=5){const a=(-160)+(i+50)*320/100,r=a*Math.PI/180,inn=320,out=350;
+const x1=Math.sin(r)*inn,y1=-Math.cos(r)*inn,x2=Math.sin(r)*(i%10===0?out:out-10),y2=-Math.cos(r)*(i%10===0?out:out-10);
+const L=document.createElementNS('http://www.w3.org/2000/svg','line');L.setAttribute('x1',x1);L.setAttribute('y1',y1);L.setAttribute('x2',x2);L.setAttribute('y2',y2);
+L.setAttribute('stroke','#2a3b4f');L.setAttribute('stroke-width',i%10===0?3:2);gTicks.appendChild(L);
+if(i%20===0){const tx=Math.sin(r)*(out+22),ty=-Math.cos(r)*(out+22),T=document.createElementNS('http://www.w3.org/2000/svg','text');
+T.setAttribute('x',tx);T.setAttribute('y',ty+8);T.setAttribute('text-anchor','middle');T.setAttribute('fill','#7f93aa');T.setAttribute('font-size','20');T.setAttribute('font-weight','700');T.textContent=i+'¢';gTicks.appendChild(T)}}}
 buildTicks();
 
-/* ===== Instrument UI (same look) ===== */
-const selInstrument=document.getElementById('instrument'),chipsWrap=document.getElementById('stringChips'),
-a4Slider=document.getElementById('a4'),a4Val=document.getElementById('a4val');
-let A4=parseInt(a4Slider.value,10),currentInstrument=selInstrument.value,currentStrings=tuningHz(currentInstrument,A4),activeIdx=0; // preselect 1st string
+const selInstrument=document.getElementById('instrument'), chipsWrap=document.getElementById('stringChips');
+const a4Slider=document.getElementById('a4'), a4Val=document.getElementById('a4val');
+let A4=parseInt(a4Slider.value,10), currentInstrument=selInstrument.value, currentStrings=tuningHz(currentInstrument,A4), activeIdx=0;
 
 function drawSilhouette(kind,strings){
-  gSil.innerHTML='';gStr.innerHTML='';
+  gSil.innerHTML=''; gStr.innerHTML='';
   const p=document.createElementNS('http://www.w3.org/2000/svg','path');
-  p.setAttribute('fill','#0a1a28');p.setAttribute('stroke','#223243');p.setAttribute('stroke-width','3');
+  p.setAttribute('fill','#0e2233'); p.setAttribute('stroke','#2a4862'); p.setAttribute('stroke-width','3');
   if(kind==='guitar'||kind==='bass'||kind==='bouzouki'||kind==='mandolin'){p.setAttribute('d','M120 160 q40 -50 120 -70 h300 q70 20 120 70 v240 q-50 60 -120 80 H240 q-80 -18 -120 -80z')}
   else if(kind==='banjo5'){p.setAttribute('d','M120 170 q40 -45 120 -60 h280 q90 18 130 70 v210 q-40 70 -130 95 H240 q-80 -20 -120 -85 z M320 240 h40 v40 h-40z')}
   else{p.setAttribute('d','M150 150 q60 -60 140 -70 h260 q60 15 110 60 v250 q-50 55 -110 80 H290 q-80 -14 -140 -70z')}
   gSil.appendChild(p);
-  const N=strings.length,topY=210,botY=360;
+  const N=strings.length, topY=210, botY=360;
   for(let i=0;i<N;i++){
     const y=topY+(i*(botY-topY)/(N-1||1));
     const peg=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    peg.setAttribute('cx','560');peg.setAttribute('cy',y);peg.setAttribute('r','12');peg.setAttribute('fill','#1b2a3a');peg.setAttribute('stroke','#2f4357');
-    peg.style.cursor='pointer';peg.addEventListener('click',()=>setActiveString(i));gSil.appendChild(peg);
+    peg.setAttribute('cx','560'); peg.setAttribute('cy',y); peg.setAttribute('r','12'); peg.setAttribute('fill','#1b2a3a'); peg.setAttribute('stroke','#2f4357');
+    peg.style.cursor='pointer'; peg.addEventListener('click',()=>setActiveString(i)); gSil.appendChild(peg);
     const s=document.createElementNS('http://www.w3.org/2000/svg','line');
-    s.setAttribute('x1','190');s.setAttribute('y1',y);s.setAttribute('x2','560');s.setAttribute('y2',y);
-    s.setAttribute('stroke','#607b97');s.setAttribute('stroke-width',i===0?3:2);s.setAttribute('data-idx',i);
-    s.style.cursor='pointer';s.addEventListener('click',()=>setActiveString(i));gStr.appendChild(s);
+    s.setAttribute('x1','190'); s.setAttribute('y1',y); s.setAttribute('x2','560'); s.setAttribute('y2',y);
+    s.setAttribute('stroke','#95b2cc'); s.setAttribute('stroke-width',i===0?3:2); s.setAttribute('data-idx',i);
+    s.style.cursor='pointer'; s.addEventListener('click',()=>setActiveString(i)); gStr.appendChild(s);
     const lab=document.createElementNS('http://www.w3.org/2000/svg','text');
-    lab.setAttribute('x','180');lab.setAttribute('y',y+7);lab.setAttribute('text-anchor','end');lab.setAttribute('fill','#9fb2c8');lab.setAttribute('font-weight','800');lab.setAttribute('font-size','20');
-    lab.textContent=strings[i].name;lab.style.cursor='pointer';lab.addEventListener('click',()=>setActiveString(i));gStr.appendChild(lab);
+    lab.setAttribute('x','180'); lab.setAttribute('y',y+7); lab.setAttribute('text-anchor','end'); lab.setAttribute('fill','#cfe0f3'); lab.setAttribute('font-weight','800'); lab.setAttribute('font-size','20');
+    lab.textContent=strings[i].name; lab.style.cursor='pointer'; lab.addEventListener('click',()=>setActiveString(i)); gStr.appendChild(lab);
   }
-  const nut=document.createElementNS('http://www.w3.org/2000/svg','rect');nut.setAttribute('x','188');nut.setAttribute('y',topY-18);
-  nut.setAttribute('width','6');nut.setAttribute('height',(botY-topY)+36);nut.setAttribute('fill','#2e3f52');gStr.appendChild(nut);
+  const nut=document.createElementNS('http://www.w3.org/2000/svg','rect'); nut.setAttribute('x','188'); nut.setAttribute('y',topY-18);
+  nut.setAttribute('width','6'); nut.setAttribute('height',(botY-topY)+36); nut.setAttribute('fill','#2e3f52'); gStr.appendChild(nut);
   highlightSVGString();
 }
-function renderChips(){chipsWrap.innerHTML='';currentStrings.forEach((s,idx)=>{const b=document.createElement('button');b.type='button';b.className='string-chip';b.textContent=s.name;b.addEventListener('click',()=>setActiveString(idx));chipsWrap.appendChild(b)});highlightChip()}
-function setActiveString(idx){activeIdx=idx;highlightChip();highlightSVGString()}
-function highlightChip(){chipsWrap.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===activeIdx))}
-function highlightSVGString(){gStr.querySelectorAll('line[data-idx]').forEach((ln,i)=>{if(i===activeIdx){ln.setAttribute('stroke','#22c55e');ln.setAttribute('stroke-width','4');ln.setAttribute('filter','url(#glowG)')}else{ln.setAttribute('stroke','#607b97');ln.setAttribute('stroke-width',i===0?3:2);ln.removeAttribute('filter')}})}
-function rebuildInstrument(){currentStrings=tuningHz(currentInstrument,A4);drawSilhouette(currentInstrument,currentStrings);renderChips()}
-selInstrument.addEventListener('change',()=>{currentInstrument=selInstrument.value;activeIdx=0;rebuildInstrument()});
-a4Slider.addEventListener('input',()=>{A4=parseInt(a4Slider.value,10);a4Val.textContent=A4;rebuildInstrument()});
+function renderChips(){ chipsWrap.innerHTML=''; currentStrings.forEach((s,idx)=>{const b=document.createElement('button'); b.type='button'; b.className='string-chip'; b.textContent=s.name; b.addEventListener('click',()=>setActiveString(idx)); chipsWrap.appendChild(b)}); highlightChip(); }
+function setActiveString(idx){ activeIdx=idx; highlightChip(); highlightSVGString(); }
+function highlightChip(){ chipsWrap.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===activeIdx)); }
+function highlightSVGString(){ gStr.querySelectorAll('line[data-idx]').forEach((ln,i)=>{ if(i===activeIdx){ln.setAttribute('stroke','#22c55e'); ln.setAttribute('stroke-width','4'); ln.setAttribute('filter','url(#glowG)')} else {ln.setAttribute('stroke','#95b2cc'); ln.setAttribute('stroke-width',i===0?3:2); ln.removeAttribute('filter')} }); }
+function rebuildInstrument(){ currentStrings=tuningHz(currentInstrument,A4); drawSilhouette(currentInstrument,currentStrings); renderChips(); }
+selInstrument.addEventListener('change',()=>{ currentInstrument=selInstrument.value; activeIdx=0; rebuildInstrument(); });
+a4Slider.addEventListener('input',()=>{ A4=parseInt(a4Slider.value,10); a4Val.textContent=A4; rebuildInstrument(); });
 rebuildInstrument();
 
-/* ===== Audio + stabilized pitch (fix for “runs through all freqs”) ===== */
+/* ------------ Pitch engine (stabilized) ------------ */
 let audioCtx, analyser, source, stream, running=false, buf;
-const btnStart=document.getElementById('btnStart'),btnStop=document.getElementById('btnStop'),selDevice=document.getElementById('device');
+const btnStart=document.getElementById('btnStart'), btnStop=document.getElementById('btnStop'), selDevice=document.getElementById('device'), diag=document.getElementById('diag');
 
-function initAnalyser(){analyser=audioCtx.createAnalyser();analyser.fftSize=2048;analyser.minDecibels=-90;analyser.maxDecibels=-10;analyser.smoothingTimeConstant=0.85;buf=new Float32Array(analyser.fftSize)}
+function initAnalyser(){ analyser=audioCtx.createAnalyser(); analyser.fftSize=2048; analyser.minDecibels=-90; analyser.maxDecibels=-10; analyser.smoothingTimeConstant=0.85; buf=new Float32Array(analyser.fftSize); }
 
-// Robust autocorrelation returning freq + gates
 function autoCorrelateFloat32(arr, sr){
   const S=arr.length; let rms=0; for(let i=0;i<S;i++){rms+=arr[i]*arr[i]} rms=Math.sqrt(rms/S);
-  if(rms<0.006) return {freq:-1,rms,corr:0}; // stronger gate to ignore noise
-  let r1=0,r2=S-1,th=0.2;for(let i=0;i<S/2;i++){if(Math.abs(arr[i])<th){r1=i;break}}for(let i=1;i<S/2;i++){if(Math.abs(arr[S-i])<th){r2=S-i;break}}
-  const buf=arr.slice(r1,r2);const N=buf.length;if(N<32)return{freq:-1,rms,corr:0};
-  const c=new Array(N).fill(0);for(let i=0;i<N;i++){let s=0;for(let j=0;j<N-i;j++){s+=buf[j]*buf[j+i]}c[i]=s}
-  let d=0;while(d+1<N&&c[d]>c[d+1])d++; let maxv=-1,maxp=-1; for(let i=d;i<N;i++){ if(c[i]>maxv){maxv=c[i];maxp=i} }
+  if(rms<0.006) return {freq:-1,rms,corr:0};
+  let r1=0,r2=S-1,th=0.2; for(let i=0;i<S/2;i++){if(Math.abs(arr[i])<th){r1=i;break}} for(let i=1;i<S/2;i++){if(Math.abs(arr[S-i])<th){r2=S-i;break}}
+  const b=arr.slice(r1,r2); const N=b.length; if(N<32) return {freq:-1,rms,corr:0};
+  const c=new Array(N).fill(0); for(let i=0;i<N;i++){ let s=0; for(let j=0;j<N-i;j++){ s+=b[j]*b[j+i] } c[i]=s }
+  let d=0; while(d+1<N && c[d]>c[d+1]) d++; let maxv=-1,maxp=-1; for(let i=d;i<N;i++){ if(c[i]>maxv){maxv=c[i];maxp=i} }
   if(maxp<=0) return {freq:-1,rms,corr:0};
-  let T0=maxp; const x1=c[T0-1]||0,x2=c[T0]||0,x3=c[T0+1]||0; const a=(x1+x3-2*x2)/2,b=(x3-x1)/2; if(a){T0=T0-b/(2*a)}
+  let T0=maxp; const x1=c[T0-1]||0,x2=c[T0]||0,x3=c[T0+1]||0; const a=(x1+x3-2*x2)/2, b2=(x3-x1)/2; if(a){ T0=T0 - b2/(2*a); }
   const freq=sr/T0; const corr=x2/c[0]; return {freq,rms,corr:isFinite(corr)?corr:0};
 }
 
-// smoothing + bias config
-const FWIN=7, STABLE_MS=180, MIN_CORR=0.78, MIN_RMS=0.006, BIAS_SEMITONES=2, MAXF=5000;
-let hist=[], lastStable=0, displayed={cents:0};
-
+/* Stabilization & bias */
+const FWIN=7, MIN_CORR=0.78, MIN_RMS=0.006, BIAS_SEMITONES=2, MAXF=5000;
+let hist=[], displayed={cents:0};
 function median(a){const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length%2?s[m]:(s[m-1]+s[m])/2}
 function avg(a){return a.reduce((p,v)=>p+v,0)/a.length}
 function nearestTarget(f){let best=null,bd=1e9;currentStrings.forEach(s=>{const d=Math.abs(1200*Math.log2(f/s.freq));if(d<bd){bd=d;best=s}});return {t:best,d:bd}}
@@ -226,11 +285,8 @@ function loop(){
   analyser.getFloatTimeDomainData(buf);
   const {freq,rms,corr}=autoCorrelateFloat32(buf,audioCtx.sampleRate);
   if(freq>0 && freq<MAXF && rms>=MIN_RMS && corr>=MIN_CORR){
-    let f=freq;
-    // bias towards chosen string or nearest
-    const near=nearestTarget(freq);
+    let f=freq; const near=nearestTarget(freq);
     if(near && near.t && near.d <= BIAS_SEMITONES*100) f = near.t.freq*0.2 + freq*0.8;
-
     hist.push(f); if(hist.length>FWIN) hist.shift();
     const smooth = hist.length>=3 ? median(hist) : f;
 
@@ -239,9 +295,8 @@ function loop(){
     const noteFreq=noteNumberToFreq(nR,A4);
     const cents=Math.round(1200*Math.log2(smooth/noteFreq));
 
-    // stability check (spread <1%)
-    const m=avg(hist), spread=hist.reduce((p,v)=>p+Math.abs(v-m),0)/hist.length;
-    const stable = spread/m < 0.01;
+    const a=avg(hist), spread=hist.reduce((p,v)=>p+Math.abs(v-a),0)/hist.length;
+    const stable = (spread/a) < 0.01;                        // <1% variance
     const eased = stable ? cents : Math.round(displayed.cents*0.7 + cents*0.3);
 
     freqLabel.textContent=smooth.toFixed(2)+' Hz';
@@ -254,9 +309,7 @@ function loop(){
     setStatus(delta);
 
     displayed.cents=eased;
-    lastStable = performance.now();
   }else{
-    // quiet/noisy → idle
     hist.length=0;
     centsLabel.textContent='0¢'; noteLabel.textContent='—'; freqLabel.textContent='0.00 Hz';
     rotateNeedle(0); statusPill.textContent='Listening…'; statusPill.className='pill';
@@ -264,61 +317,86 @@ function loop(){
   requestAnimationFrame(loop);
 }
 
-// needle + status
 function rotateNeedle(c){const lim=50,cl=Math.max(-lim,Math.min(lim,c));const ang=(-160)+(cl+50)*320/100;gNeedle.setAttribute('transform','rotate('+ang+')');
 if(cl>5)gNeedle.setAttribute('stroke','#ef4444');else if(cl<-5)gNeedle.setAttribute('stroke','#f59e0b');else gNeedle.setAttribute('stroke','#22c55e')}
 function setStatus(delta){const abs=Math.abs(delta);if(abs<=5){statusPill.textContent='In tune';statusPill.className='pill ok'}else if(delta<-5){statusPill.textContent='Flat '+abs+'¢';statusPill.className='pill flat'}else{statusPill.textContent='Sharp '+abs+'¢';statusPill.className='pill sharp'}}
 
-/* ===== Mic handling (small tweak, same UI) ===== */
-const selDevice=document.getElementById('device');
-async function refreshDevices(){
+/* ------------ Mobile-safe Mic start ------------ */
+const tapOverlay=document.getElementById('tapOverlay'), overlayStart=document.getElementById('overlayStart');
+async function ensureGestureAndResume(){
   try{
-    // If labels are empty, asking for quick permission first helps Chrome populate them
-    if(!(await navigator.permissions.query({name:'microphone'})).state==='granted'){
-      try{ const tmp=await navigator.mediaDevices.getUserMedia({audio:true,video:false}); tmp.getTracks().forEach(t=>t.stop()); }catch(e){}
-    }
-    const devices=await navigator.mediaDevices.enumerateDevices();
-    const mics=devices.filter(d=>d.kind==='audioinput');
-    selDevice.innerHTML='';
-    mics.forEach((m,i)=>{const opt=document.createElement('option');opt.value=m.deviceId;opt.textContent=m.label||('Microphone '+(i+1));selDevice.appendChild(opt);});
-  }catch(e){ console.error(e); }
+    if(!audioCtx) return;
+    if(audioCtx.state==='suspended'){ await audioCtx.resume(); }
+  }catch(e){}
 }
-document.getElementById('btnRefresh').addEventListener('click', refreshDevices);
+async function populateDevices(){
+  try{
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    const mics=devs.filter(d=>d.kind==='audioinput'); const sel=document.getElementById('device'); sel.innerHTML='';
+    mics.forEach((m,i)=>{const o=document.createElement('option');o.value=m.deviceId;o.textContent=m.label||('Microphone '+(i+1));sel.appendChild(o)});
+  }catch(e){console.error(e)}
+}
+document.getElementById('btnRefresh').addEventListener('click', populateDevices);
 document.getElementById('btnRetry').addEventListener('click', start);
 
-async function start(){
-  if(!window.isSecureContext){ statusPill.textContent='Needs HTTPS (GitHub Pages)'; statusPill.className='pill flat'; }
-  if(running) return;
+/* Bind both click and touch to satisfy iOS/Android gesture policies */
+['click','touchend'].forEach(evt=>{
+  document.getElementById('btnStart').addEventListener(evt, start, {passive:true});
+  overlayStart.addEventListener(evt, start, {passive:true});
+});
+
+async function start(e){
   try{
-    const deviceId=selDevice.value||undefined;
+    // Show overlay if no user gesture yet on iOS
+    if(!window.isSecureContext){
+      statusPill.textContent='Needs HTTPS (GitHub Pages)'; statusPill.className='pill flat';
+    }
+    tapOverlay.style.display='none';
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:44100});
+    await ensureGestureAndResume();
+
+    // Quick permission prompt so device labels populate
+    try{ const tmp=await navigator.mediaDevices.getUserMedia({audio:true,video:false}); tmp.getTracks().forEach(t=>t.stop()); }catch(_){}
+
+    await populateDevices();
+    const deviceId=document.getElementById('device').value||undefined;
+
     stream=await navigator.mediaDevices.getUserMedia({
-      audio:{deviceId:deviceId?{exact:deviceId}:undefined,channelCount:1,echoCancellation:false,noiseSuppression:false,autoGainControl:false,sampleRate:44100},
+      audio:{ deviceId:deviceId?{exact:deviceId}:undefined, channelCount:1, echoCancellation:false, noiseSuppression:false, autoGainControl:false, sampleRate:44100 },
       video:false
     });
-    audioCtx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:44100});
+    if(audioCtx.state==='suspended') await audioCtx.resume();
     source=audioCtx.createMediaStreamSource(stream);
     initAnalyser(); source.connect(analyser);
-    running=true; btnStart.disabled=true; btnStop.disabled=false;
+    running=true; document.getElementById('btnStart').disabled=true; document.getElementById('btnStop').disabled=false;
     statusPill.textContent='Listening…'; statusPill.className='pill'; diag.textContent='';
     loop();
   }catch(err){
     console.error(err);
-    let msg=!window.isSecureContext?'Needs HTTPS/localhost: use GitHub Pages':
-      (err.name==='NotAllowedError'||err.name==='SecurityError')?'Permission denied: allow mic':
+    // If gesture required on iOS, show overlay to force a tap inside the page
+    if((/NotAllowedError|SecurityError/.test(err.name)) && (audioCtx && audioCtx.state!=='running')){
+      tapOverlay.style.display='flex';
+    }
+    let msg=!window.isSecureContext?'Needs HTTPS/localhost':
+      (err.name==='NotAllowedError'||err.name==='SecurityError')?'Permission denied (allow mic)':
       (err.name==='NotFoundError')?'No microphone found':'Mic blocked';
     statusPill.textContent=msg; statusPill.className='pill flat';
-    const d=document.getElementById('diag'); d.textContent=(err.name+': '+(err.message||''))||'';
+    diag.textContent=(err.name+': '+(err.message||''))||'';
   }
 }
-function stop(){
+document.getElementById('btnStop').addEventListener('click', ()=>{
   running=false; if(stream) stream.getTracks().forEach(t=>t.stop()); if(audioCtx) audioCtx.close();
-  btnStart.disabled=false; btnStop.disabled=true; statusPill.textContent='Mic stopped'; statusPill.className='pill';
-}
-btnStart.addEventListener('click', start);
-btnStop.addEventListener('click', stop);
+  document.getElementById('btnStart').disabled=false; document.getElementById('btnStop').disabled=true;
+  statusPill.textContent='Mic stopped'; statusPill.className='pill';
+});
 
-// init
-refreshDevices();
+/* First paint + device list */
+populateDevices();
+
+/* On first touch anywhere, if audio not running, show overlay to prompt user gesture (helps iOS) */
+document.addEventListener('touchend',()=>{
+  if(!running){ tapOverlay.style.display='flex'; }
+},{passive:true});
 </script>
 </body>
 </html>
