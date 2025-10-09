@@ -102,7 +102,8 @@ body.tuned #tint{opacity:1}
           <!-- green glow arc -->
           <path id="tuneGlow" d="M -60 -372 A 380 380 0 0 1 60 -372" fill="none" stroke="#22c55e" stroke-opacity="0.9" stroke-width="24" filter="url(#glowG)"/>
           <!-- BRIGHT needle (no dark shadow) -->
-          <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="url(#needleGrad)" stroke-linecap="round" filter="url(#glowG)"/>
+          <line id="needle" x1="0" y1="0" x2="0" y2="-340" stroke="#ffffff" stroke-width="16" stroke-linecap="round" filter="url(#glowG)"/>
+
           <circle id="needleTip" cx="0" cy="-340" r="7" fill="#22ff8a"/>
           <!-- hub -->
           <circle cx="0" cy="0" r="12" fill="#0a1722" stroke="#2a4862" stroke-width="4"/>
@@ -370,4 +371,5 @@ rebuildAll();
 </script>
 </body>
 </html>
+
 
