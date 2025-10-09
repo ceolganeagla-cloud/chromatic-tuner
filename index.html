@@ -82,10 +82,11 @@ body.tuned #tint{opacity:1}
           <!-- strong green glow -->
           <filter id="glowG"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           <!-- bright needle gradient -->
-          <linearGradient id="needleGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"  stop-color="#f6d665"/>   <!-- gold -->
-            <stop offset="100%" stop-color="#22ff8a"/> <!-- lime-green -->
-          </linearGradient>
+<linearGradient id="needleGrad" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0%"  stop-color="#ffffff"/>   <!-- white top -->
+  <stop offset="100%" stop-color="#ccffcc"/> <!-- pale green bottom -->
+</linearGradient>
+
         </defs>
         <rect x="0" y="0" width="1200" height="825" rx="16" ry="16" fill="#0a1722" stroke="#223a53"/>
         <!-- instrument -->
@@ -369,3 +370,4 @@ rebuildAll();
 </script>
 </body>
 </html>
+
