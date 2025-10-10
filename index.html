@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Tuner (Dark)</title>
+<title>Ceol Gan Eagla — Tuner (Strings Only)</title>
 <meta name="theme-color" content="#0b1220">
 <style>
   :root{
@@ -19,16 +19,18 @@
   .wrap{max-width:980px;margin:0 auto;padding:16px}
   header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 
-  /* Brand card like your screenshot */
+  /* Brand card */
   .brandCard{
     display:flex;align-items:center;gap:12px;
     padding:12px 14px;border-radius:18px;
     background:linear-gradient(180deg,#10311e,#0e2619);
     border:1px solid #1c3a2a; box-shadow:0 8px 24px rgba(0,0,0,.35);
   }
-  .brandLogo{width:38px;height:38px;border-radius:10px;background:#0b1220;border:2px solid #27435e;display:grid;place-items:center;overflow:hidden}
-  /* Replace with your image: <img src="cge-logo.png" style="width:100%;height:100%;object-fit:cover"> */
-  .brandLogo::before{content:"";width:70%;height:70%;border-radius:8px;background:conic-gradient(#22c55e 0 33%, #fff 33% 66%, #f97316 66% 100%)}
+  .brandLogo{
+    width:40px;height:40px;border-radius:10px;background:#0b1220;border:2px solid #27435e;
+    overflow:hidden;display:grid;place-items:center
+  }
+  .brandLogo img{width:100%;height:100%;object-fit:cover}
   .brandText{line-height:1.1}
   .brandTitle{font-weight:900;letter-spacing:.3px}
   .brandSub{font-size:12px;color:#c8d7f5;opacity:.85}
@@ -44,24 +46,38 @@
   .card{background:var(--panel);border:1px solid #1a2946;border-radius:20px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
   .block{background:#0d1b2f;border:1px solid #1a2946;border-radius:16px;padding:14px;margin-bottom:14px}
 
-  /* Strings panel (top block) */
-  .spTitle{font-size:14px;color:var(--muted);margin-bottom:8px}
-  .row{display:flex;align-items:center;gap:10px;margin:12px 0}
-  .note{font-weight:900;min-width:42px}
-  .line{flex:1;height:2px;background:#314764;border-radius:2px}
-  .led{width:12px;height:12px;border-radius:50%;background:#2a3957;border:1px solid #37537e}
-  .led.on{background:#1faa57;border-color:#1faa57;box-shadow:0 0 0 2px rgba(34,197,94,.25)}
+  /* Strings tuner */
+  .spHead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .spTitle{font-size:14px;color:var(--muted)}
+  .rows{display:flex;flex-direction:column;gap:10px}
+  .srow{
+    display:grid;grid-template-columns:56px 1fr 84px;gap:10px;align-items:center;
+    padding:10px;border-radius:12px;background:#0c1b31;border:1px solid #1a2a48
+  }
+  .srow.in{background:#0f2a1e;border-color:#1f6b3f}
+  .sName{font-weight:900}
+  .sBar{position:relative;height:10px;background:#223654;border-radius:999px;overflow:hidden}
+  .sBar::before{/* center mark */
+    content:""; position:absolute; left:50%; top:0; width:2px; height:100%; background:#8ba1c7; opacity:.7; transform:translateX(-50%);
+  }
+  .sDot{
+    position:absolute; top:50%; width:16px; height:16px; border-radius:50%;
+    background:#c6d6f4; border:2px solid #ffffff; transform:translate(-50%,-50%);
+    transition:left .08s linear, background .12s, border-color .12s;
+  }
+  .srow.flat .sDot{ background:#f7c3c3; border-color:#ef9a9a }
+  .srow.sharp .sDot{ background:#f7c3c3; border-color:#ef9a9a }
+  .srow.in .sDot{ background:#b8ffd0; border-color:#22c55e }
+  .sStatus{font-weight:700;color:#9fb0d0;text-align:right}
+  .srow.in .sStatus{color:#bff3d1}
 
-  /* Gauge block */
-  .gaugeBox{padding:12px}
-  canvas{width:100%;height:auto;display:block}
+  /* Readouts + controls */
   .readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
   .chip{background:#0f213a;border:1px solid #1b2a46;border-radius:14px;padding:12px;text-align:center}
   .chip.ok{background:#0f2a1e;outline:2px solid var(--ok)}
   .lbl{display:block;font-size:14px;color:var(--muted);margin-bottom:4px}
   .val{font-size:22px;font-weight:900;letter-spacing:.3px}
   .fine{font-size:14px;color:var(--muted)}
-
   .controlsRow{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
   .seg{background:#0e203a;border:1px solid #1b2a46;border-radius:12px;padding:10px}
   .miniBtns{display:flex;gap:8px;flex-wrap:wrap}
@@ -78,7 +94,7 @@
   <div class="wrap">
     <header>
       <div class="brandCard">
-        <div class="brandLogo" aria-hidden="true"></div>
+        <div class="brandLogo"><img src="cge-logo.png" alt="Ceol Gan Eagla"></div>
         <div class="brandText">
           <div class="brandTitle">Ceol Gan Eagla</div>
           <div class="brandSub">Chromatic Tuner</div>
@@ -92,39 +108,29 @@
     </header>
 
     <section class="card">
-      <!-- Strings panel (top) -->
-      <div class="block" id="stringsBlock">
-        <div class="spTitle">Strings • <span id="spTuning">EADGBE</span></div>
-        <div id="spList"></div>
-      </div>
+      <!-- STRINGS-ONLY TUNER -->
+      <div class="block">
+        <div class="spHead">
+          <div class="spTitle">Strings • <span id="spTuning">EADGBE</span></div>
+        </div>
+        <div class="rows" id="rows"></div>
 
-      <!-- Gauge block (below strings) -->
-      <div class="block gaugeBox">
-        <canvas id="gauge" width="960" height="420"></canvas>
         <div class="readouts">
           <div id="statusChip" class="chip"><span class="lbl">Status</span><span id="status" class="val">Stopped</span></div>
           <div class="chip"><span class="lbl">Note</span><span id="note" class="val">—</span><span id="cents" class="fine">±0 cents</span></div>
           <div class="chip"><span class="lbl">Frequency</span><span id="freq" class="val">0.00 Hz</span></div>
         </div>
-      </div>
 
-      <div class="controlsRow">
-        <div class="seg">
-          <div class="lbl">Reference A4</div>
-          <div class="miniBtns">
-            <button class="aRef" data-a="438">438</button>
-            <button class="aRef" data-a="439">439</button>
-            <button class="aRef active" data-a="440">440</button>
-            <button class="aRef" data-a="441">441</button>
-            <button class="aRef" data-a="442">442</button>
-            <button class="aRef" data-a="443">443</button>
-            <button class="aRef" data-a="444">444</button>
+        <div class="controlsRow">
+          <div class="seg">
+            <div class="lbl">Reference A4</div>
+            <div class="miniBtns" id="aBtns"></div>
           </div>
-        </div>
-        <div class="seg">
-          <div class="lbl">Instrument</div>
-          <select id="instrument"></select>
-          <div id="altTunings" class="miniBtns" style="margin-top:8px"></div>
+          <div class="seg">
+            <div class="lbl">Instrument</div>
+            <select id="instrument"></select>
+            <div id="altTunings" class="miniBtns" style="margin-top:8px"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -146,58 +152,74 @@ const INSTRUMENTS = {
   }},
   "Chromatic":{ tunings:{ "—":[] } }
 };
-const aRefBtns=[...document.querySelectorAll('.aRef')]; let A4=440;
-aRefBtns.forEach(b=>b.addEventListener('click',()=>{aRefBtns.forEach(x=>x.classList.remove('active'));b.classList.add('active');A4=+b.dataset.a;}));
 
-const instrumentSel=document.getElementById('instrument');
-const altTuningsDiv=document.getElementById('altTunings');
-const spList=document.getElementById('spList');
-const spTuning=document.getElementById('spTuning');
+/* ---------- UI refs ---------- */
+const rowsEl = document.getElementById('rows');
+const spTuning = document.getElementById('spTuning');
+const instrumentSel = document.getElementById('instrument');
+const altTuningsDiv = document.getElementById('altTunings');
+const statusEl = document.getElementById('status'), statusChip = document.getElementById('statusChip');
+const freqEl = document.getElementById('freq'), noteEl = document.getElementById('note'), centsEl = document.getElementById('cents');
+const startBtn = document.getElementById('startBtn'), stopBtn = document.getElementById('stopBtn');
+const aBtns = document.getElementById('aBtns');
+
+let A4 = 440;
+[438,439,440,441,442,443,444].forEach(v=>{
+  const b=document.createElement('button'); b.textContent=v; b.className='aRef';
+  if(v===440) b.classList.add('active');
+  b.addEventListener('click',()=>{ [...aBtns.children].forEach(x=>x.classList.remove('active')); b.classList.add('active'); A4=v; });
+  aBtns.appendChild(b);
+});
+
+/* populate instruments */
 for(const k of Object.keys(INSTRUMENTS)){ const o=document.createElement('option'); o.textContent=k; instrumentSel.appendChild(o); }
 instrumentSel.value="Guitar";
-let currentInstrument="Guitar", currentTuning=Object.keys(INSTRUMENTS[currentInstrument].tunings)[0];
+let currentInstrument="Guitar", currentTuning=Object.keys(INSTRUMENTS["Guitar"].tunings)[0];
 
-function buildStrings(){
-  spList.innerHTML=""; spTuning.textContent=currentTuning;
+function buildRows(){
+  rowsEl.innerHTML="";
   const notes = INSTRUMENTS[currentInstrument].tunings[currentTuning];
+  spTuning.textContent=currentTuning;
+
   notes.forEach(n=>{
-    const r=document.createElement('div'); r.className='row'; r.dataset.note=n;
-    r.innerHTML = `<div class="note">${n}</div><div class="line"></div><div class="led"></div>`;
-    spList.appendChild(r);
+    const r=document.createElement('div'); r.className='srow'; r.dataset.note=n;
+    r.innerHTML = `
+      <div class="sName">${n}</div>
+      <div class="sBar"><div class="sDot" style="left:50%"></div></div>
+      <div class="sStatus">—</div>`;
+    // manual focus: tap a row to lock target to that string (optional)
+    r.addEventListener('click',()=>{ targetString = n; });
+    rowsEl.appendChild(r);
   });
 }
+
 function rebuildTunings(){
-  currentInstrument=instrumentSel.value;
-  const names=Object.keys(INSTRUMENTS[currentInstrument].tunings);
+  currentInstrument = instrumentSel.value;
+  const names = Object.keys(INSTRUMENTS[currentInstrument].tunings);
   if(!names.includes(currentTuning)) currentTuning = names[0];
   altTuningsDiv.innerHTML="";
   names.forEach(n=>{
     const b=document.createElement('button'); b.textContent=n; b.className='aRef'; if(n===currentTuning) b.classList.add('active');
-    b.addEventListener('click',()=>{currentTuning=n; buildStrings(); rebuildTunings();});
+    b.addEventListener('click',()=>{ currentTuning=n; [...altTuningsDiv.children].forEach(x=>x.classList.remove('active')); b.classList.add('active'); buildRows(); });
     altTuningsDiv.appendChild(b);
   });
-  buildStrings();
+  buildRows();
 }
 instrumentSel.addEventListener('change', rebuildTunings);
 rebuildTunings();
 
 /* ---------- Audio + Pitch ---------- */
-const gauge=document.getElementById('gauge'), g=gauge.getContext('2d');
-const statusEl=document.getElementById('status'), statusChip=document.getElementById('statusChip');
-const freqEl=document.getElementById('freq'), noteEl=document.getElementById('note'), centsEl=document.getElementById('cents');
-const startBtn=document.getElementById('startBtn'), stopBtn=document.getElementById('stopBtn');
-
-let audioCtx=null, analyser=null, data=null, mediaStream=null, rafId=null, running=false;
+let audioCtx=null, analyser=null, data=null, mediaStream=null, rafId=null, running=false, targetString=null;
 
 async function start(){
   if(running) return;
   statusEl.textContent='Starting…'; startBtn.disabled=true;
   try{
     mediaStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
-    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    const src=audioCtx.createMediaStreamSource(mediaStream);
-    analyser=audioCtx.createAnalyser(); analyser.fftSize=4096; analyser.smoothingTimeConstant=0;
-    src.connect(analyser); data=new Float32Array(analyser.fftSize);
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const src = audioCtx.createMediaStreamSource(mediaStream);
+    analyser = audioCtx.createAnalyser(); analyser.fftSize=4096; analyser.smoothingTimeConstant=0.0;
+    src.connect(analyser); data = new Float32Array(analyser.fftSize);
     running=true; stopBtn.disabled=false; statusEl.textContent='Listening'; tick();
   }catch(e){ console.error(e); statusEl.textContent='Mic blocked'; startBtn.disabled=false; }
 }
@@ -205,14 +227,21 @@ async function stop(){
   running=false; stopBtn.disabled=true; startBtn.disabled=false;
   statusEl.textContent='Stopped'; statusChip.classList.remove('ok');
   freqEl.textContent='0.00 Hz'; noteEl.textContent='—'; centsEl.textContent='±0 cents';
+  targetString=null;
   cancelAnimationFrame(rafId);
-  document.querySelectorAll('.led').forEach(el=>el.classList.remove('on'));
+  // reset UI
+  rowsEl.querySelectorAll('.srow').forEach(r=>{
+    r.classList.remove('in','flat','sharp');
+    r.querySelector('.sDot').style.left='50%';
+    r.querySelector('.sStatus').textContent='—';
+  });
   try{ if(mediaStream) mediaStream.getTracks().forEach(t=>t.stop()); }catch(_){}
   mediaStream=null; try{ if(audioCtx && audioCtx.state!=='closed') await audioCtx.close(); }catch(_){}
-  audioCtx=null; analyser=null; drawGauge(0,0,true,false);
+  audioCtx=null; analyser=null;
 }
 startBtn.addEventListener('click',start); stopBtn.addEventListener('click',stop);
 
+/* Pitch detection (autocorrelation) */
 function detectPitch(){
   if(!analyser) return null;
   analyser.getFloatTimeDomainData(data);
@@ -220,8 +249,9 @@ function detectPitch(){
   rms=Math.sqrt(rms/SIZE); if(rms<0.01) return null;
   let r1=0,r2=SIZE-1,thres=0.2; for(let i=0;i<SIZE/2;i++){ if(Math.abs(data[i])<thres){r1=i;break;} }
   for(let i=1;i<SIZE/2;i++){ if(Math.abs(data[SIZE-i])<thres){r2=SIZE-i;break;} }
-  data=data.slice(r1,r2); SIZE=data.length;
-  const c=new Float32Array(SIZE); for(let i=0;i<SIZE;i++){ let s=0; for(let j=0;j<SIZE-i;j++) s+=data[j]*data[j+i]; c[i]=s; }
+  const buf=data.slice(r1,r2); SIZE=buf.length;
+  const c=new Float32Array(SIZE);
+  for(let i=0;i<SIZE;i++){ let s=0; for(let j=0;j<SIZE-i;j++) s+=buf[j]*buf[j+i]; c[i]=s; }
   let d=0; while(c[d]>c[d+1]) d++;
   let max=-1,pos=-1; for(let i=d;i<SIZE;i++){ if(c[i]>max){max=c[i];pos=i;} }
   if(pos<=0) return null;
@@ -229,6 +259,8 @@ function detectPitch(){
   const period=(pos+(isFinite(shift)?shift:0)); const f=audioCtx.sampleRate/period;
   if(f<20||f>5000) return null; return f;
 }
+
+/* Note helpers */
 function noteToFreq(midi){ return A4*Math.pow(2,(midi-69)/12); }
 function freqToNote(f){
   const n=12*Math.log2(f/A4)+57, midi=Math.round(n)+12;
@@ -237,90 +269,68 @@ function freqToNote(f){
   const cents=Math.round(1200*Math.log2(f/noteToFreq(midi)));
   return {noteName,cents,midi};
 }
-
-/* Gauge — red ends only, white needle, green tip when in tune */
-function drawGauge(cents,hz,idle=false,inTune=false){
-  const W=gauge.width,H=gauge.height; g.clearRect(0,0,W,H);
-  const cx=W/2, cy=H*0.8, r=Math.min(W,H*1.2)/2, start=Math.PI*0.75, end=Math.PI*0.25;
-
-  g.lineWidth=18; g.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--line').trim();
-  g.beginPath(); g.arc(cx,cy,r-22,start,end,true); g.stroke();
-
-  // red end caps (no center green band)
-  g.lineWidth=10; g.strokeStyle='rgba(239,68,68,.9)';
-  g.beginPath(); g.arc(cx,cy,r-22,start,start+0.10,true); g.stroke();
-  g.beginPath(); g.arc(cx,cy,r-22,end-0.10,end,true); g.stroke();
-
-  // center tick
-  g.strokeStyle='#5a6f95'; g.lineWidth=3; g.beginPath(); g.moveTo(cx,cy-(r-55)); g.lineTo(cx,cy-(r-15)); g.stroke();
-
-  // center dot
-  g.fillStyle='#95a8cc'; g.beginPath(); g.arc(cx,cy,5,0,Math.PI*2); g.fill();
-
-  // needle
-  const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
-  const c=clamp(cents||0,-50,50), t=(c+50)/100, ang=start+(end-start)*t;
-  g.save(); g.translate(cx,cy); g.rotate(ang-Math.PI);
-  g.strokeStyle='#ffffff'; g.lineCap='round'; g.lineWidth=6;
-  g.beginPath(); g.moveTo(0,0); g.lineTo(r-34,0); g.stroke();
-  g.fillStyle=inTune ? '#22c55e' : '#ffffff';
-  g.beginPath(); g.arc(r-34,0,5,0,Math.PI*2); g.fill();
-  g.restore();
-
-  // labels
-  g.fillStyle='var(--ink)'; g.textAlign='center'; g.font='800 26px system-ui,Segoe UI,Roboto';
-  g.fillText(idle?'0.00 Hz':`${hz.toFixed(2)} Hz`, cx, cy-32);
-  g.font='500 16px system-ui,Segoe UI,Roboto'; g.fillStyle='#9fb0d0';
-  g.fillText(`${idle?0:Math.round(c)} cents`, cx, cy+28);
-}
-
-function NOTE_TO_FREQ(note){
+function noteHz(note){
   const m=note.match(/^([A-G]#?)(-?\d)$/); if(!m) return null;
   const map={"C":0,"C#":1,"D":2,"D#":3,"E":4,"F":5,"F#":6,"G":7,"G#":8,"A":9,"A#":10,"B":11};
   const idx=map[m[1]], oct=+m[2], midi=(oct+1)*12+idx; return A4*Math.pow(2,(midi-69)/12);
 }
 function nearestString(f){
-  const list=INSTRUMENTS[currentInstrument].tunings[currentTuning];
-  if(!list||!list.length) return null;
+  const list = INSTRUMENTS[currentInstrument].tunings[currentTuning];
+  if(!list || !list.length) return null;
   let best=null, bestDiff=1e9;
-  list.forEach(n=>{ const hz=NOTE_TO_FREQ(n); const d=Math.abs(f-hz); if(d<bestDiff){best={note:n,hz}; bestDiff=d;} });
+  list.forEach(n=>{ const hz=noteHz(n); const d=Math.abs(f-hz); if(d<bestDiff){best={note:n,hz}; bestDiff=d;} });
   return best;
 }
 
-/* loop */
-function tick(){
-  if(!running) return;
-  const f=detectPitch();
-  if(f){
-    const {noteName,cents}=freqToNote(f);
-    const inTune=Math.abs(cents)<=3;
-    const near=nearestString(f);
-
-    freqEl.textContent=`${f.toFixed(2)} Hz`;
-    noteEl.textContent=noteName;
-    centsEl.textContent=`${cents>0?'+':''}${cents} cents`;
-    statusEl.textContent=inTune?'In tune':(cents<0?'Flat':'Sharp');
-    statusChip.classList.toggle('ok',inTune);
-
-    document.querySelectorAll('.led').forEach(el=>{
-      const parent=el.parentElement; const n=parent.dataset.note;
-      if(near && n===near.note) el.classList.toggle('on', inTune); else el.classList.remove('on');
-    });
-
-    drawGauge(cents,f,false,inTune);
+/* UI update for a single row */
+function updateRow(row, cents, inTune){
+  const dot=row.querySelector('.sDot');
+  const status=row.querySelector('.sStatus');
+  // map -50..50 cents → 0..100% (left..right)
+  let pos = Math.max(-50, Math.min(50, cents));
+  dot.style.left = `${(pos + 50)}%`;
+  row.classList.remove('in','flat','sharp');
+  if(inTune){
+    row.classList.add('in');
+    status.textContent = 'In tune';
   }else{
-    statusEl.textContent='Listening…'; statusChip.classList.remove('ok');
-    document.querySelectorAll('.led').forEach(el=>el.classList.remove('on'));
-    drawGauge(0,0,true,false);
+    status.textContent = cents < 0 ? 'Flat' : 'Sharp';
+    row.classList.add(cents < 0 ? 'flat' : 'sharp');
   }
-  rafId=requestAnimationFrame(tick);
 }
 
-const startBtnEl=document.getElementById('startBtn'), stopBtnEl=document.getElementById('stopBtn');
-startBtnEl.addEventListener('click',start); stopBtnEl.addEventListener('click',stop);
+/* main loop */
+function tick(){
+  if(!running) return;
+  const f = detectPitch();
+  if(f){
+    const {noteName,cents} = freqToNote(f);
+    const near = nearestString(f);
+    const activeNote = targetString || (near ? near.note : null);
+    const inTune = Math.abs(cents) <= 3;
 
-/* initial paint */
-drawGauge(0,0,true,false);
+    freqEl.textContent = `${f.toFixed(2)} Hz`;
+    noteEl.textContent = noteName;
+    centsEl.textContent = `${cents>0?'+':''}${cents} cents`;
+    statusEl.textContent = inTune ? 'In tune' : (cents<0?'Flat':'Sharp');
+    statusChip.classList.toggle('ok', inTune);
+
+    // reset all rows, then update only the active one
+    rowsEl.querySelectorAll('.srow').forEach(r=>{
+      if(r.dataset.note === activeNote){
+        updateRow(r, cents, inTune);
+      } else {
+        // fade to neutral slowly for others
+        const d=r.querySelector('.sDot'); d.style.left='50%';
+        r.classList.remove('in','flat','sharp');
+        r.querySelector('.sStatus').textContent='—';
+      }
+    });
+  }else{
+    statusEl.textContent='Listening…'; statusChip.classList.remove('ok');
+  }
+  rafId = requestAnimationFrame(tick);
+}
 </script>
 </body>
 </html>
