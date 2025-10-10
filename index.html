@@ -7,77 +7,75 @@
 <meta name="theme-color" content="#0b1220">
 <style>
   :root{
-    --bg:#0b1220;        /* deep navy */
-    --panel:#0f1a2e;     /* card */
-    --ink:#e8f0ff;       /* main text */
-    --muted:#a9b8d6;     /* secondary text */
-    --ok:#22c55e;        /* in-tune green */
-    --warn:#ef4444;      /* off red */
-    --accent:#1f9cf0;    /* brand accent */
+    --bg:#0b1220; --panel:#0f1a2e; --ink:#e8f0ff; --muted:#a9b8d6;
+    --ok:#22c55e; --warn:#ef4444; --accent:#1f9cf0; --line:#1f2f4c;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
   body{
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
-    background: radial-gradient(1200px 700px at 50% -20%, #112034 20%, var(--bg) 60%) no-repeat, var(--bg);
-    color: var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans;
+    background:radial-gradient(1200px 700px at 50% -20%, #112034 20%, var(--bg) 60%) no-repeat, var(--bg);
+    color:var(--ink)
   }
-  .wrap{max-width:900px;margin:0 auto;padding:18px}
+  .wrap{max-width:950px;margin:0 auto;padding:18px}
   header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
   .brand{
     background:#0e1a2c;border:1px solid #1c2a44;border-radius:16px;padding:10px 14px;
-    display:flex;align-items:center;gap:10px;box-shadow:0 4px 14px rgba(0,0,0,.25)
+    display:flex;align-items:center;gap:12px;box-shadow:0 4px 14px rgba(0,0,0,.25)
   }
-  .brand .dot{width:18px;height:18px;border-radius:4px;background:linear-gradient(145deg,#24c760,#179f49)}
-  header h1{font-size:20px;margin:0}
+  /* “logo” block (use your image here if you want):
+     replace this with <img src="logo.png" class="logo"> */
+  .logo{
+    width:42px;height:42px;border-radius:10px;
+    background:conic-gradient(from 0deg, #22c55e 0 33%, #ffffff 33% 66%, #f97316 66% 100%);
+    border:2px solid #263753; box-shadow:inset 0 0 0 4px #0e1a2c;
+  }
+  .flag{font-size:18px;opacity:.95}
   .controls{display:flex;gap:10px;margin-left:auto}
   button{
-    font-size:16px;padding:10px 16px;border-radius:14px;border:1px solid #1a2a48;
-    background:#13213a;color:var(--ink);cursor:pointer
+    font-size:16px;padding:10px 16px;border-radius:14px;border:1px solid #1a2a48;background:#13213a;color:var(--ink);cursor:pointer
   }
   button.primary{background:#123a20;border-color:#1c5c34}
   button.danger{background:#311a1a;border-color:#512626}
   button:disabled{opacity:.5;cursor:not-allowed}
-  .card{
-    background:var(--panel);border:1px solid #1a2946;border-radius:20px;padding:16px;
-    box-shadow:0 8px 24px rgba(0,0,0,.35)
-  }
+  .card{background:var(--panel);border:1px solid #1a2946;border-radius:20px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
   .gaugeBox{padding:16px}
   canvas{width:100%;height:auto;display:block}
-  .readouts{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px
-  }
-  .chip{
-    background:#0f213a;border:1px solid #1b2a46;border-radius:14px;padding:10px 12px;text-align:center
-  }
+  .readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+  .chip{background:#0f213a;border:1px solid #1b2a46;border-radius:14px;padding:10px 12px;text-align:center}
+  .chip.ok{background:#0f2a1e;outline:2px solid var(--ok)}
   .lbl{display:block;font-size:14px;color:var(--muted);margin-bottom:4px}
-  .val{font-size:22px;font-weight:700;letter-spacing:.3px}
+  .val{font-size:22px;font-weight:800;letter-spacing:.3px}
   .fine{font-size:14px;color:var(--muted)}
   .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
-  .seg{
-    background:#0e203a;border:1px solid #1b2a46;border-radius:12px;padding:8px 10px
-  }
+  .seg{background:#0e203a;border:1px solid #1b2a46;border-radius:12px;padding:10px}
   select, .miniBtns button{
     font-size:16px;background:#0c1b31;color:var(--ink);
     border:1px solid #1a2a48;border-radius:10px;padding:8px 10px
   }
   .miniBtns{display:flex;gap:8px;flex-wrap:wrap}
   .miniBtns button.active{outline:2px solid var(--accent)}
+  /* Strings strip */
+  .strings{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .string{
+    padding:8px 12px;border-radius:999px;border:1px solid #1b2a46;background:#0c1b31;
+    font-weight:700;min-width:58px;text-align:center
+  }
+  .string.active{outline:2px solid #4b91ff}
+  .string.in{background:#0f2a1e;border-color:#1f6b3f;color:#d8ffe9}
   footer{margin:16px 0 6px;color:#9fb0d0;text-align:center;font-size:14px}
-  /* success glow when very close to target */
-  .glow-ok{box-shadow:0 0 0 0 rgba(34,197,94,0);animation:glow 1.6s ease-out forwards}
-  @keyframes glow{from{box-shadow:0 0 0 12px rgba(34,197,94,.25)}to{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div class="brand">
-        <div class="dot"></div>
+        <div class="logo" title="Ceol Gan Eagla"></div>
         <div>
-          <div style="font-weight:800;letter-spacing:.3px">Ceol Gan Eagla</div>
+          <div style="font-weight:900;letter-spacing:.3px">Ceol Gan Eagla</div>
           <div style="font-size:12px;color:var(--muted)">Chromatic Tuner</div>
         </div>
+        <div class="flag" title="Ireland">🇮🇪</div>
       </div>
       <div class="controls">
         <button id="startBtn" class="primary">Start</button>
@@ -86,10 +84,10 @@
     </header>
 
     <section class="card gaugeBox">
-      <canvas id="gauge" width="900" height="420"></canvas>
+      <canvas id="gauge" width="950" height="430"></canvas>
 
       <div class="readouts">
-        <div class="chip">
+        <div id="statusChip" class="chip">
           <span class="lbl">Status</span>
           <span id="status" class="val">Stopped</span>
         </div>
@@ -117,17 +115,12 @@
             <button class="aRef" data-a="444">444</button>
           </div>
         </div>
+
         <div class="seg">
           <div class="lbl">Instrument</div>
-          <select id="instrument">
-            <option>Guitar</option>
-            <option>Violin</option>
-            <option>Mandolin</option>
-            <option>Banjo</option>
-            <option>Ukulele</option>
-            <option>Bass</option>
-            <option>Chromatic</option>
-          </select>
+          <select id="instrument"></select>
+          <div id="altTunings" class="miniBtns" style="margin-top:8px"></div>
+          <div id="strings" class="strings"></div>
         </div>
       </div>
     </section>
@@ -136,227 +129,248 @@
   </div>
 
 <script>
-/* ========= UI bits ========= */
+/* ========= Instrument + tunings ========= */
+const INSTRUMENTS = {
+  "Guitar": { tunings:{ "EADGBE":["E2","A2","D3","G3","B3","E4"] } },
+  "Violin": { tunings:{ "GDAE":["G3","D4","A4","E5"] } },
+  "Mandolin": { tunings:{ "GDAE":["G3","D4","A4","E5"] } },
+  "Banjo": { tunings:{ "gDGBD":["G4","D3","G3","B3","D4"] } },
+  "Ukulele": { tunings:{ "GCEA":["G4","C4","E4","A4"] } },
+  "Bass": { tunings:{ "EADG":["E1","A1","D2","G2"] } },
+  "Bouzouki": { tunings:{
+      "GDAD":["G2","D3","A3","D4"],
+      "GDAE":["G2","D3","A3","E4"],
+      "ADAD":["A2","D3","A3","D4"]
+  }},
+  "Chromatic": { tunings:{ "—":[] } }
+};
+const NOTE_TO_FREQ=(note)=>{
+  const N=note.match(/^([A-G]#?)(-?\d)$/); if(!N) return null;
+  const name=N[1], oct=parseInt(N[2],10);
+  const idx={"C":0,"C#":1,"D":2,"D#":3,"E":4,"F":5,"F#":6,"G":7,"G#":8,"A":9,"A#":10,"B":11}[name];
+  const midi = (oct+1)*12 + idx; // C-1 = 0
+  return A4 * Math.pow(2,(midi-69)/12);
+};
+
+/* ========= UI refs ========= */
 const gauge = document.getElementById('gauge');
 const g = gauge.getContext('2d');
 const startBtn = document.getElementById('startBtn');
 const stopBtn  = document.getElementById('stopBtn');
 const statusEl = document.getElementById('status');
+const statusChip = document.getElementById('statusChip');
 const freqEl   = document.getElementById('freq');
 const noteEl   = document.getElementById('note');
 const centsEl  = document.getElementById('cents');
 const aRefBtns = Array.from(document.querySelectorAll('.aRef'));
+const instrumentSel = document.getElementById('instrument');
+const altTuningsDiv = document.getElementById('altTunings');
+const stringsDiv = document.getElementById('strings');
 
 let A4 = 440;
-aRefBtns.forEach(b=>{
-  b.addEventListener('click', ()=>{
-    aRefBtns.forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    A4 = parseFloat(b.dataset.a);
+aRefBtns.forEach(b=>b.addEventListener('click',()=>{aRefBtns.forEach(x=>x.classList.remove('active'));b.classList.add('active');A4=+b.dataset.a;}));
+
+/* Populate instruments + default tuning */
+for(const k of Object.keys(INSTRUMENTS)){
+  const o=document.createElement('option'); o.textContent=k; instrumentSel.appendChild(o);
+}
+instrumentSel.value="Guitar";
+let currentInstrument="Guitar", currentTuningName=Object.keys(INSTRUMENTS["Guitar"].tunings)[0];
+
+/* Build alt-tuning buttons and string strip */
+function rebuildTunings(){
+  currentInstrument = instrumentSel.value;
+  altTuningsDiv.innerHTML = "";
+  const tNames = Object.keys(INSTRUMENTS[currentInstrument].tunings);
+  if(!tNames.length){ stringsDiv.innerHTML=""; return; }
+  if(!tNames.includes(currentTuningName)) currentTuningName=tNames[0];
+
+  tNames.forEach(n=>{
+    const b=document.createElement('button');
+    b.textContent=n; b.className="activeRef";
+    b.classList.add("aRef"); if(n===currentTuningName) b.classList.add('active');
+    b.addEventListener('click',()=>{ currentTuningName=n; rebuildTunings(); });
+    altTuningsDiv.appendChild(b);
   });
-});
+
+  const notes = INSTRUMENTS[currentInstrument].tunings[currentTuningName];
+  stringsDiv.innerHTML="";
+  notes.forEach((note,i)=>{
+    const el=document.createElement('div');
+    el.className='string'; el.dataset.note=note; el.textContent=note;
+    stringsDiv.appendChild(el);
+  });
+}
+instrumentSel.addEventListener('change', rebuildTunings);
+rebuildTunings();
 
 /* ========= Audio + Pitch ========= */
-let audioCtx = null, analyser = null, data = null, mediaStream = null, rafId = null;
-let running = false;
+let audioCtx=null, analyser=null, data=null, mediaStream=null, rafId=null, running=false;
 
 async function start() {
   if (running) return;
-  statusEl.textContent = 'Starting…';
-  startBtn.disabled = true;
-
+  statusEl.textContent = 'Starting…'; startBtn.disabled = true;
   try {
-    // Hint Android that we only need the mic
-    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false }, video:false });
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},
+      video:false
+    });
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
     const src = audioCtx.createMediaStreamSource(mediaStream);
     analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 4096;
-    analyser.smoothingTimeConstant = 0.0;
-    src.connect(analyser);
-    data = new Float32Array(analyser.fftSize);
-    running = true;
-    stopBtn.disabled = false;
-    statusEl.textContent = 'Listening';
-    tick();
-  } catch(err){
-    statusEl.textContent = 'Mic blocked';
-    console.error(err);
-    startBtn.disabled = false;
+    analyser.fftSize=4096; analyser.smoothingTimeConstant=0.0;
+    src.connect(analyser); data=new Float32Array(analyser.fftSize);
+    running=true; stopBtn.disabled=false; statusEl.textContent='Listening'; tick();
+  } catch(e){
+    console.error(e); statusEl.textContent='Mic blocked'; startBtn.disabled=false;
   }
 }
 
 async function stop() {
-  running = false;
-  stopBtn.disabled = true;
-  startBtn.disabled = false;
-  statusEl.textContent = 'Stopped';
-  freqEl.textContent = '0.00 Hz';
-  noteEl.textContent = '—';
-  centsEl.textContent = '±0 cents';
+  running=false; stopBtn.disabled=true; startBtn.disabled=false;
+  statusEl.textContent='Stopped'; statusChip.classList.remove('ok');
+  freqEl.textContent='0.00 Hz'; noteEl.textContent='—'; centsEl.textContent='±0 cents';
+  Array.from(stringsDiv.children).forEach(el=>{el.classList.remove('active','in');});
   cancelAnimationFrame(rafId);
-  // fully release mic + context (Android fix)
-  try {
-    if (mediaStream) mediaStream.getTracks().forEach(t=>t.stop());
-  } catch(e){}
-  mediaStream = null;
-  try {
-    if (audioCtx && audioCtx.state !== 'closed') await audioCtx.close();
-  } catch(e){}
-  audioCtx = null;
-  analyser = null;
-  drawGauge(0, 0, true);
+  try{ if(mediaStream) mediaStream.getTracks().forEach(t=>t.stop()); }catch(e){}
+  mediaStream=null;
+  try{ if(audioCtx && audioCtx.state!=='closed') await audioCtx.close(); }catch(e){}
+  audioCtx=null; analyser=null; drawGauge(0,0,true,false);
 }
-
-startBtn.addEventListener('click', start);
-stopBtn.addEventListener('click', stop);
+startBtn.addEventListener('click',start); stopBtn.addEventListener('click',stop);
 
 /* ========= Pitch detection (autocorrelation) ========= */
-function detectPitch() {
-  if (!analyser) return null;
+function detectPitch(){
+  if(!analyser) return null;
   analyser.getFloatTimeDomainData(data);
-  // ACF
-  let SIZE = data.length;
-  let rms = 0;
-  for (let i=0;i<SIZE;i++) rms += data[i]*data[i];
-  rms = Math.sqrt(rms/SIZE);
-  if (rms < 0.01) return null; // too quiet
-
-  let r1 = 0, r2 = SIZE-1, thres = 0.2;
-  for (let i=0;i<SIZE/2;i++){ if (Math.abs(data[i])<thres){r1=i;break;} }
-  for (let i=1;i<SIZE/2;i++){ if (Math.abs(data[SIZE-i])<thres){r2=SIZE-i;break;} }
-  data = data.slice(r1, r2); SIZE = data.length;
-
-  const c = new Float32Array(SIZE);
-  for (let i=0;i<SIZE;i++){
-    let sum = 0;
-    for (let j=0;j<SIZE-i;j++) sum += data[j]*data[j+i];
-    c[i] = sum;
-  }
-  let d=0; while (c[d] > c[d+1]) d++;
-  let maxval=-1, maxpos=-1;
-  for (let i=d;i<SIZE;i++){ if (c[i] > maxval){ maxval=c[i]; maxpos=i; } }
-  if (maxpos <= 0) return null;
-
-  // parabolic interpolation
-  const x1 = c[maxpos-1], x2 = c[maxpos], x3 = c[maxpos+1] || x2;
-  const a = (x1 + x3 - 2*x2)/2, b = (x3 - x1)/2;
-  let shift = b/(2*a);
-  const period = (maxpos + (isFinite(shift)?shift:0));
-  const freq = audioCtx.sampleRate / period;
-  if (freq < 20 || freq > 5000) return null;
+  let SIZE=data.length, rms=0; for(let i=0;i<SIZE;i++) rms+=data[i]*data[i];
+  rms=Math.sqrt(rms/SIZE); if(rms<0.01) return null;
+  let r1=0,r2=SIZE-1,thres=0.2;
+  for(let i=0;i<SIZE/2;i++){ if(Math.abs(data[i])<thres){r1=i;break;} }
+  for(let i=1;i<SIZE/2;i++){ if(Math.abs(data[SIZE-i])<thres){r2=SIZE-i;break;} }
+  data=data.slice(r1,r2); SIZE=data.length;
+  const c=new Float32Array(SIZE);
+  for(let i=0;i<SIZE;i++){ let sum=0; for(let j=0;j<SIZE-i;j++) sum+=data[j]*data[j+i]; c[i]=sum; }
+  let d=0; while(c[d]>c[d+1]) d++;
+  let maxval=-1,maxpos=-1; for(let i=d;i<SIZE;i++){ if(c[i]>maxval){maxval=c[i];maxpos=i;} }
+  if(maxpos<=0) return null;
+  const x1=c[maxpos-1],x2=c[maxpos],x3=c[maxpos+1]||x2;
+  const a=(x1+x3-2*x2)/2, b=(x3-x1)/2, shift=b/(2*a);
+  const period=(maxpos+(isFinite(shift)?shift:0));
+  const freq=(audioCtx.sampleRate/period);
+  if(freq<20||freq>5000) return null;
   return freq;
 }
 
 /* ========= Note helpers ========= */
 function freqToNote(f){
-  const n = 12 * (Math.log2(f / (A4))) + 57; // 57 -> A4=69 minus 12
-  const midi = Math.round(n) + 12;           // convert back to MIDI number
-  const cents = Math.round(1200 * Math.log2(f / noteToFreq(midi)));
-  const names = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  const noteName = names[midi % 12] + (Math.floor(midi/12)-1);
-  return { midi, noteName, cents };
-}
-function noteToFreq(midi){
-  return A4 * Math.pow(2, (midi-69)/12);
+  const n = 12 * (Math.log2(f / A4)) + 57;      // A4 ref
+  const midi = Math.round(n) + 12;
+  const names=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const noteName = names[midi%12] + (Math.floor(midi/12)-1);
+  const cents = Math.round(1200 * Math.log2(f / (A4 * Math.pow(2,(midi-69)/12))));
+  return {noteName,cents,midi};
 }
 
 /* ========= Gauge drawing ========= */
-function drawGauge(cents, hz, idle=false){
-  const W = gauge.width, H = gauge.height;
-  g.clearRect(0,0,W,H);
+function drawGauge(cents,hz,idle=false,inTune=false){
+  const W=gauge.width,H=gauge.height; g.clearRect(0,0,W,H);
+  const cx=W/2, cy=H*0.82, r=Math.min(W,H*1.2)/2.0, start=Math.PI*0.75, end=Math.PI*0.25;
 
-  const cx = W/2, cy = H*0.8;           // center bottom-ish
-  const r  = Math.min(W, H*1.2)/2.0;    // radius
-  const start = Math.PI*0.75, end = Math.PI*0.25; // 270° arc
+  // track
+  g.lineWidth=18; g.strokeStyle= getComputedStyle(document.documentElement).getPropertyValue('--line').trim();
+  g.beginPath(); g.arc(cx,cy,r-22,start,end,true); g.stroke();
 
-  // arc track
-  g.lineWidth = 18;
-  g.strokeStyle = '#1f2f4c';
-  g.beginPath(); g.arc(cx, cy, r-22, start, end, true); g.stroke();
+  // colored ends (flat/sharp) + central green band
+  g.lineWidth=10;
+  g.strokeStyle='rgba(239,68,68,.9)';        // red
+  g.beginPath(); g.arc(cx,cy,r-22,start,start+0.10,true); g.stroke();
+  g.beginPath(); g.arc(cx,cy,r-22,end-0.10,end,true); g.stroke();
+  g.strokeStyle='rgba(34,197,94,.9)';        // green center
+  const mid=(start+end)/2; g.beginPath(); g.arc(cx,cy,r-22,mid-0.04,mid+0.04,false); g.stroke();
 
-  // minor ticks
-  g.strokeStyle = '#2a3b5e';
-  g.lineWidth = 2;
+  // ticks
+  g.strokeStyle='#2a3b5e'; g.lineWidth=2;
   for(let i=-50;i<=50;i+=10){
-    const t = (i+50)/100; // 0..1
-    const ang = start + (end-start)*t;
-    const x1 = cx + (r-40)*Math.cos(ang);
-    const y1 = cy + (r-40)*Math.sin(ang);
-    const x2 = cx + (r-20)*Math.cos(ang);
-    const y2 = cy + (r-20)*Math.sin(ang);
+    const t=(i+50)/100, ang=start+(end-start)*t;
+    const x1=cx+(r-40)*Math.cos(ang), y1=cy+(r-40)*Math.sin(ang);
+    const x2=cx+(r-20)*Math.cos(ang), y2=cy+(r-20)*Math.sin(ang);
     g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke();
   }
 
+  // center tick marker
+  g.strokeStyle='#5a6f95'; g.lineWidth=3;
+  g.beginPath(); g.moveTo(cx, cy-(r-55)); g.lineTo(cx, cy-(r-15)); g.stroke();
+
   // center dot
-  g.fillStyle = '#95a8cc';
-  g.beginPath(); g.arc(cx, cy, 5, 0, Math.PI*2); g.fill();
+  g.fillStyle='#95a8cc'; g.beginPath(); g.arc(cx,cy,5,0,Math.PI*2); g.fill();
 
-  // needle (white and thick)
-  const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
-  const c = clamp(cents||0, -50, 50);
-  const t = (c + 50)/100; // map -50..50 → 0..1
-  const ang = start + (end-start)*t;
+  // needle (white) + green tip when inTune
+  const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
+  const c = clamp(cents||0,-50,50), t=(c+50)/100, ang=start+(end-start)*t;
 
-  g.save();
-  g.translate(cx, cy);
-  g.rotate(ang - Math.PI);
-  g.strokeStyle = '#ffffff';
-  g.lineCap = 'round';
-  g.lineWidth = 6; // THICK white needle
-  g.beginPath();
-  g.moveTo(0,0);
-  g.lineTo(r-28, 0);
-  g.stroke();
+  g.save(); g.translate(cx,cy); g.rotate(ang-Math.PI);
+  g.strokeStyle='#ffffff'; g.lineCap='round'; g.lineWidth=6;
+  g.beginPath(); g.moveTo(0,0); g.lineTo(r-34,0); g.stroke();
+  // tip
+  g.fillStyle = inTune ? '#22c55e' : '#ffffff';
+  g.beginPath(); g.arc(r-34,0,5,0,Math.PI*2); g.fill();
   g.restore();
 
-  // in-tune band
-  g.strokeStyle = 'rgba(34,197,94,.9)'; // green
-  g.lineWidth = 10;
-  const mid = (start+end)/2;
-  g.beginPath(); g.arc(cx, cy, r-22, mid-0.04, mid+0.04, false); g.stroke();
-
-  // frequency label (large)
-  g.fillStyle = 'var(--ink)';
-  g.textAlign='center';
-  g.font = '700 26px system-ui, Segoe UI, Roboto';
-  g.fillText(idle ? '0.00 Hz' : `${hz.toFixed(2)} Hz`, cx, cy-26);
-
-  // cents label
-  g.font = '500 18px system-ui, Segoe UI, Roboto';
-  g.fillStyle = '#9fb0d0';
-  g.fillText(`${idle ? 0 : Math.round(c)} cents`, cx, cy+30);
+  // labels
+  g.fillStyle='var(--ink)'; g.textAlign='center'; g.font='800 26px system-ui, Segoe UI, Roboto';
+  g.fillText(idle?'0.00 Hz':`${hz.toFixed(2)} Hz`, cx, cy-32);
+  g.font='500 16px system-ui, Segoe UI, Roboto'; g.fillStyle='#9fb0d0';
+  g.fillText(`${idle?0:Math.round(c)} cents`, cx, cy+28);
 }
 
 /* ========= Loop ========= */
+function nearestStringNote(f){
+  const tNames=INSTRUMENTS[currentInstrument].tunings[currentTuningName];
+  if(!tNames || !tNames.length) return null;
+  let best=null, bestDiff=1e9;
+  tNames.forEach(n=>{
+    const target = NOTE_TO_FREQ(n);
+    const diff = Math.abs(f-target);
+    if(diff<bestDiff){ best={note:n, hz:target}; bestDiff=diff; }
+  });
+  return best;
+}
+
 function tick(){
-  if (!running) return;
-  const f = detectPitch();
-  if (f){
-    const {noteName, cents} = freqToNote(f);
-    freqEl.textContent = `${f.toFixed(2)} Hz`;
-    noteEl.textContent = noteName;
-    centsEl.textContent = `${cents>0?'+':''}${cents} cents`;
-    statusEl.textContent = Math.abs(cents)<=3 ? 'In tune' : (cents<0?'Flat':'Sharp');
+  if(!running) return;
+  const f=detectPitch();
+  if(f){
+    const {noteName,cents}=freqToNote(f);
+    const hit = nearestStringNote(f);
+    const inTune = Math.abs(cents)<=3;
 
-    // subtle glow on perfect hits
-    if (Math.abs(cents)<=2){
-      document.querySelector('.card').classList.remove('glow-ok');
-      // reflow to retrigger animation
-      void document.querySelector('.card').offsetWidth;
-      document.querySelector('.card').classList.add('glow-ok');
-    }
+    freqEl.textContent=`${f.toFixed(2)} Hz`;
+    noteEl.textContent=noteName;
+    centsEl.textContent=`${cents>0?'+':''}${cents} cents`;
+    statusEl.textContent = inTune ? 'In tune' : (cents<0?'Flat':'Sharp');
+    statusChip.classList.toggle('ok', inTune);
 
-    drawGauge(cents, f, false);
+    // strings UI
+    Array.from(stringsDiv.children).forEach(el=>{
+      el.classList.remove('active','in');
+      if(hit && el.dataset.note===hit.note){
+        el.classList.add('active');
+        if(inTune) el.classList.add('in');
+      }
+    });
+
+    drawGauge(cents,f,false,inTune);
   } else {
-    statusEl.textContent = 'Listening…';
-    drawGauge(0, 0, true);
+    statusEl.textContent='Listening…';
+    statusChip.classList.remove('ok');
+    drawGauge(0,0,true,false);
   }
-  rafId = requestAnimationFrame(tick);
+  rafId=requestAnimationFrame(tick);
 }
 
 /* initial paint */
-drawGauge(0,0,true);
+drawGauge(0,0,true,false);
 </script>
 </body>
 </html>
