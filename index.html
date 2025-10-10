@@ -6,73 +6,38 @@
 <title>Ceol Gan Eagla — Tuner</title>
 <meta name="theme-color" content="#0b1220">
 <style>
-  :root{
-    --bg:#0b1220; --panel:#0f1a2e; --ink:#e8f0ff; --muted:#a9b8d6;
-    --ok:#22c55e; --warn:#ef4444; --accent:#1f9cf0; --line:#1f2f4c;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0}
-  body{
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;
-    background:radial-gradient(900px 520px at 50% -20%, #112034 20%, var(--bg) 60%) no-repeat, var(--bg);
-    color:var(--ink);
-    padding-top:env(safe-area-inset-top);
-    padding-left:env(safe-area-inset-left);
-    padding-right:env(safe-area-inset-right);
-  }
+  :root{ --bg:#0b1220; --panel:#0f1a2e; --ink:#e8f0ff; --muted:#a9b8d6; --ok:#22c55e; --accent:#1f9cf0; --line:#1f2f4c; }
+  *{box-sizing:border-box} html,body{height:100%;margin:0}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;background:radial-gradient(900px 520px at 50% -20%, #112034 20%, var(--bg) 60%) no-repeat, var(--bg);color:var(--ink)}
   .wrap{max-width:960px;margin:0 auto;padding:10px}
   header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-
-  /* Brand */
-  .brandCard{
-    display:flex;align-items:center;gap:10px;
-    padding:8px 10px;border-radius:14px;
-    background:linear-gradient(180deg,#12361f,#0f2a1b);
-    border:1px solid #1b3a2a; box-shadow:0 6px 16px rgba(0,0,0,.35);
-  }
-  .brandLogo{
-    width:36px;height:36px;border-radius:8px;background:#0b1220;
-    border:1px solid #27435e; overflow:hidden; display:grid; place-items:center
-  }
+  .brandCard{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;background:linear-gradient(180deg,#12361f,#0f2a1b);border:1px solid #1b3a2a;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+  .brandLogo{width:36px;height:36px;border-radius:8px;background:#0b1220;border:1px solid #27435e;overflow:hidden;display:grid;place-items:center}
   .brandLogo img{width:100%;height:100%;object-fit:cover}
   .brandText{line-height:1.05}
   .brandTitle{font-weight:800;letter-spacing:.2px;font-size:16px}
   .brandSub{font-size:11px;color:#c8d7f5;opacity:.85}
   .flag{font-size:16px;margin-left:6px}
   .controls{display:flex;gap:8px;margin-left:auto}
-  button{
-    font-size:14px;padding:8px 12px;border-radius:12px;border:1px solid #1a2a48;background:#13213a;color:var(--ink);cursor:pointer
-  }
+  button{font-size:14px;padding:8px 12px;border-radius:12px;border:1px solid #1a2a48;background:#13213a;color:var(--ink);cursor:pointer}
   button.primary{background:#123a20;border-color:#1c5c34}
   button.danger{background:#311a1a;border-color:#512626}
   button:disabled{opacity:.5;cursor:not-allowed}
-
   .card{background:var(--panel);border:1px solid #1a2946;border-radius:16px;padding:10px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
   .block{background:#0d1b2f;border:1px solid #1a2946;border-radius:12px;padding:10px;margin-bottom:10px}
-
-  /* Strings tuner (compact + stable) */
   .spHead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
   .spTitle{font-size:12px;color:var(--muted)}
   .rows{display:flex;flex-direction:column;gap:8px}
-  .srow{
-    display:grid;grid-template-columns:54px 1fr 82px;gap:10px;align-items:center;
-    padding:8px;border-radius:10px;background:#0c1b31;border:1px solid #1a2a48
-  }
+  .srow{display:grid;grid-template-columns:54px 1fr 100px;gap:10px;align-items:center;padding:8px;border-radius:10px;background:#0c1b31;border:1px solid #1a2a48}
   .srow.in{background:#0f2a1e;border-color:#1f6b3f}
   .sName{font-weight:800;font-size:16px}
   .sBar{position:relative;height:8px;background:#223654;border-radius:999px;overflow:hidden}
   .sBar::before{content:"";position:absolute;left:50%;top:0;width:2px;height:100%;background:#8ba1c7;opacity:.7;transform:translateX(-50%)}
-  .sDot{
-    position:absolute;top:50%;width:14px;height:14px;border-radius:50%;
-    background:#c6d6f4;border:2px solid #ffffff;transform:translate(-50%,-50%);
-    transition:left .06s linear, background .12s, border-color .12s;
-  }
-  .srow.flat .sDot,.srow.sharp .sDot{ background:#f7c3c3;border-color:#ef9a9a }
-  .srow.in .sDot{ background:#b8ffd0;border-color:#22c55e }
+  .sDot{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#c6d6f4;border:2px solid #ffffff;transform:translate(-50%,-50%);transition:left .06s linear, background .12s, border-color .12s}
+  .srow.flat .sDot,.srow.sharp .sDot{background:#f7c3c3;border-color:#ef9a9a}
+  .srow.in .sDot{background:#b8ffd0;border-color:#22c55e}
   .sStatus{font-weight:700;color:#9fb0d0;text-align:right;font-size:12px}
   .srow.in .sStatus{color:#bff3d1}
-
-  /* Readouts + controls */
   .readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
   .chip{background:#0f213a;border:1px solid #1b2a46;border-radius:10px;padding:8px;text-align:center}
   .chip.ok{background:#0f2a1e;outline:2px solid var(--ok)}
@@ -82,12 +47,8 @@
   .controlsRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
   .seg{background:#0e203a;border:1px solid #1b2a46;border-radius:10px;padding:8px}
   .miniBtns{display:flex;gap:6px;flex-wrap:wrap}
-  .miniBtns button, select{
-    font-size:14px;background:#0c1b31;color:var(--ink);
-    border:1px solid #1a2a48;border-radius:8px;padding:6px 8px
-  }
+  .miniBtns button, select{font-size:14px;background:#0c1b31;color:var(--ink);border:1px solid #1a2a48;border-radius:8px;padding:6px 8px}
   .miniBtns button.active{outline:2px solid var(--accent)}
-
   footer{margin:10px 0 4px;color:#9fb0d0;text-align:center;font-size:12px}
 </style>
 </head>
@@ -118,7 +79,7 @@
         <div class="readouts">
           <div id="statusChip" class="chip"><span class="lbl">Status</span><span id="status" class="val">Stopped</span></div>
           <div class="chip"><span class="lbl">Note</span><span id="note" class="val">—</span><span id="cents" class="fine">±0 cents</span></div>
-          <div class="chip"><span id="freqLbl" class="lbl">Frequency</span><span id="freq" class="val">0.00 Hz</span></div>
+          <div class="chip"><span class="lbl">Frequency</span><span id="freq" class="val">0.00 Hz</span></div>
         </div>
 
         <div class="controlsRow">
@@ -139,247 +100,235 @@
   </div>
 
 <script>
-/* ---------- Instruments & Tunings ---------- */
-const INSTRUMENTS = {
-  "Guitar":  { tunings:{ "EADGBE":["E2","A2","D3","G3","B3","E4"] } },
-  "Violin":  { tunings:{ "GDAE":["G3","D4","A4","E5"] } },
-  "Mandolin":{ tunings:{ "GDAE":["G3","D4","A4","E5"] } },
-  "Banjo":   { tunings:{ "gDGBD":["G4","D3","G3","B3","D4"] } },
-  "Ukulele": { tunings:{ "GCEA":["G4","C4","E4","A4"] } },
-  "Bass":    { tunings:{ "EADG":["E1","A1","D2","G2"] } },
-  "Bouzouki":{ tunings:{
-      "GDAD":["G2","D3","A3","D4"], "GDAE":["G2","D3","A3","E4"], "ADAD":["A2","D3","A3","D4"]
-  }},
-  "Chromatic":{ tunings:{ "—":[] } }
+/* ===== Data ===== */
+const INSTRUMENTS={
+  "Guitar":{tunings:{"EADGBE":["E2","A2","D3","G3","B3","E4"]}},
+  "Violin":{tunings:{"GDAE":["G3","D4","A4","E5"]}},
+  "Mandolin":{tunings:{"GDAE":["G3","D4","A4","E5"]}},
+  "Banjo":{tunings:{"gDGBD":["G4","D3","G3","B3","D4"]}},
+  "Ukulele":{tunings:{"GCEA":["G4","C4","E4","A4"]}},
+  "Bass":{tunings:{"EADG":["E1","A1","D2","G2"]}},
+  "Bouzouki":{tunings:{"GDAD":["G2","D3","A3","D4"],"GDAE":["G2","D3","A3","E4"],"ADAD":["A2","D3","A3","D4"]}},
+  "Chromatic":{tunings:{"—":[]}}
 };
+/* ===== Elements ===== */
+const rowsEl=document.getElementById('rows'), spTuning=document.getElementById('spTuning');
+const instrumentSel=document.getElementById('instrument'), altTuningsDiv=document.getElementById('altTunings');
+const statusEl=document.getElementById('status'), statusChip=document.getElementById('statusChip');
+const freqEl=document.getElementById('freq'), noteEl=document.getElementById('note'), centsEl=document.getElementById('cents');
+const startBtn=document.getElementById('startBtn'), stopBtn=document.getElementById('stopBtn'), aBtns=document.getElementById('aBtns');
 
-/* ---------- Elements ---------- */
-const rowsEl = document.getElementById('rows');
-const spTuning = document.getElementById('spTuning');
-const instrumentSel = document.getElementById('instrument');
-const altTuningsDiv = document.getElementById('altTunings');
-const statusEl = document.getElementById('status'), statusChip = document.getElementById('statusChip');
-const freqEl = document.getElementById('freq'), noteEl = document.getElementById('note'), centsEl = document.getElementById('cents');
-const startBtn = document.getElementById('startBtn'), stopBtn = document.getElementById('stopBtn');
-const aBtns = document.getElementById('aBtns');
+/* ===== Note math ===== */
+let A4=440;
+function noteToMidiName(m){const names=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];return names[m%12]+(Math.floor(m/12)-1)}
+function midiToFreq(m){return A4*Math.pow(2,(m-69)/12)}
+function noteHz(note){const m=note.match(/^([A-G]#?)(-?\d)$/);const map={"C":0,"C#":1,"D":2,"D#":3,"E":4,"F":5,"F#":6,"G":7,"G#":8,"A":9,"A#":10,"B":11};const i=map[m[1]],o=+m[2];return midiToFreq((o+1)*12+i)}
+function centsFrom(f,target){return 1200*Math.log2(f/target)}
 
-let A4 = 440;
-[438,439,440,441,442,443,444].forEach(v=>{
-  const b=document.createElement('button'); b.textContent=v; b.className='aRef';
-  if(v===440) b.classList.add('active');
-  b.addEventListener('click',()=>{ [...aBtns.children].forEach(x=>x.classList.remove('active')); b.classList.add('active'); A4=v; resetSmoothing(); });
-  aBtns.appendChild(b);
-});
-
-/* populate instruments */
-for(const k of Object.keys(INSTRUMENTS)){ const o=document.createElement('option'); o.textContent=k; instrumentSel.appendChild(o); }
+/* ===== Build UI ===== */
+[438,439,440,441,442,443,444].forEach(v=>{const b=document.createElement('button');b.textContent=v;b.className='aRef';if(v===440)b.classList.add('active');b.onclick=()=>{[...aBtns.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');A4=v;resetState();buildRows();};aBtns.appendChild(b);});
+for(const k of Object.keys(INSTRUMENTS)){const o=document.createElement('option');o.textContent=k;instrumentSel.appendChild(o);}
 instrumentSel.value="Guitar";
 let currentInstrument="Guitar", currentTuning=Object.keys(INSTRUMENTS["Guitar"].tunings)[0];
 
 function buildRows(){
   rowsEl.innerHTML="";
-  const notes = INSTRUMENTS[currentInstrument].tunings[currentTuning];
+  const notes=INSTRUMENTS[currentInstrument].tunings[currentTuning];
   spTuning.textContent=currentTuning;
-
-  notes.forEach(n=>{
-    const r=document.createElement('div'); r.className='srow'; r.dataset.note=n;
-    r.innerHTML = `
-      <div class="sName">${n}</div>
-      <div class="sBar"><div class="sDot" style="left:50%"></div></div>
-      <div class="sStatus">—</div>`;
-    r.addEventListener('click',()=>{ targetString = n; }); // lock to a string by tapping
-    rowsEl.appendChild(r);
-  });
+  notes.forEach(n=>{const r=document.createElement('div');r.className='srow';r.dataset.note=n;r.innerHTML=`<div class="sName">${n}</div><div class="sBar"><div class="sDot" style="left:50%"></div></div><div class="sStatus">—</div>`;rowsEl.appendChild(r);});
 }
 function rebuildTunings(){
-  currentInstrument = instrumentSel.value;
-  const names = Object.keys(INSTRUMENTS[currentInstrument].tunings);
-  if(!names.includes(currentTuning)) currentTuning = names[0];
+  currentInstrument=instrumentSel.value;
+  const names=Object.keys(INSTRUMENTS[currentInstrument].tunings);
+  if(!names.includes(currentTuning)) currentTuning=names[0];
   altTuningsDiv.innerHTML="";
-  names.forEach(n=>{
-    const b=document.createElement('button'); b.textContent=n; b.className='aRef'; if(n===currentTuning) b.classList.add('active');
-    b.addEventListener('click',()=>{ currentTuning=n; [...altTuningsDiv.children].forEach(x=>x.classList.remove('active')); b.classList.add('active'); buildRows(); resetSmoothing(); });
-    altTuningsDiv.appendChild(b);
-  });
+  names.forEach(n=>{const b=document.createElement('button');b.textContent=n;b.className='aRef';if(n===currentTuning)b.classList.add('active');b.onclick=()=>{currentTuning=n;[...altTuningsDiv.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');resetState();buildRows();};altTuningsDiv.appendChild(b);});
   buildRows();
 }
-instrumentSel.addEventListener('change', rebuildTunings);
-rebuildTunings();
+instrumentSel.onchange=rebuildTunings; rebuildTunings();
 
-/* ---------- Audio + Pitch with stability ---------- */
-let audioCtx=null, analyser=null, data=null, mediaStream=null, rafId=null, running=false, targetString=null;
+/* ===== Audio & Pitch (YIN) ===== */
+let audioCtx=null, analyser=null, data=null, mediaStream=null, rafId=null, running=false;
+let noiseFloor=0.015;
+function yinPitch(){
+  if(!analyser) return {freq:null,conf:0};
+  analyser.getFloatTimeDomainData(data);
+  const N=data.length;
+  let rms=0; for(let i=0;i<N;i++) rms+=data[i]*data[i];
+  rms=Math.sqrt(rms/N); if(rms<noiseFloor) return {freq:null,conf:0};
+  const maxTau=Math.floor(N/2);
+  const diff=new Float32Array(maxTau);
+  for(let tau=1;tau<maxTau;tau++){let s=0;for(let i=0;i<maxTau;i++){const d=data[i]-data[i+tau];s+=d*d;}diff[tau]=s;}
+  const cmndf=new Float32Array(maxTau); cmndf[0]=1; let run=0;
+  for(let tau=1;tau<maxTau;tau++){run+=diff[tau];cmndf[tau]=diff[tau]*tau/(run||1);}
+  const thr=0.15; let tau=2; while(tau<maxTau && cmndf[tau]>thr) tau++;
+  if(tau===maxTau) return {freq:null,conf:0};
+  const t1=tau-1, t2=tau, t3=Math.min(tau+1,maxTau-1);
+  const a=(cmndf[t1]+cmndf[t3]-2*cmndf[t2])/2, b=(cmndf[t3]-cmndf[t1])/2;
+  const tauEst=t2 + (isFinite(a)&&a!==0? -b/(2*a):0);
+  const f=audioCtx.sampleRate/tauEst, conf=1-cmndf[tau];
+  if(f<20||f>5000) return {freq:null,conf:0};
+  return {freq:f,conf};
+}
 
-/* smoothing + stability */
-const FBUF=[]; const MAXN=9;   // median window size
-let smoothCents=0;             // low-pass cents
-let lockState=null;            // hysteresis lock
-let noiseFloor=0.015;          // dynamic threshold
+/* ===== Lock-on State Machine =====
+   IDLE -> CANDIDATE (if a note is within CAPTURE_CENTS for LOCK_FRAMES)
+   CANDIDATE -> ACTIVE when stable enough
+   ACTIVE stays locked to that string until it drifts outside RELEASE_CENTS for DROP_FRAMES
+*/
+const CAPTURE_CENTS = 80;   // only consider notes within ±80¢ of some string to start
+const RELEASE_CENTS = 120;  // drop lock if it goes beyond ±120¢
+const LOCK_FRAMES   = 6;    // need 6 consistent frames to lock
+const DROP_FRAMES   = 12;   // need 12 bad frames to drop lock
+const SMOOTH_ALPHA  = 0.35; // low-pass for cents
 
-function resetSmoothing(){ FBUF.length=0; smoothCents=0; lockState=null; }
+let state="IDLE";           // "IDLE" | "CANDIDATE" | "ACTIVE"
+let candidate=null;         // {note,targetHz,count}
+let active=null;            // {note,targetHz}
+let smoothCents=0;
+let badFrames=0;
 
+function resetState(){
+  state="IDLE"; candidate=null; active=null; smoothCents=0; badFrames=0;
+  statusChip.classList.remove('ok'); statusEl.textContent="Stopped";
+  freqEl.textContent='0.00 Hz'; noteEl.textContent='—'; centsEl.textContent='±0 cents';
+  rowsEl.querySelectorAll('.srow').forEach(r=>{r.classList.remove('in','flat','sharp');r.querySelector('.sDot').style.left='50%';r.querySelector('.sStatus').textContent='—';});
+}
+
+/* nearest string in current tuning (returns {note,targetHz,cents,absCents}) */
+function nearestString(f){
+  const list=INSTRUMENTS[currentInstrument].tunings[currentTuning];
+  if(!list||!list.length) return null;
+  let best=null, bestAbs=1e9;
+  list.forEach(n=>{const hz=noteHz(n); const c=Math.round(centsFrom(f,hz)); const ac=Math.abs(c); if(ac<bestAbs){best={note:n,targetHz:hz,cents:c,absCents:ac};bestAbs=ac;}});
+  return best;
+}
+
+/* UI update for a specific row */
+function updateRow(note,cents,inTune){
+  const row=[...rowsEl.children].find(r=>r.dataset.note===note); if(!row) return;
+  const dot=row.querySelector('.sDot'); const status=row.querySelector('.sStatus');
+  const pos=Math.max(-50,Math.min(50,cents)); dot.style.left=`${pos+50}%`;
+  row.classList.remove('in','flat','sharp');
+  if(inTune){ row.classList.add('in'); status.textContent='In tune'; }
+  else { status.textContent = cents<0?'Flat':'Sharp'; row.classList.add(cents<0?'flat':'sharp'); }
+}
+function clearNonActive(note){
+  rowsEl.querySelectorAll('.srow').forEach(r=>{
+    if(r.dataset.note!==note){ r.classList.remove('in','flat','sharp'); r.querySelector('.sDot').style.left='50%'; r.querySelector('.sStatus').textContent='—'; }
+  });
+}
+
+/* ===== Main loop ===== */
+let FBUF=[]; const MAXN=7; // median freq smoother
+function median(a){const b=[...a].sort((x,y)=>x-y); return b[Math.floor(b.length/2)]}
+
+function loop(){
+  if(!running) return;
+  const {freq,conf}=yinPitch();
+
+  if(freq && conf>0.25){ // ignore weak/uncertain
+    FBUF.push(freq); if(FBUF.length>MAXN) FBUF.shift();
+    const fmed=median(FBUF);
+    const near=nearestString(fmed);
+    if(near){
+      if(state==="IDLE"){
+        // only start candidate if within capture window
+        if(near.absCents<=CAPTURE_CENTS){
+          state="CANDIDATE"; candidate={note:near.note,targetHz:near.targetHz,count:1};
+        }
+      }else if(state==="CANDIDATE"){
+        // must stay near same string to build confidence
+        if(near.note===candidate.note && near.absCents<=CAPTURE_CENTS){
+          candidate.count++;
+          if(candidate.count>=LOCK_FRAMES){
+            state="ACTIVE"; active={note:candidate.note,targetHz:candidate.targetHz}; badFrames=0; smoothCents=0;
+          }
+        }else{
+          // reset if it wandered to other note or too far
+          candidate={note:near.note,targetHz:near.targetHz,count:1};
+        }
+      }else if(state==="ACTIVE"){
+        // compute cents strictly against the locked string
+        const c=Math.round(centsFrom(fmed,active.targetHz));
+        smoothCents = (1-SMOOTH_ALPHA)*smoothCents + SMOOTH_ALPHA*c;
+        const inTune = Math.abs(smoothCents)<=3;
+
+        // UI for active only
+        updateRow(active.note, Math.round(smoothCents), inTune);
+        clearNonActive(active.note);
+
+        // readouts
+        statusEl.textContent = inTune ? "In tune" : (smoothCents<0?"Flat":"Sharp");
+        statusChip.classList.toggle('ok', inTune);
+        noteEl.textContent = active.note;
+        centsEl.textContent = `${smoothCents>0?'+':''}${Math.round(smoothCents)} cents`;
+        freqEl.textContent = `${fmed.toFixed(2)} Hz`;
+
+        // drop lock if far off for several frames
+        if(Math.abs(c)>RELEASE_CENTS || near.note!==active.note){
+          badFrames++;
+          if(badFrames>=DROP_FRAMES){
+            state="IDLE"; active=null; candidate=null; FBUF.length=0;
+            // clear UI to neutral
+            statusChip.classList.remove('ok');
+            statusEl.textContent="Listening…";
+            freqEl.textContent='0.00 Hz'; noteEl.textContent='—'; centsEl.textContent='±0 cents';
+            rowsEl.querySelectorAll('.srow').forEach(r=>{r.classList.remove('in','flat','sharp'); r.querySelector('.sDot').style.left='50%'; r.querySelector('.sStatus').textContent='—';});
+          }
+        }else{
+          badFrames=0;
+        }
+      }
+    }
+    // When candidate or idle, keep readouts neutral
+    if(state!=="ACTIVE"){
+      statusEl.textContent="Listening…"; statusChip.classList.remove('ok');
+      freqEl.textContent='0.00 Hz'; noteEl.textContent='—'; centsEl.textContent='±0 cents';
+    }
+  }else{
+    // no valid pitch this frame
+    if(state==="ACTIVE"){
+      // count as bad frames toward drop
+      badFrames++; if(badFrames>=DROP_FRAMES){ state="IDLE"; active=null; candidate=null; FBUF.length=0; rowsEl.querySelectorAll('.srow').forEach(r=>{r.classList.remove('in','flat','sharp'); r.querySelector('.sDot').style.left='50%'; r.querySelector('.sStatus').textContent='—';}); }
+    }else{
+      statusEl.textContent="Listening…"; statusChip.classList.remove('ok');
+    }
+  }
+  rafId=requestAnimationFrame(loop);
+}
+
+/* ===== Controls ===== */
 async function start(){
-  if(running) return;
-  statusEl.textContent='Starting…'; startBtn.disabled=true;
+  if(running) return; statusEl.textContent='Starting…'; startBtn.disabled=true;
   try{
-    mediaStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1},video:false});
-    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-
-    // Band-pass to reduce rumble/hiss (50–2000 Hz)
-    const src = audioCtx.createMediaStreamSource(mediaStream);
-    const hp = audioCtx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value = 50;
-    const lp = audioCtx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value = 2000;
+    mediaStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1},video:false});
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=audioCtx.createMediaStreamSource(mediaStream);
+    // light band-pass focuses on strings; tweak if needed
+    const hp=audioCtx.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=50;
+    const lp=audioCtx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=2000;
     src.connect(hp); hp.connect(lp);
 
-    analyser = audioCtx.createAnalyser(); analyser.fftSize=8192; analyser.smoothingTimeConstant=0;
-    lp.connect(analyser);
-    data = new Float32Array(analyser.fftSize);
+    analyser=audioCtx.createAnalyser(); analyser.fftSize=8192; analyser.smoothingTimeConstant=0;
+    lp.connect(analyser); data=new Float32Array(analyser.fftSize);
 
-    // Quick noise calibration (200ms)
+    // quick noise calibration
     await new Promise(res=>setTimeout(res,200));
-    analyser.getFloatTimeDomainData(data);
-    let rms=0; for(let i=0;i<data.length;i++) rms+=data[i]*data[i];
-    noiseFloor = Math.max(0.01, Math.sqrt(rms/data.length)*0.9);
+    analyser.getFloatTimeDomainData(data); let s=0; for(let i=0;i<data.length;i++) s+=data[i]*data[i];
+    noiseFloor=Math.max(0.01, Math.sqrt(s/data.length)*0.9);
 
-    running=true; stopBtn.disabled=false; statusEl.textContent='Listening'; resetSmoothing(); tick();
+    running=true; stopBtn.disabled=false; statusEl.textContent='Listening…'; resetState(); loop();
   }catch(e){ console.error(e); statusEl.textContent='Mic blocked'; startBtn.disabled=false; }
 }
 async function stop(){
   running=false; stopBtn.disabled=true; startBtn.disabled=false;
-  statusEl.textContent='Stopped'; statusChip.classList.remove('ok');
-  freqEl.textContent='0.00 Hz'; noteEl.textContent='—'; centsEl.textContent='±0 cents';
-  targetString=null; resetSmoothing();
-  cancelAnimationFrame(rafId);
-  rowsEl.querySelectorAll('.srow').forEach(r=>{
-    r.classList.remove('in','flat','sharp');
-    r.querySelector('.sDot').style.left='50%';
-    r.querySelector('.sStatus').textContent='—';
-  });
+  resetState(); cancelAnimationFrame(rafId);
   try{ if(mediaStream) mediaStream.getTracks().forEach(t=>t.stop()); }catch(_){}
   mediaStream=null; try{ if(audioCtx && audioCtx.state!=='closed') await audioCtx.close(); }catch(_){}
-  audioCtx=null; analyser=null;
+  audioCtx=null; analyser=null; data=null;
 }
-startBtn.addEventListener('click',start); stopBtn.addEventListener('click',stop);
-
-/* YIN (fast simplified) */
-function yinPitch(){
-  if(!analyser) return {freq:null,conf:0};
-  analyser.getFloatTimeDomainData(data);
-  const SIZE=data.length;
-  // RMS gate
-  let rms=0; for(let i=0;i<SIZE;i++) rms+=data[i]*data[i];
-  rms=Math.sqrt(rms/SIZE);
-  if(rms<noiseFloor) return {freq:null,conf:0};
-
-  const tauMax = Math.floor(SIZE/2);
-  const diff = new Float32Array(tauMax);
-  for(let tau=1; tau<tauMax; tau++){
-    let sum=0;
-    for(let i=0;i<tauMax;i++){ const d = data[i]-data[i+tau]; sum += d*d; }
-    diff[tau]=sum;
-  }
-  // cumulative mean normalized difference function
-  const cmndf = new Float32Array(tauMax);
-  cmndf[0]=1;
-  let runningSum=0;
-  for(let tau=1; tau<tauMax; tau++){
-    runningSum += diff[tau];
-    cmndf[tau] = diff[tau] * tau / (runningSum || 1);
-  }
-  // threshold
-  const threshold=0.15;
-  let tau=2;
-  while(tau<tauMax && cmndf[tau] > threshold) tau++;
-  if(tau===tauMax) return {freq:null,conf:0};
-
-  // parabolic interpolation around minimum
-  const tau1 = tau>1? tau-1 : tau;
-  const tau2 = tau;
-  const tau3 = tau+1<tauMax? tau+1 : tau;
-  const a = (cmndf[tau1] + cmndf[tau3] - 2*cmndf[tau2]) / 2;
-  const b = (cmndf[tau3] - cmndf[tau1]) / 2;
-  const tauEst = tau2 + (isFinite(a) && a!==0 ? -b/(2*a) : 0);
-
-  const freq = audioCtx.sampleRate / tauEst;
-  const conf = 1 - cmndf[tau];
-  if(freq<20||freq>5000) return {freq:null,conf:0};
-  return {freq, conf};
-}
-
-function noteToFreq(midi){ return A4*Math.pow(2,(midi-69)/12); }
-function freqToNote(f){
-  const n=12*Math.log2(f/A4)+57, midi=Math.round(n)+12;
-  const names=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  const noteName=names[midi%12]+(Math.floor(midi/12)-1);
-  const cents=Math.round(1200*Math.log2(f/noteToFreq(midi)));
-  return {noteName,cents,midi};
-}
-function noteHz(note){
-  const m=note.match(/^([A-G]#?)(-?\d)$/); if(!m) return null;
-  const map={"C":0,"C#":1,"D":2,"D#":3,"E":4,"F":5,"F#":6,"G":7,"G#":8,"A":9,"A#":10,"B":11};
-  const idx=map[m[1]], oct=+m[2], midi=(oct+1)*12+idx; return A4*Math.pow(2,(midi-69)/12);
-}
-function nearestString(f){
-  const list = INSTRUMENTS[currentInstrument].tunings[currentTuning];
-  if(!list || !list.length) return null;
-  let best=null, bestDiff=1e9;
-  list.forEach(n=>{ const hz=noteHz(n); const d=Math.abs(f-hz); if(d<bestDiff){best={note:n,hz}; bestDiff=d;} });
-  return best;
-}
-
-/* UI helpers */
-function updateRow(row, cents, inTune){
-  const dot=row.querySelector('.sDot'); const status=row.querySelector('.sStatus');
-  let pos = Math.max(-50, Math.min(50, cents));
-  dot.style.left = `${(pos + 50)}%`;
-  row.classList.remove('in','flat','sharp');
-  if(inTune){ row.classList.add('in'); status.textContent='In tune'; }
-  else { status.textContent = cents < 0 ? 'Flat' : 'Sharp'; row.classList.add(cents<0?'flat':'sharp'); }
-}
-
-/* Main loop with smoothing + hysteresis */
-function tick(){
-  if(!running) return;
-  const {freq, conf} = yinPitch();
-
-  if(freq && conf > 0.2){                 // ignore low-confidence frames
-    // median filter (freq)
-    FBUF.push(freq); if(FBUF.length>MAXN) FBUF.shift();
-    const fmed = [...FBUF].sort((a,b)=>a-b)[Math.floor(FBUF.length/2)];
-
-    const {noteName,cents} = freqToNote(fmed);
-
-    // low-pass cents to kill jitter
-    smoothCents = 0.65*smoothCents + 0.35*cents;
-
-    // hysteresis for "in tune" badge (±3 in, ±6 out)
-    const inNow = Math.abs(smoothCents) <= 3;
-    if(lockState===true && Math.abs(smoothCents) <= 6) {
-      // remain locked
-    } else {
-      lockState = inNow;
-    }
-
-    const near = nearestString(fmed);
-    const activeNote = targetString || (near ? near.note : null);
-
-    freqEl.textContent = `${fmed.toFixed(2)} Hz`;
-    noteEl.textContent = noteName;
-    centsEl.textContent = `${smoothCents>0?'+':''}${Math.round(smoothCents)} cents`;
-    statusEl.textContent = lockState ? 'In tune' : (smoothCents<0?'Flat':'Sharp');
-    statusChip.classList.toggle('ok', !!lockState);
-
-    rowsEl.querySelectorAll('.srow').forEach(r=>{
-      if(r.dataset.note === activeNote){
-        updateRow(r, smoothCents, !!lockState);
-      } else {
-        const d=r.querySelector('.sDot'); d.style.left='50%';
-        r.classList.remove('in','flat','sharp');
-        r.querySelector('.sStatus').textContent='—';
-      }
-    });
-  }
-  rafId = requestAnimationFrame(tick);
-}
+startBtn.onclick=start; stopBtn.onclick=stop;
 </script>
 </body>
-</html> 
+</html>
