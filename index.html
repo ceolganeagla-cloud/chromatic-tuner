@@ -1,4 +1,4 @@
-<!doctype html>
+ <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -6,15 +6,12 @@
 <title>Ceol Gan Eagla — Tuner</title>
 <meta name="theme-color" content="#0b1220"/>
 
-<!-- Irish-flag circular favicon -->
+<!-- Irish tricolour favicon (rectangular, green-white-orange left→right) -->
 <link rel="icon" href='data:image/svg+xml;utf8,
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-<defs><clipPath id="c"><circle cx="32" cy="32" r="32"/></clipPath></defs>
-<g clip-path="url(#c)">
-<rect width="64" height="64" fill="%23fff"/>
-<rect width="21.34" height="64" x="0" fill="%2309a061"/>
-<rect width="21.33" height="64" x="42.67" fill="%23ff7f4d"/>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48">
+<rect width="64" height="48" fill="%23fff"/>
+<rect x="0" y="0" width="21.333" height="48" fill="%2309a061"/>
+<rect x="42.666" y="0" width="21.334" height="48" fill="%23ff7f4d"/>
 </svg>'/>
 
 <style>
@@ -22,33 +19,21 @@
   --bg:#0b1220; --panel:#0f172a; --card:#0c1324; --ink:#eaf2ff; --muted:#a4b0c0; --line:#1f2a44;
   --ok:#22c55e; --low:#ff8a1f; --high:#ef4444; --bar:#111a2e; --bar-edge:#1a2744; --glow:0 10px 30px rgba(0,0,0,.45);
 }
-
-/* Reset + no scroll */
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;overflow:hidden}
 
-/* Single-screen layout: fit exactly in the visible viewport */
+/* One-screen layout */
 .app{
-  height:100svh;              /* visible viewport height (fixes mobile URL bar) */
-  width:100vw;
-  display:grid;
-  grid-template-rows:auto auto 1fr auto;  /* header / controls / bar / footer */
-  gap:0.9rem;
-  padding:clamp(10px,2.6vw,16px);
-  max-width:960px;
-  margin:0 auto;
+  height:100svh; width:100vw; max-width:960px; margin:0 auto;
+  display:grid; gap:.9rem; padding:clamp(10px,2.6vw,16px);
+  grid-template-rows:auto auto 1fr auto; /* header / instruments / center / footer */
 }
-
-/* Header */
 header{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
-.title{
-  display:flex;align-items:center;gap:.55rem;font-weight:900;letter-spacing:.3px;
-  font-size:clamp(18px,5vw,28px)
-}
+.title{display:flex;align-items:center;gap:.55rem;font-weight:900;letter-spacing:.3px;font-size:clamp(18px,5vw,28px)}
 .flag{
-  width:1.65em;height:1.65em;border-radius:50%;display:inline-grid;place-items:center;
-  background:conic-gradient(from 90deg,#09a061 0 120deg,#fff 0 240deg,#ff7f4d 0 1turn);
-  box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 2px 6px rgba(0,0,0,.35)
+  width:1.8em;height:1.2em;border-radius:4px;overflow:hidden;display:inline-block;box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 2px 6px rgba(0,0,0,.35);
+  background:
+    linear-gradient(90deg,#09a061 0 33.333%,white 33.333% 66.666%,#ff7f4d 66.666% 100%);
 }
 .controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
 button{
@@ -58,17 +43,18 @@ button{
 }
 button.toggle.start{background:#16a34a;color:white;border-color:#106c31}
 button.toggle.stop{background:#b91c1c;color:white;border-color:#7f1212}
-.badge{
-  padding:.45rem .7rem;border-radius:999px;background:var(--panel);border:1px solid var(--line);
-  font-weight:700;color:var(--muted);font-size:clamp(11px,3.2vw,13px)
+.badge{padding:.45rem .7rem;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:700;color:var(--muted);font-size:clamp(11px,3.2vw,13px)}
+select, input[type="number"]{
+  background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:12px;
+  padding:.45rem .6rem; font-weight:700; font-size:clamp(12px,3.2vw,14px); outline:none
 }
 
-/* Card that holds instruments + tuning + meter — compact to avoid scroll */
+/* Cards */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:.7rem;box-shadow:var(--glow)}
 .row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:space-between}
 
-/* Instrument chips (wrap nicely) */
-.tray{display:flex;flex-wrap:wrap;gap:.5rem;max-height:28vh;overflow:auto} /* overflow just for chip row if too many */
+/* Instrument tray */
+.tray{display:flex;flex-wrap:wrap;gap:.5rem;max-height:24vh;overflow:auto}
 .instrument-btn{
   display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;border-radius:14px;
   background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:800;color:var(--ink);
@@ -77,7 +63,7 @@ button.toggle.stop{background:#b91c1c;color:white;border-color:#7f1212}
 .instrument-btn.active{outline:2px solid #3b82f6}
 .instrument-btn.tuned{background:#0e2919;border-color:#1f8a4e}
 
-/* Tuning readout + strings */
+/* Tuning + strings */
 .tuning{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:clamp(12px,3.2vw,14px)}
 .string-row{display:flex;gap:.45rem;flex-wrap:wrap}
 .string-chip{
@@ -87,10 +73,8 @@ button.toggle.stop{background:#b91c1c;color:white;border-color:#7f1212}
 .string-chip.active{outline:2px solid #3b82f6}
 .string-chip.tuned{background:#0e2919;border-color:#1f8a4e}
 
-/* Middle section: bar + readout — this grid area flexes to fill leftover space */
-.center{
-  display:grid;grid-template-rows:auto 1fr auto;gap:.7rem;min-height:0;
-}
+/* Center (bar + readout + metronome) */
+.center{display:grid;grid-template-rows:auto 1fr auto;gap:.7rem;min-height:0}
 .bar-wrap{display:grid;gap:.6rem}
 .bar{
   position:relative;height:clamp(36px,7.5vh,56px);border-radius:999px;background:var(--bar);
@@ -113,29 +97,25 @@ button.toggle.stop{background:#b91c1c;color:white;border-color:#7f1212}
 .status.high{color:var(--high);box-shadow:0 0 0 2px rgba(239,68,68,.15) inset}
 .status.ok{color:var(--ok);box-shadow:0 0 0 2px rgba(34,197,94,.15) inset}
 .help{font-size:clamp(11px,3vw,13px);color:var(--muted)}
-
-/* BG glow when tuned */
 .app.tuned{ background: radial-gradient(1200px 380px at 50% -180px, rgba(34,197,94,.10), transparent 60%), var(--bg); }
 
-/* Footer stays tiny to preserve space */
 footer{text-align:center;color:var(--muted);font-size:11px}
 
-/* Error + mic meter */
+/* Error + meters */
 .error{color:#fca5a5;font-size:12px}
 .meter{height:8px;border-radius:999px;background:#1f2a44;overflow:hidden;width:150px;border:1px solid var(--line)}
 .meter > div{height:100%;width:0;background:#3b82f6;transition:width .1s linear}
 
-/* Safety: if the phone is very short, nudge sizes smaller so no scroll ever */
-@media (max-height: 620px){
-  .tray{max-height:24vh}
-  .note{font-size:clamp(24px,9.5vw,40px)}
-}
+/* Metronome */
+.met-wrap{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;justify-content:center}
+.pulse{width:10px;height:10px;border-radius:50%;background:#2c3552;box-shadow:0 0 0 1px var(--line) inset}
+.pulse.on{background:#eaf2ff;box-shadow:0 0 12px rgba(255,255,255,.6)}
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <header>
-    <div class="title"><span class="flag" aria-hidden="true"></span> <span>Ceol Gan Eagla — Chromatic Tuner</span></div>
+    <div class="title"><span class="flag" aria-hidden="true"></span><span>Ceol Gan Eagla — Chromatic Tuner</span></div>
     <div class="controls">
       <button id="toggleBtn" class="toggle start">Start Mic</button>
       <span class="badge" id="micStatus">Mic: Off</span>
@@ -157,24 +137,28 @@ footer{text-align:center;color:var(--muted);font-size:11px}
         <button class="instrument-btn" data-inst="viola">🎻 Viola</button>
         <button class="instrument-btn" data-inst="cello">🎻 Cello</button>
       </div>
-      <span class="badge" id="modeBadge">Mode: Auto string detect</span>
-    </div>
-
-    <div class="row" style="margin-top:.4rem">
-      <div class="tuning"><strong>Tuning:</strong> <span id="tuningText">E A D G B E</span></div>
-      <div style="display:flex;align-items:center;gap:.5rem">
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <label class="badge" for="tuningSel">Tuning</label>
+        <select id="tuningSel" title="Select tuning"></select>
+        <label class="badge" for="a4">A4</label>
+        <input id="a4" type="number" min="430" max="450" step="1" value="440" title="A4 reference (Hz)" />
         <span class="badge">Mic Level</span>
         <div class="meter"><div id="levelBar"></div></div>
       </div>
     </div>
 
+    <div class="row" style="margin-top:.4rem">
+      <div class="tuning"><strong>Tuning notes:</strong> <span id="tuningText">E A D G B E</span></div>
+      <div class="error" id="err"></div>
+    </div>
+
     <div class="row">
       <div class="string-row" id="stringRow"></div>
-      <div class="error" id="err"></div>
+      <span class="badge" id="modeBadge">Mode: Auto string detect</span>
     </div>
   </div>
 
-  <!-- Center section: bar + readout -->
+  <!-- Center: tuner bar + readout + metronome -->
   <div class="center">
     <div class="panel bar-wrap">
       <div class="bar" id="bar">
@@ -189,6 +173,19 @@ footer{text-align:center;color:var(--muted);font-size:11px}
         <div class="help">Bar turns <b style="color:var(--ok)">green</b> when in tune; <span style="color:var(--low)">orange</span> = too low, <span style="color:var(--high)">red</span> = too high.</div>
       </div>
     </div>
+
+    <div class="panel">
+      <div class="met-wrap">
+        <label class="badge" for="metTime">Time</label>
+        <select id="metTime">
+          <option>2/4</option><option>3/4</option><option selected>4/4</option><option>6/8</option>
+        </select>
+        <label class="badge" for="metTempo">Tempo</label>
+        <input id="metTempo" type="number" min="30" max="240" step="1" value="100"/>
+        <button id="metToggle">Start Metronome</button>
+        <div class="pulse" id="metPulse" title="beat"></div>
+      </div>
+    </div>
   </div>
 
   <footer>© 2025 Gearóid MacUaid — Ceol Gan Eagla</footer>
@@ -196,21 +193,54 @@ footer{text-align:center;color:var(--muted);font-size:11px}
 
 <script>
 (() => {
-  const A4 = 440;
+  let A4 = 440;
   const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
-  const INSTRUMENTS = {
-    guitar:       [{n:"E2",f:82.4069},{n:"A2",f:110.000},{n:"D3",f:146.832},{n:"G3",f:196.000},{n:"B3",f:246.942},{n:"E4",f:329.628}],
-    violin:       [{n:"G3",f:196.000},{n:"D4",f:293.665},{n:"A4",f:440.000},{n:"E5",f:659.255}],
-    tenorbanjo:   [{n:"G2",f:97.999},{n:"D3",f:146.832},{n:"A3",f:220.000},{n:"E4",f:329.628}],
-    mandolin:     [{n:"G3",f:196.000},{n:"D4",f:293.665},{n:"A4",f:440.000},{n:"E5",f:659.255}],
-    bouzouki_gdae:[{n:"G2",f:97.999},{n:"D3",f:146.832},{n:"A3",f:220.000},{n:"E4",f:329.628}],
-    bouzouki_gdad:[{n:"G2",f:97.999},{n:"D3",f:146.832},{n:"A3",f:220.000},{n:"D4",f:293.665}],
-    ukulele:      [{n:"G4",f:392.000},{n:"C4",f:261.626},{n:"E4",f:329.628},{n:"A4",f:440.000}],
-    bass4:        [{n:"E1",f:41.2034},{n:"A1",f:55.000},{n:"D2",f:73.4162},{n:"G2",f:97.999}],
-    viola:        [{n:"C3",f:130.813},{n:"G3",f:196.000},{n:"D4",f:293.665},{n:"A4",f:440.000}],
-    cello:        [{n:"C2",f:65.4064},{n:"G2",f:97.999},{n:"D3",f:146.832},{n:"A3",f:220.000}],
+  /* Tunings per instrument */
+  const TUNINGS = {
+    guitar: {
+      "Standard (E A D G B E)": ["E2","A2","D3","G3","B3","E4"],
+      "Drop D (D A D G B E)": ["D2","A2","D3","G3","B3","E4"],
+      "DADGAD (D A D G A D)": ["D2","A2","D3","G3","A3","D4"],
+      "Open G (D G D G B D)": ["D2","G2","D3","G3","B3","D4"],
+      "Open D (D A D F# A D)": ["D2","A2","D3","F#3","A3","D4"]
+    },
+    violin: { "Standard (G D A E)": ["G3","D4","A4","E5"] },
+    tenorbanjo: { "Standard (G D A E)": ["G2","D3","A3","E4"] },
+    mandolin: { "Standard (G D A E)": ["G3","D4","A4","E5"] },
+    bouzouki_gdae: { "GDAE (G D A E)": ["G2","D3","A3","E4"] },
+    bouzouki_gdad: { "GDAD (G D A D)": ["G2","D3","A3","D4"] },
+    ukulele: {
+      "Re-entrant (G C E A)": ["G4","C4","E4","A4"],
+      "Low G (G C E A)": ["G3","C4","E4","A4"]
+    },
+    bass4: { "Standard (E A D G)": ["E1","A1","D2","G2"] },
+    viola: { "Standard (C G D A)": ["C3","G3","D4","A4"] },
+    cello: { "Standard (C G D A)": ["C2","G2","D3","A3"] },
   };
+
+  /* Frequency map from note name */
+  function noteToHz(note){
+    // Parse like "F#3"
+    const m = note.match(/^([A-G])(#?)(\d)$/); if(!m) return 0;
+    const base = "C C# D D# E F F# G G# A A# B".split(" ");
+    const name = m[1] + (m[2]||"");
+    const octave = parseInt(m[3],10);
+    // MIDI semantics: A4 = 440 is MIDI 69. C-1 => 0
+    const index = base.indexOf(name);
+    const midi = (octave+1)*12 + index;
+    const a4midi = 69;
+    return A4 * Math.pow(2, (midi - a4midi)/12);
+  }
+
+  /* Build instrument maps with Hz */
+  function buildInstrument(instKey){
+    const obj = {};
+    for (const [label, notes] of Object.entries(TUNINGS[instKey])) {
+      obj[label] = notes.map(n => ({ n, f: noteToHz(n) }));
+    }
+    return obj;
+  }
 
   // UI refs
   const appEl = document.getElementById('app');
@@ -221,14 +251,36 @@ footer{text-align:center;color:var(--muted);font-size:11px}
   const bar = document.getElementById('bar');
   const noteEl = document.getElementById('note');
   const statusEl = document.getElementById('status');
+  const tuningSel = document.getElementById('tuningSel');
   const tuningText = document.getElementById('tuningText');
   const stringRow = document.getElementById('stringRow');
   const errEl = document.getElementById('err');
   const levelBar = document.getElementById('levelBar');
+  const a4Input = document.getElementById('a4');
 
+  // Metronome refs
+  const metTime = document.getElementById('metTime');
+  const metTempo = document.getElementById('metTempo');
+  const metToggle = document.getElementById('metToggle');
+  const metPulse = document.getElementById('metPulse');
+
+  /* State */
   let currentInstrumentKey = 'guitar';
+  let INST = buildInstrument(currentInstrumentKey); // {label: [{n,f}..]}
+  let currentTuningLabel = Object.keys(INST)[0];
+
+  function renderTuningSelector(){
+    tuningSel.innerHTML = '';
+    for (const label of Object.keys(INST)){
+      const opt = document.createElement('option');
+      opt.value = label; opt.textContent = label;
+      tuningSel.appendChild(opt);
+    }
+    tuningSel.value = currentTuningLabel;
+  }
+
   function renderTuningUI(){
-    const inst = INSTRUMENTS[currentInstrumentKey];
+    const inst = INST[currentTuningLabel];
     const names = inst.map(s => s.n.replace(/\d+$/,''));
     tuningText.textContent = names.join(' ');
     stringRow.innerHTML = '';
@@ -240,6 +292,15 @@ footer{text-align:center;color:var(--muted);font-size:11px}
       stringRow.appendChild(chip);
     });
   }
+
+  function rebuildInstrument(){
+    INST = buildInstrument(currentInstrumentKey);
+    currentTuningLabel = Object.keys(INST)[0];
+    renderTuningSelector();
+    renderTuningUI();
+  }
+
+  renderTuningSelector();
   renderTuningUI();
 
   tray.addEventListener('click', (e)=>{
@@ -248,16 +309,25 @@ footer{text-align:center;color:var(--muted);font-size:11px}
     [...tray.children].forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     currentInstrumentKey = btn.dataset.inst;
+    rebuildInstrument();
+  });
+
+  tuningSel.addEventListener('change', ()=>{
+    currentTuningLabel = tuningSel.value;
     renderTuningUI();
   });
 
-  // Audio
+  a4Input.addEventListener('change', ()=>{
+    A4 = Math.max(430, Math.min(450, parseInt(a4Input.value||440,10)));
+    rebuildInstrument();
+  });
+
+  /* ---------- Audio + Tuner ---------- */
   let audioCtx=null, analyser=null, mediaStream=null, hpFilter=null, lpFilter=null;
   const BUF_SIZE = 4096;
   let buf = new Float32Array(BUF_SIZE);
   let running=false;
 
-  // Stability
   let displayCents = 0, lock={active:false,stringIdx:-1,expires:0}, cand={idx:-1,count:0};
   const LEVEL_GATE = 0.012, YIN_THRESH=0.10, CONF_GATE=0.6, MIN_HZ=50, MAX_HZ=1200;
   const SMOOTH_A=0.92, DEADBAND_CENTS=1.5, LOCK_NEED_FRAMES=14, LOCK_TIME_MS=6000, C_HISTORY=7;
@@ -360,8 +430,7 @@ footer{text-align:center;color:var(--muted);font-size:11px}
         err.name === "NotReadableError"? "Mic busy in another app. Close other apps using the mic." :
         err.name === "SecurityError"   ? "Needs HTTPS (use the GitHub Pages URL)." :
         ("Mic error: " + err.name);
-      errEl.textContent = hint;
-      return;
+      errEl.textContent = hint; return;
     }
 
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -395,14 +464,10 @@ footer{text-align:center;color:var(--muted);font-size:11px}
     toggleBtn.textContent = "Start Mic";
     toggleBtn.classList.remove('stop'); toggleBtn.classList.add('start');
     micStatus.textContent = "Mic: Off";
-    statusEl.className = "status";
-    statusEl.textContent = "Stopped";
+    statusEl.className = "status"; statusEl.textContent = "Stopped";
     appEl.classList.remove('tuned');
     pointer.style.left = "50%";
-    displayCents = 0;
-    centsHistory.length = 0;
-    lock = {active:false,stringIdx:-1,expires:0};
-    cand = {idx:-1,count:0};
+    displayCents = 0; centsHistory.length = 0; lock = {active:false,stringIdx:-1,expires:0}; cand = {idx:-1,count:0};
     [...stringRow.children].forEach(c=>c.className='string-chip');
     levelBar.style.width = "0%";
   }
@@ -419,18 +484,12 @@ footer{text-align:center;color:var(--muted);font-size:11px}
     levelBar.style.width = Math.min(100, (level*500)) + "%";
 
     const sr = audioCtx.sampleRate || 48000;
-    if (level < LEVEL_GATE){
-      statusEl.className="status"; statusEl.textContent="Listening…"; appEl.classList.remove('tuned');
-      return requestAnimationFrame(loop);
-    }
+    if (level < LEVEL_GATE){ statusEl.className="status"; statusEl.textContent="Listening…"; appEl.classList.remove('tuned'); return requestAnimationFrame(loop); }
 
     const {hz, conf} = yin(buf, sr);
-    if (!(hz>0 && conf>CONF_GATE)){
-      statusEl.className="status"; statusEl.textContent="Listening…"; appEl.classList.remove('tuned');
-      return requestAnimationFrame(loop);
-    }
+    if (!(hz>0 && conf>CONF_GATE)){ statusEl.className="status"; statusEl.textContent="Listening…"; appEl.classList.remove('tuned'); return requestAnimationFrame(loop); }
 
-    const inst = INSTRUMENTS[currentInstrumentKey];
+    const inst = INST[currentTuningLabel];
     let idx = nearestStringIdx(hz, inst);
 
     if (!lock.active){
@@ -470,18 +529,69 @@ footer{text-align:center;color:var(--muted);font-size:11px}
     requestAnimationFrame(loop);
   }
 
-  /* Chrome Android mic wake-up patch */
+  /* --- Chrome Android mic wake-up patch --- */
   document.addEventListener('click', async () => {
-    if (audioCtx && audioCtx.state === 'suspended') {
-      try { await audioCtx.resume(); } catch {}
-    }
+    if (audioCtx && audioCtx.state === 'suspended') { try { await audioCtx.resume(); } catch {} }
   }, { once: true });
-
   navigator.mediaDevices.ondevicechange = async () => {
-    if (running && (!mediaStream || mediaStream.getTracks().every(t=>!t.enabled))) {
-      stop(); setTimeout(start, 600);
-    }
+    if (running && (!mediaStream || mediaStream.getTracks().every(t=>!t.enabled))) { stop(); setTimeout(start, 600); }
   };
+
+  /* ---------- Metronome ---------- */
+  let metCtx=null, metGain=null, metTimer=null, metLook=25, metSchedAhead=0.1, metNext=0, metBeat=0, metBeatsPerBar=4;
+  const accentFreq = 1700, tickFreq = 1000;
+  function metEnsureCtx(){
+    if (!metCtx) {
+      metCtx = new (window.AudioContext || window.webkitAudioContext)();
+      metGain = metCtx.createGain(); metGain.gain.value = 0.2; metGain.connect(metCtx.destination);
+    }
+  }
+  function metClick(t, accent){
+    const osc = metCtx.createOscillator(); const g = metCtx.createGain();
+    osc.type = "square"; osc.frequency.value = accent ? accentFreq : tickFreq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(accent?0.35:0.22, t+0.001);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.06);
+    osc.connect(g); g.connect(metGain);
+    osc.start(t); osc.stop(t+0.07);
+  }
+  function metSchedule(){
+    const tempo = Math.max(30, Math.min(240, parseInt(metTempo.value||100,10)));
+    const secPerBeat = 60/tempo;
+    while (metNext < metCtx.currentTime + metSchedAhead){
+      const accent = (metBeat % metBeatsPerBar) === 0;
+      metClick(metNext, accent);
+      // tiny UI pulse
+      setTimeout(()=>{ metPulse.classList.add('on'); setTimeout(()=>metPulse.classList.remove('on'), 70); }, (metNext - metCtx.currentTime)*1000);
+      metNext += secPerBeat;
+      metBeat = (metBeat + 1) % metBeatsPerBar;
+    }
+  }
+  function metTick(){
+    metSchedule();
+    metTimer = setTimeout(metTick, metLook);
+  }
+  function metStart(){
+    metEnsureCtx();
+    metCtx.resume();
+    // beats per bar from time select
+    const ts = metTime.value;
+    metBeatsPerBar = (ts==="6/8") ? 6 : parseInt(ts,10) || 4;
+    const tempo = Math.max(30, Math.min(240, parseInt(metTempo.value||100,10)));
+    const secPerBeat = 60/tempo;
+    metNext = metCtx.currentTime + 0.05;
+    metBeat = 0;
+    metTick();
+    metToggle.textContent = "Stop Metronome";
+  }
+  function metStop(){
+    if (metTimer) clearTimeout(metTimer); metTimer=null;
+    try{ metCtx && metCtx.suspend(); }catch(e){}
+    metToggle.textContent = "Start Metronome";
+  }
+  metToggle.addEventListener('click', ()=> (metTimer ? metStop() : metStart()));
+  metTime.addEventListener('change', ()=>{ if (metTimer){ metStop(); metStart(); }});
+  metTempo.addEventListener('change', ()=>{ if (metTimer){ metStop(); metStart(); }});
 })();
 </script>
 </body>
