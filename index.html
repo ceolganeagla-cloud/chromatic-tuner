@@ -1,73 +1,71 @@
- <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Chromatic Tuner (Dark, Tunings Visible)</title>
+<title>Ceol Gan Eagla — Chromatic Tuner (Chrome Fix + Mic Level)</title>
 <meta name="theme-color" content="#0b1220"/>
-<link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230b1220"/><path d="M12 32h40" stroke="%23a4b0c0" stroke-width="6" stroke-linecap="round"/><circle cx="32" cy="32" r="8" fill="%23a4f2b5"/></svg>'/>
 <style>
-  :root{
-    --bg:#0b1220; --panel:#0f172a; --card:#0c1324; --ink:#eaf2ff; --muted:#a4b0c0; --line:#1f2a44;
-    --ok:#22c55e; --low:#ff8a1f; --high:#ef4444; --bar:#111a2e; --bar-edge:#1a2744; --glow:0 10px 30px rgba(0,0,0,.45);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif}
-  .wrap{display:grid;grid-template-rows:auto auto auto 1fr auto;gap:12px;min-height:100dvh;padding:14px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  h1{margin:0;font-size:clamp(18px,4.5vw,28px);letter-spacing:.3px}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  button{
-    appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);
-    padding:10px 14px;border-radius:14px;font-weight:700;cursor:pointer;box-shadow:var(--glow)
-  }
-  button.toggle.start{background:#16a34a;color:white;border-color:#106c31}
-  button.toggle.stop{background:#b91c1c;color:white;border-color:#7f1212}
-  .badge{padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:700;color:var(--muted)}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:var(--glow)}
-  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
-  /* Instrument chips */
-  .tray{display:flex;flex-wrap:wrap;gap:8px}
-  .instrument-btn{
-    display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;
-    background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:800;color:var(--ink)
-  }
-  .instrument-btn.active{outline:2px solid #3b82f6}
-  .instrument-btn.tuned{background:#0e2919;border-color:#1f8a4e;}
-  /* Tuning readout + strings */
-  .tuning{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted)}
-  .string-row{display:flex;gap:6px;flex-wrap:wrap}
-  .string-chip{
-    padding:6px 10px;border:1px solid var(--line);background:var(--card);border-radius:999px;font-weight:800;color:var(--ink);min-width:44px;text-align:center
-  }
-  .string-chip.active{outline:2px solid #3b82f6}
-  .string-chip.tuned{background:#0e2919;border-color:#1f8a4e}
-  /* Bar */
-  .bar-wrap{display:grid;gap:12px}
-  .bar{
-    position:relative;height:36px;border-radius:999px;background:var(--bar);
-    border:1px solid var(--bar-edge);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), var(--glow);
-    overflow:hidden;
-  }
-  .bar .zone.low{position:absolute;left:0;top:0;bottom:0;width:50%;background:linear-gradient(90deg, rgba(255,138,31,.18), rgba(255,138,31,0));}
-  .bar .zone.high{position:absolute;right:0;top:0;bottom:0;width:50%;background:linear-gradient(270deg, rgba(239,68,68,.18), rgba(239,68,68,0));}
-  .bar .zone.ok{position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:12%;background:linear-gradient(90deg, rgba(34,197,94,.3), rgba(34,197,94,.0) 60%);}
-  .pointer{
-    position:absolute;top:50%;transform:translate(-50%,-50%);
-    width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:18px solid #eaf2ff;
-    filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));
-  }
-  .readout{display:grid;gap:6px;justify-items:center;text-align:center}
-  .note{font-size:clamp(28px,10vw,48px);font-weight:900;letter-spacing:1px}
-  .status{font-size:clamp(16px,4vw,22px);font-weight:900;padding:6px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);min-width:140px}
-  .status.low{color:var(--low);box-shadow:0 0 0 2px rgba(255,138,31,.15) inset}
-  .status.high{color:var(--high);box-shadow:0 0 0 2px rgba(239,68,68,.15) inset}
-  .status.ok{color:var(--ok);box-shadow:0 0 0 2px rgba(34,197,94,.15) inset}
-  .help{font-size:12px;color:var(--muted)}
-  /* Background glow when tuned */
-  .wrap.tuned{ background: radial-gradient(1200px 400px at 50% -200px, rgba(34,197,94,.12), transparent 60%), var(--bg); }
-  footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
-  .error{color:#fca5a5;font-size:13px}
+:root{
+  --bg:#0b1220; --panel:#0f172a; --card:#0c1324; --ink:#eaf2ff; --muted:#a4b0c0; --line:#1f2a44;
+  --ok:#22c55e; --low:#ff8a1f; --high:#ef4444; --bar:#111a2e; --bar-edge:#1a2744; --glow:0 10px 30px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif}
+.wrap{display:grid;grid-template-rows:auto auto auto 1fr auto;gap:12px;min-height:100dvh;padding:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{margin:0;font-size:clamp(18px,4.5vw,28px);letter-spacing:.3px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{
+  appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  padding:10px 14px;border-radius:14px;font-weight:700;cursor:pointer;box-shadow:var(--glow)
+}
+button.toggle.start{background:#16a34a;color:white;border-color:#106c31}
+button.toggle.stop{background:#b91c1c;color:white;border-color:#7f1212}
+.badge{padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:700;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:var(--glow)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+/* Chips */
+.tray{display:flex;flex-wrap:wrap;gap:8px}
+.instrument-btn{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;
+  background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:800;color:var(--ink)
+}
+.instrument-btn.active{outline:2px solid #3b82f6}
+.instrument-btn.tuned{background:#0e2919;border-color:#1f8a4e}
+/* Tuning readout + strings */
+.tuning{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted)}
+.string-row{display:flex;gap:6px;flex-wrap:wrap}
+.string-chip{padding:6px 10px;border:1px solid var(--line);background:var(--card);border-radius:999px;font-weight:800;color:var(--ink);min-width:44px;text-align:center}
+.string-chip.active{outline:2px solid #3b82f6}
+.string-chip.tuned{background:#0e2919;border-color:#1f8a4e}
+/* Bar */
+.bar-wrap{display:grid;gap:12px}
+.bar{
+  position:relative;height:36px;border-radius:999px;background:var(--bar);
+  border:1px solid var(--bar-edge);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), var(--glow);
+  overflow:hidden;
+}
+.bar .zone.low{position:absolute;left:0;top:0;bottom:0;width:50%;background:linear-gradient(90deg, rgba(255,138,31,.18), rgba(255,138,31,0));}
+.bar .zone.high{position:absolute;right:0;top:0;bottom:0;width:50%;background:linear-gradient(270deg, rgba(239,68,68,.18), rgba(239,68,68,0));}
+.bar .zone.ok{position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:12%;background:linear-gradient(90deg, rgba(34,197,94,.3), rgba(34,197,94,.0) 60%);}
+.pointer{
+  position:absolute;top:50%;transform:translate(-50%,-50%);
+  width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:18px solid #eaf2ff;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));
+}
+.readout{display:grid;gap:6px;justify-items:center;text-align:center}
+.note{font-size:clamp(28px,10vw,48px);font-weight:900;letter-spacing:1px}
+.status{font-size:clamp(16px,4vw,22px);font-weight:900;padding:6px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);min-width:140px}
+.status.low{color:var(--low);box-shadow:0 0 0 2px rgba(255,138,31,.15) inset}
+.status.high{color:var(--high);box-shadow:0 0 0 2px rgba(239,68,68,.15) inset}
+.status.ok{color:var(--ok);box-shadow:0 0 0 2px rgba(34,197,94,.15) inset}
+.help{font-size:12px;color:var(--muted)}
+.wrap.tuned{ background: radial-gradient(1200px 400px at 50% -200px, rgba(34,197,94,.12), transparent 60%), var(--bg); }
+footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
+.error{color:#fca5a5;font-size:13px}
+.meter{height:8px;border-radius:999px;background:#1f2a44;overflow:hidden;width:180px;border:1px solid var(--line)}
+.meter > div{height:100%;width:0;background:#3b82f6;transition:width .1s linear}
 </style>
 </head>
 <body>
@@ -80,20 +78,19 @@
     </div>
   </header>
 
-  <!-- (Logo removed but layout unchanged) -->
   <div class="panel">
     <div class="row">
       <div class="tray" id="instrumentTray" aria-label="Choose instrument">
-        <button class="instrument-btn active" data-inst="guitar" title="Guitar (EADGBE)">🎸<span>Guitar</span></button>
-        <button class="instrument-btn" data-inst="violin" title="Violin (GDAE)">🎻<span>Violin</span></button>
-        <button class="instrument-btn" data-inst="tenorbanjo" title="Tenor Banjo (GDAE)">🪕<span>Tenor Banjo</span></button>
-        <button class="instrument-btn" data-inst="mandolin" title="Mandolin (GDAE)">🎶<span>Mandolin</span></button>
-        <button class="instrument-btn" data-inst="bouzouki_gdae" title="Irish Bouzouki (GDAE)">🎶<span>Bouzouki GDAE</span></button>
-        <button class="instrument-btn" data-inst="bouzouki_gdad" title="Irish Bouzouki (GDAD)">🎶<span>Bouzouki GDAD</span></button>
-        <button class="instrument-btn" data-inst="ukulele" title="Ukulele (GCEA re-entrant)">🎵<span>Ukulele</span></button>
-        <button class="instrument-btn" data-inst="bass4" title="Bass (EADG)">🎸<span>Bass</span></button>
-        <button class="instrument-btn" data-inst="viola" title="Viola (CGDA)">🎻<span>Viola</span></button>
-        <button class="instrument-btn" data-inst="cello" title="Cello (CGDA)">🎻<span>Cello</span></button>
+        <button class="instrument-btn active" data-inst="guitar">🎸<span>Guitar</span></button>
+        <button class="instrument-btn" data-inst="violin">🎻<span>Violin</span></button>
+        <button class="instrument-btn" data-inst="tenorbanjo">🪕<span>Tenor Banjo</span></button>
+        <button class="instrument-btn" data-inst="mandolin">🎶<span>Mandolin</span></button>
+        <button class="instrument-btn" data-inst="bouzouki_gdae">🎶<span>Bouzouki GDAE</span></button>
+        <button class="instrument-btn" data-inst="bouzouki_gdad">🎶<span>Bouzouki GDAD</span></button>
+        <button class="instrument-btn" data-inst="ukulele">🎵<span>Ukulele</span></button>
+        <button class="instrument-btn" data-inst="bass4">🎸<span>Bass</span></button>
+        <button class="instrument-btn" data-inst="viola">🎻<span>Viola</span></button>
+        <button class="instrument-btn" data-inst="cello">🎻<span>Cello</span></button>
       </div>
       <span class="badge" id="modeBadge">Mode: Auto string detect</span>
     </div>
@@ -105,6 +102,10 @@
 
     <div class="row">
       <div class="string-row" id="stringRow"></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="badge">Mic Level</span>
+        <div class="meter"><div id="levelBar"></div></div>
+      </div>
     </div>
   </div>
 
@@ -117,7 +118,7 @@
     </div>
     <div class="readout">
       <div class="note" id="note">—</div>
-      <div class="status" id="status">Listening…</div>
+      <div class="status" id="status">Stopped</div>
       <div class="help">Bar turns <b style="color:var(--ok)">green</b> when in tune; <span style="color:var(--low)">orange</span> = too low, <span style="color:var(--high)">red</span> = too high.</div>
     </div>
   </div>
@@ -130,7 +131,6 @@
   const A4 = 440;
   const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
-  // Instruments + tunings
   const INSTRUMENTS = {
     guitar:       [{n:"E2",f:82.4069},{n:"A2",f:110.000},{n:"D3",f:146.832},{n:"G3",f:196.000},{n:"B3",f:246.942},{n:"E4",f:329.628}],
     violin:       [{n:"G3",f:196.000},{n:"D4",f:293.665},{n:"A4",f:440.000},{n:"E5",f:659.255}],
@@ -145,7 +145,6 @@
   };
 
   // UI
-  const appEl = document.getElementById('app');
   const toggleBtn = document.getElementById('toggleBtn');
   const micStatus = document.getElementById('micStatus');
   const tray = document.getElementById('instrumentTray');
@@ -156,34 +155,10 @@
   const tuningText = document.getElementById('tuningText');
   const stringRow = document.getElementById('stringRow');
   const errEl = document.getElementById('err');
+  const levelBar = document.getElementById('levelBar');
+  const appEl = document.getElementById('app');
 
   let currentInstrumentKey = 'guitar';
-
-  // Audio chain
-  let audioCtx=null, analyser=null, mediaStream=null;
-  let hpFilter=null, lpFilter=null;
-  const BUF_SIZE = 4096;
-  let buf = new Float32Array(BUF_SIZE);
-  let running=false;
-
-  // Stability & smoothing
-  let displayCents = 0;
-  let lock = {active:false, stringIdx:-1, expires:0};
-  let cand = {idx:-1, count:0};
-
-  // Anti-wildness parameters
-  const LEVEL_GATE = 0.012;
-  const YIN_THRESH = 0.10;
-  const CONF_GATE  = 0.6;
-  const MIN_HZ=50, MAX_HZ=1200;
-  const SMOOTH_A = 0.92;
-  const DEADBAND_CENTS = 1.5;
-  const LOCK_NEED_FRAMES = 14;
-  const LOCK_TIME_MS = 6000;
-  const C_HISTORY = 7;
-  const centsHistory = [];
-
-  // Init tuning UI
   function renderTuningUI(){
     const inst = INSTRUMENTS[currentInstrumentKey];
     const names = inst.map(s => s.n.replace(/\d+$/,''));
@@ -205,13 +180,21 @@
     [...tray.children].forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     currentInstrumentKey = btn.dataset.inst;
-    lock = {active:false,stringIdx:-1,expires:0};
-    cand = {idx:-1,count:0};
-    [...stringRow.children].forEach(c=>c.className='string-chip');
     renderTuningUI();
   });
 
-  // Helpers
+  // Audio
+  let audioCtx=null, analyser=null, mediaStream=null, hpFilter=null, lpFilter=null;
+  const BUF_SIZE = 4096;
+  let buf = new Float32Array(BUF_SIZE);
+  let running=false;
+
+  // Stability
+  let displayCents = 0, lock={active:false,stringIdx:-1,expires:0}, cand={idx:-1,count:0};
+  const LEVEL_GATE = 0.012, YIN_THRESH=0.10, CONF_GATE=0.6, MIN_HZ=50, MAX_HZ=1200;
+  const SMOOTH_A=0.92, DEADBAND_CENTS=1.5, LOCK_NEED_FRAMES=14, LOCK_TIME_MS=6000, C_HISTORY=7;
+  const centsHistory = [];
+
   function rms(arr){ let s=0; for(let i=0;i<arr.length;i++){const v=arr[i]; s+=v*v;} return Math.sqrt(s/arr.length); }
   function centsOff(f, ref){ return 1200 * Math.log2(f / ref); }
   function freqToNote(f){
@@ -228,13 +211,8 @@
     }
     return best.idx;
   }
-  function median(arr){
-    const a = arr.slice().sort((x,y)=>x-y);
-    const m = Math.floor(a.length/2);
-    return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
-  }
+  function median(arr){ const a = arr.slice().sort((x,y)=>x-y); const m = Math.floor(a.length/2); return a.length%2?a[m]:(a[m-1]+a[m])/2; }
 
-  // YIN detector
   function yin(buf, sampleRate){
     const N = buf.length;
     const tauMax = Math.min(Math.floor(sampleRate / 50), N-1);
@@ -242,10 +220,7 @@
     const d = new Float32Array(tauMax+1);
     for (let tau=tauMin; tau<=tauMax; tau++){
       let sum = 0;
-      for (let i=0; i<N - tau; i++){
-        const diff = buf[i] - buf[i+tau];
-        sum += diff*diff;
-      }
+      for (let i=0; i<N - tau; i++){ const diff = buf[i] - buf[i+tau]; sum += diff*diff; }
       d[tau] = sum;
     }
     const cmnd = new Float32Array(tauMax+1);
@@ -257,14 +232,13 @@
     let tau = -1;
     for (let t=tauMin+1; t<=tauMax; t++){
       if (cmnd[t] < YIN_THRESH && cmnd[t] < cmnd[t-1]){
-        tau = t;
-        while (t+1 <= tauMax && cmnd[t+1] < cmnd[t]) { t++; tau = t; }
+        tau = t; while (t+1 <= tauMax && cmnd[t+1] < cmnd[t]) { t++; tau = t; }
         break;
       }
     }
     if (tau === -1) return {hz:-1, conf:0};
-    const t0 = Math.max(tau-1, tauMin), t1 = tau, t2 = Math.min(tau+1, tauMax);
-    const s0 = cmnd[t0], s1 = cmnd[t1], s2 = cmnd[t2];
+    const t0 = Math.max(tau-1, tauMin), t1=tau, t2=Math.min(tau+1, tauMax);
+    const s0=cmnd[t0], s1=cmnd[t1], s2=cmnd[t2];
     const denom = (s0 - 2*s1 + s2);
     const shift = denom !== 0 ? (s0 - s2) / (2*denom) : 0;
     const tauEst = tau + shift;
@@ -283,10 +257,11 @@
     pointer.style.left = (t*100) + "%";
   }
 
-  // Mic: robust start with fallbacks + clear errors
   async function getMicStream() {
     const tries = [
-      { audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false, channelCount:1 } },
+      // Chrome on Android sometimes needs NS/AGC on to grant a device
+      { audio: { echoCancellation:true,  noiseSuppression:true,  autoGainControl:true,  channelCount:1, sampleRate:48000 } },
+      { audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false, channelCount:1, sampleRate:48000 } },
       { audio: { channelCount:1 } },
       { audio: true }
     ];
@@ -307,25 +282,30 @@
       return;
     }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      errEl.textContent = "This browser/page can’t open the mic. Try latest Chrome or Safari.";
+      errEl.textContent = "This page cannot access the microphone in Chrome.";
       return;
     }
-    try {
-      mediaStream = await getMicStream();
-    } catch (err) {
+
+    try { mediaStream = await getMicStream(); }
+    catch (err) {
       const hint =
-        err.name === "NotAllowedError" ? "Permission blocked. Tap the padlock → Allow microphone and reload." :
-        err.name === "NotFoundError"   ? "No microphone found. Check system settings." :
-        err.name === "NotReadableError"? "Mic busy in another app. Close other apps using mic." :
-        err.name === "SecurityError"   ? "Needs HTTPS (use GitHub Pages URL)." :
+        err.name === "NotAllowedError" ? "Permission blocked. Padlock → Site settings → Microphone → Allow, then reload." :
+        err.name === "NotFoundError"   ? "No microphone found/selected. Choose one in Chrome’s mic settings." :
+        err.name === "NotReadableError"? "Mic busy in another app. Close other apps using the mic." :
+        err.name === "SecurityError"   ? "Needs HTTPS (use the GitHub Pages URL)." :
         ("Mic error: " + err.name);
       errEl.textContent = hint;
       return;
     }
 
+    // Ensure an active context (Chrome sometimes starts suspended)
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    try { await audioCtx.resume(); } catch(e){}
+    // Recreate to be safe, then resume again
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state !== "running") { try{ await audioCtx.resume(); }catch(e){} }
+    try { await audioCtx.resume(); } catch(e){}
 
+    // Filters + analyser
     hpFilter = audioCtx.createBiquadFilter(); hpFilter.type="highpass"; hpFilter.frequency.value=50;
     lpFilter = audioCtx.createBiquadFilter(); lpFilter.type="lowpass";  lpFilter.frequency.value=1800;
 
@@ -340,7 +320,8 @@
     toggleBtn.textContent = "Stop Mic";
     toggleBtn.classList.remove('start'); toggleBtn.classList.add('stop');
     micStatus.textContent = "Mic: On";
-    loop();
+    statusEl.textContent = "Listening…";
+    requestAnimationFrame(loop);
   }
 
   function stop(){
@@ -360,84 +341,78 @@
     lock = {active:false,stringIdx:-1,expires:0};
     cand = {idx:-1,count:0};
     [...stringRow.children].forEach(c=>c.className='string-chip');
+    levelBar.style.width = "0%";
   }
 
   toggleBtn.addEventListener('click', () => running ? stop() : start());
-  document.addEventListener('visibilitychange', () => { if (document.hidden && running) stop(); });
 
   function loop(){
     if (!running || !analyser) return;
 
     analyser.getFloatTimeDomainData(buf);
-    const sr = audioCtx.sampleRate || 48000;
+    // Show mic level so we know the stream is alive
+    let lsum=0; for(let i=0;i<buf.length;i++){ const v=buf[i]; lsum += v*v; }
+    const level = Math.sqrt(lsum/buf.length);
+    levelBar.style.width = Math.min(100, (level*500)) + "%"; // crude meter
 
-    if (rms(buf) < LEVEL_GATE){
-      statusEl.className = "status";
-      statusEl.textContent = "Listening…";
-      appEl.classList.remove('tuned');
-      requestAnimationFrame(loop);
-      return;
-    }
+    const sr = audioCtx.sampleRate || 48000;
+    if (level < 0.012){ statusEl.className="status"; statusEl.textContent="Listening…"; appEl.classList.remove('tuned'); return requestAnimationFrame(loop); }
 
     const {hz, conf} = yin(buf, sr);
+    if (!(hz>0 && conf>0.6)){ statusEl.className="status"; statusEl.textContent="Listening…"; appEl.classList.remove('tuned'); return requestAnimationFrame(loop); }
 
-    if (hz > 0 && conf > CONF_GATE){
-      const inst = INSTRUMENTS[currentInstrumentKey];
-      let idx = nearestStringIdx(hz, inst);
-
-      // Lock logic
-      if (!lock.active){
-        if (cand.idx === idx) cand.count++; else { cand.idx=idx; cand.count=1; }
-        if (cand.count > LOCK_NEED_FRAMES){ lock={active:true,stringIdx:idx,expires:performance.now()+LOCK_TIME_MS}; cand={idx:-1,count:0}; }
-      } else {
-        if (performance.now() > lock.expires){ lock={active:false,stringIdx:-1,expires:0}; }
-        else { idx = lock.stringIdx; }
-      }
-
-      const ref = inst[idx].f;
-      let cents = 1200 * Math.log2(hz / ref);
-      centsHistory.push(cents); if (centsHistory.length > C_HISTORY) centsHistory.shift();
-      cents = median(centsHistory);
-
-      // UI: pointer + note + status
-      const note = freqToNote(hz);
-      noteEl.textContent = `${note.name}${note.octave}`;
-
-      const abs = Math.abs(cents);
-      let cls = "status", txt = "";
-      if (abs <= 5){ cls+=" ok"; txt="In Tune"; appEl.classList.add('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(34,197,94,.35), var(--glow)"; }
-      else if (cents < 0){ cls+=" low"; txt="Too Low"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(255,138,31,.25), var(--glow)"; }
-      else { cls+=" high"; txt="Too High"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(239,68,68,.25), var(--glow)"; }
-      statusEl.className = cls; statusEl.textContent = txt;
-
-      // Needle
-      const clamp = Math.max(-50, Math.min(50, cents));
-      const delta = clamp - displayCents;
-      if (Math.abs(delta) >= DEADBAND_CENTS) {
-        displayCents = displayCents * SMOOTH_A + clamp * (1 - SMOOTH_A);
-        const t = (displayCents + 50) / 100; pointer.style.left = (t*100) + "%";
-      }
-
-      // Update string chips
-      [...stringRow.children].forEach((chip,i)=>{
-        chip.className = 'string-chip' + (i===idx ? ' active' : '');
-      });
-      if (lock.active && abs <= 5){
-        stringRow.children[idx]?.classList.add('tuned');
-      }
-
+    const inst = INSTRUMENTS[currentInstrumentKey];
+    let idx = nearestStringIdx(hz, inst);
+    // lock behaviour
+    if (!lock.active){
+      if (cand.idx === idx) cand.count++; else { cand.idx=idx; cand.count=1; }
+      if (cand.count > 14){ lock={active:true,stringIdx:idx,expires:performance.now()+6000}; cand={idx:-1,count:0}; }
     } else {
-      statusEl.className = "status";
-      statusEl.textContent = "Listening…";
-      appEl.classList.remove('tuned');
-      // relax pointer
-      displayCents = displayCents*0.95;
+      if (performance.now() > lock.expires){ lock={active:false,stringIdx:-1,expires:0}; }
+      else { idx = lock.stringIdx; }
+    }
+
+    const ref = inst[idx].f;
+    let cents = 1200 * Math.log2(hz / ref);
+    centsHistory.push(cents); if (centsHistory.length > 7) centsHistory.shift();
+    cents = median(centsHistory);
+
+    const note = freqToNote(hz);
+    noteEl.textContent = `${note.name}${note.octave}`;
+
+    const abs = Math.abs(cents);
+    let cls="status", txt="";
+    if (abs <= 5){ cls+=" ok"; txt="In Tune"; appEl.classList.add('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(34,197,94,.35), var(--glow)"; }
+    else if (cents < 0){ cls+=" low"; txt="Too Low"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(255,138,31,.25), var(--glow)"; }
+    else { cls+=" high"; txt="Too High"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(239,68,68,.25), var(--glow)"; }
+    statusEl.className = cls; statusEl.textContent = txt;
+
+    // pointer & strings
+    const clamp = Math.max(-50, Math.min(50, cents));
+    const delta = clamp - displayCents;
+    if (Math.abs(delta) >= 1.5) {
+      displayCents = displayCents * 0.92 + clamp * 0.08;
       const t = (displayCents + 50) / 100; pointer.style.left = (t*100) + "%";
     }
+    [...stringRow.children].forEach((chip,i)=>{
+      chip.className = 'string-chip' + (i===idx ? ' active' : '');
+    });
+    if (lock.active && abs <= 5) stringRow.children[idx]?.classList.add('tuned');
 
     requestAnimationFrame(loop);
   }
+
+  // Show Chrome permission state once (nice hint)
+  (async () => {
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const p = await navigator.permissions.query({ name: 'microphone' });
+        if (p.state === 'denied')
+          errEl.textContent = 'Microphone permission is blocked. Padlock → Site settings → Microphone → Allow, then reload.';
+      } catch {}
+    }
+  })();
 })();
 </script>
 </body>
-</html> 
+</html>
