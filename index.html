@@ -1,330 +1,362 @@
-<!doctype html>
+ <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Ceol Gan Eagla — Simple Tuner</title>
-<meta name="theme-color" content="#ffffff">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Ceol Gan Eagla — Tuner (Dark)</title>
+<meta name="theme-color" content="#0b1220">
 <style>
   :root{
-    --ok:#22c55e;          /* green when in tune */
-    --ink:#000;            /* black needle/text */
-    --muted:#666;
-    --line:#ddd;
-    --brand:#0a0a0a;
-    --warn:#ef4444;
+    --bg:#0b1220;        /* deep navy */
+    --panel:#0f1a2e;     /* card */
+    --ink:#e8f0ff;       /* main text */
+    --muted:#a9b8d6;     /* secondary text */
+    --ok:#22c55e;        /* in-tune green */
+    --warn:#ef4444;      /* off red */
+    --accent:#1f9cf0;    /* brand accent */
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:#fff;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue","Noto Sans",Arial,sans-serif}
-  header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-  .brand{font-weight:800;letter-spacing:.3px}
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
-  button{
-    appearance:none;border:1px solid var(--ink);background:#fff;color:var(--ink);
-    padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer
+  html,body{height:100%;margin:0}
+  body{
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";
+    background: radial-gradient(1200px 700px at 50% -20%, #112034 20%, var(--bg) 60%) no-repeat, var(--bg);
+    color: var(--ink);
   }
+  .wrap{max-width:900px;margin:0 auto;padding:18px}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .brand{
+    background:#0e1a2c;border:1px solid #1c2a44;border-radius:16px;padding:10px 14px;
+    display:flex;align-items:center;gap:10px;box-shadow:0 4px 14px rgba(0,0,0,.25)
+  }
+  .brand .dot{width:18px;height:18px;border-radius:4px;background:linear-gradient(145deg,#24c760,#179f49)}
+  header h1{font-size:20px;margin:0}
+  .controls{display:flex;gap:10px;margin-left:auto}
+  button{
+    font-size:16px;padding:10px 16px;border-radius:14px;border:1px solid #1a2a48;
+    background:#13213a;color:var(--ink);cursor:pointer
+  }
+  button.primary{background:#123a20;border-color:#1c5c34}
+  button.danger{background:#311a1a;border-color:#512626}
   button:disabled{opacity:.5;cursor:not-allowed}
-  .rec{background:#fff;border-color:var(--warn);color:var(--warn)}
-  .rec.active{background:var(--warn);color:#fff}
-  .stop{background:#fff;border-color:var(--ok);color:var(--ok)}
-  .stop.active{background:var(--ok);color:#fff}
-  main{padding:10px;display:grid;gap:16px;grid-template-rows:auto auto auto 1fr}
-  /* Gauge */
-  .gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
-  canvas{width:100%;max-width:520px;height:auto;aspect-ratio:2/1;background:#fff;border:1px solid var(--line);border-radius:14px}
-  .readout{font-variant-numeric:tabular-nums;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
-  .readout strong{font-size:1.2rem}
-  .note-pill{padding:6px 10px;border:1px solid var(--ink);border-radius:999px;font-weight:700}
-  .muted{color:var(--muted)}
-  /* Instruments */
-  .selector{display:grid;gap:10px}
-  .inst-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
-  .inst{border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;gap:8px;align-items:center;cursor:pointer;background:#fff}
-  .inst.selected{outline:3px solid #000}
-  .inst svg{width:38px;height:38px;display:block;flex:0 0 auto}
-  .inst .name{font-weight:800}
-  .art{fill:#555;stroke:#333;stroke-width:1.5}
-  .art.in-tune{fill:var(--ok);stroke:var(--ok)}
-  /* Strings */
-  .strings{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{border:1px solid var(--ink);border-radius:999px;padding:6px 10px;font-weight:700;cursor:pointer;background:#fff}
-  .chip.active{background:#000;color:#fff}
-  footer{padding:14px 16px;border-top:1px solid var(--line);text-align:center;color:var(--muted);font-size:.9rem}
+  .card{
+    background:var(--panel);border:1px solid #1a2946;border-radius:20px;padding:16px;
+    box-shadow:0 8px 24px rgba(0,0,0,.35)
+  }
+  .gaugeBox{padding:16px}
+  canvas{width:100%;height:auto;display:block}
+  .readouts{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px
+  }
+  .chip{
+    background:#0f213a;border:1px solid #1b2a46;border-radius:14px;padding:10px 12px;text-align:center
+  }
+  .lbl{display:block;font-size:14px;color:var(--muted);margin-bottom:4px}
+  .val{font-size:22px;font-weight:700;letter-spacing:.3px}
+  .fine{font-size:14px;color:var(--muted)}
+  .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .seg{
+    background:#0e203a;border:1px solid #1b2a46;border-radius:12px;padding:8px 10px
+  }
+  select, .miniBtns button{
+    font-size:16px;background:#0c1b31;color:var(--ink);
+    border:1px solid #1a2a48;border-radius:10px;padding:8px 10px
+  }
+  .miniBtns{display:flex;gap:8px;flex-wrap:wrap}
+  .miniBtns button.active{outline:2px solid var(--accent)}
+  footer{margin:16px 0 6px;color:#9fb0d0;text-align:center;font-size:14px}
+  /* success glow when very close to target */
+  .glow-ok{box-shadow:0 0 0 0 rgba(34,197,94,0);animation:glow 1.6s ease-out forwards}
+  @keyframes glow{from{box-shadow:0 0 0 12px rgba(34,197,94,.25)}to{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 </style>
 </head>
 <body>
-<header>
-  <div class="brand">Ceol Gan Eagla — Tuner (Simple)</div>
-  <div class="controls">
-    <button id="startBtn" class="rec">Start</button>
-    <button id="stopBtn" class="stop">Stop</button>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <div style="font-weight:800;letter-spacing:.3px">Ceol Gan Eagla</div>
+          <div style="font-size:12px;color:var(--muted)">Chromatic Tuner</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="startBtn" class="primary">Start</button>
+        <button id="stopBtn" class="danger" disabled>Stop</button>
+      </div>
+    </header>
+
+    <section class="card gaugeBox">
+      <canvas id="gauge" width="900" height="420"></canvas>
+
+      <div class="readouts">
+        <div class="chip">
+          <span class="lbl">Status</span>
+          <span id="status" class="val">Stopped</span>
+        </div>
+        <div class="chip">
+          <span class="lbl">Note</span>
+          <span id="note" class="val">—</span>
+          <span id="cents" class="fine">±0 cents</span>
+        </div>
+        <div class="chip">
+          <span class="lbl">Frequency</span>
+          <span id="freq" class="val">0.00 Hz</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="seg">
+          <div class="lbl">Reference A4</div>
+          <div class="miniBtns">
+            <button class="aRef" data-a="438">438</button>
+            <button class="aRef" data-a="439">439</button>
+            <button class="aRef active" data-a="440">440</button>
+            <button class="aRef" data-a="441">441</button>
+            <button class="aRef" data-a="442">442</button>
+            <button class="aRef" data-a="443">443</button>
+            <button class="aRef" data-a="444">444</button>
+          </div>
+        </div>
+        <div class="seg">
+          <div class="lbl">Instrument</div>
+          <select id="instrument">
+            <option>Guitar</option>
+            <option>Violin</option>
+            <option>Mandolin</option>
+            <option>Banjo</option>
+            <option>Ukulele</option>
+            <option>Bass</option>
+            <option>Chromatic</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <footer>© Gearóid MacUaid — Ceol Gan Eagla — 2025</footer>
   </div>
-</header>
-
-<main>
-  <!-- Gauge -->
-  <section class="gauge-wrap">
-    <canvas id="gauge" width="800" height="400" aria-label="Tuning gauge"></canvas>
-    <div class="readout">
-      <span>Freq: <strong id="freq">—</strong> Hz</span>
-      <span>Note: <span class="note-pill" id="note">—</span></span>
-      <span class="muted">Cents: <strong id="cents">—</strong></span>
-      <span class="muted">Target: <strong id="target">—</strong></span>
-    </div>
-  </section>
-
-  <!-- Instrument selector -->
-  <section class="selector">
-    <div class="inst-list" id="instList"></div>
-    <div class="strings" id="stringRow"></div>
-  </section>
-
-  <!-- Hidden audio element just to keep context stable on some Androids -->
-  <audio id="hiddenAudio" autoplay muted playsinline style="display:none"></audio>
-</main>
-
-<footer>
-  © Gearóid MacUaid — Ceol Gan Eagla — 2025
-</footer>
 
 <script>
-/* ------------------- Instrument presets ------------------- */
-const INSTRUMENTS = [
-  { id:"guitar", name:"Guitar (EADGBE)", strings:["E2","A2","D3","G3","B3","E4"], svg:`
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <g class="art" id="art"><rect x="6" y="28" width="40" height="8" rx="4"></rect>
-      <circle cx="50" cy="32" r="8"></circle><rect x="52" y="29" width="8" height="6" rx="2"></rect></g>
-    </svg>`},
-  { id:"violin", name:"Violin (GDAE)", strings:["G3","D4","A4","E5"], svg:`
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <g class="art" id="art"><ellipse cx="22" cy="32" rx="10" ry="14"></ellipse>
-      <ellipse cx="42" cy="32" rx="10" ry="14"></ellipse>
-      <rect x="31" y="12" width="2" height="40"></rect></g>
-    </svg>`},
-  { id:"mandolin", name:"Mandolin (GDAE)", strings:["G3","D4","A4","E5"], svg:`
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <g class="art" id="art"><ellipse cx="30" cy="38" rx="14" ry="18"></ellipse>
-      <rect x="28" y="10" width="4" height="18"></rect></g>
-    </svg>`},
-  { id:"banjo", name:"Banjo (gDGBD)", strings:["G4","D3","G3","B3","D4"], svg:`
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <g class="art" id="art"><circle cx="28" cy="34" r="14"></circle>
-      <rect x="40" y="30" width="16" height="8" rx="4"></rect></g>
-    </svg>`},
-  { id:"ukulele", name:"Ukulele (GCEA)", strings:["G4","C4","E4","A4"], svg:`
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <g class="art" id="art"><circle cx="26" cy="36" r="12"></circle>
-      <rect x="36" y="30" width="16" height="8" rx="4"></rect></g>
-    </svg>`},
-  { id:"bass", name:"Bass (EADG)", strings:["E1","A1","D2","G2"], svg:`
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <g class="art" id="art"><rect x="8" y="28" width="40" height="8" rx="4"></rect>
-      <rect x="48" y="26" width="10" height="12" rx="2"></rect></g>
-    </svg>`},
-];
-
-/* ------------------- Note math helpers ------------------- */
-const A4 = 440;
-const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-function freqToNoteData(freq){
-  if(!freq || freq<=0) return null;
-  const n = Math.round(12 * Math.log2(freq / A4)) + 69;  // MIDI number
-  const name = NOTE_NAMES[(n + 1200) % 12];
-  const octave = Math.floor(n/12) - 1;
-  const ref = A4 * Math.pow(2, (n-69)/12);
-  const cents = Math.max(-50, Math.min(50, Math.floor(1200*Math.log2(freq/ref))));
-  return { name, octave, midi:n, ref, cents };
-}
-function noteNameToFreq(note){
-  // e.g., "E2", "G#3"
-  const m = note.match(/^([A-G])(#|b)?(\d)$/i);
-  if(!m) return null;
-  let [,L,acc,oct] = m; L=L.toUpperCase(); oct=+oct;
-  let i = "C D E F G A B".split(" ").indexOf(L);
-  const semis = [0,2,4,5,7,9,11][i] + (acc==="#"?1:acc==="b"?-1:0) + (oct+1)*12;
-  return 440 * Math.pow(2,(semis-69)/12);
-}
-
-/* ------------------- UI build ------------------- */
-const instList = document.getElementById('instList');
-const stringRow = document.getElementById('stringRow');
-let selectedInstrument = INSTRUMENTS[0];
-let selectedString = null;
-function renderInstruments(){
-  instList.innerHTML = "";
-  INSTRUMENTS.forEach(inst=>{
-    const div = document.createElement('div');
-    div.className = 'inst' + (inst.id===selectedInstrument.id?' selected':'');
-    div.innerHTML = inst.svg + `<div><div class="name">${inst.name}</div></div>`;
-    div.onclick = ()=>{
-      selectedInstrument = inst; selectedString = null; renderInstruments(); renderStrings();
-    };
-    instList.appendChild(div);
-  });
-  // keep a reference to the active instrument art so we can toggle green
-  document.querySelectorAll('.inst').forEach(d=>{
-    d._art = d.querySelector('#art');
-  });
-}
-function renderStrings(){
-  stringRow.innerHTML = "";
-  (selectedInstrument.strings||[]).forEach(s=>{
-    const chip = document.createElement('button');
-    chip.className='chip' + (selectedString===s?' active':'');
-    chip.textContent = s;
-    chip.onclick=()=>{ selectedString = (selectedString===s? null : s); renderStrings(); };
-    stringRow.appendChild(chip);
-  });
-}
-renderInstruments(); renderStrings();
-
-/* ------------------- Gauge (black needle on white) ------------------- */
+/* ========= UI bits ========= */
 const gauge = document.getElementById('gauge');
 const g = gauge.getContext('2d');
-function drawGauge(cents=0){
-  const w=gauge.width,h=gauge.height; g.clearRect(0,0,w,h);
-  // arc
-  g.strokeStyle = '#000'; g.lineWidth = 6; g.lineCap='round';
-  const cx=w/2, cy=h*0.85, r=h*0.75;
-  g.beginPath(); g.arc(cx,cy,r,Math.PI,0); g.stroke();
-  // ticks (-50..+50 cents)
+const startBtn = document.getElementById('startBtn');
+const stopBtn  = document.getElementById('stopBtn');
+const statusEl = document.getElementById('status');
+const freqEl   = document.getElementById('freq');
+const noteEl   = document.getElementById('note');
+const centsEl  = document.getElementById('cents');
+const aRefBtns = Array.from(document.querySelectorAll('.aRef'));
+
+let A4 = 440;
+aRefBtns.forEach(b=>{
+  b.addEventListener('click', ()=>{
+    aRefBtns.forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    A4 = parseFloat(b.dataset.a);
+  });
+});
+
+/* ========= Audio + Pitch ========= */
+let audioCtx = null, analyser = null, data = null, mediaStream = null, rafId = null;
+let running = false;
+
+async function start() {
+  if (running) return;
+  statusEl.textContent = 'Starting…';
+  startBtn.disabled = true;
+
+  try {
+    // Hint Android that we only need the mic
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false }, video:false });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = audioCtx.createMediaStreamSource(mediaStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 4096;
+    analyser.smoothingTimeConstant = 0.0;
+    src.connect(analyser);
+    data = new Float32Array(analyser.fftSize);
+    running = true;
+    stopBtn.disabled = false;
+    statusEl.textContent = 'Listening';
+    tick();
+  } catch(err){
+    statusEl.textContent = 'Mic blocked';
+    console.error(err);
+    startBtn.disabled = false;
+  }
+}
+
+async function stop() {
+  running = false;
+  stopBtn.disabled = true;
+  startBtn.disabled = false;
+  statusEl.textContent = 'Stopped';
+  freqEl.textContent = '0.00 Hz';
+  noteEl.textContent = '—';
+  centsEl.textContent = '±0 cents';
+  cancelAnimationFrame(rafId);
+  // fully release mic + context (Android fix)
+  try {
+    if (mediaStream) mediaStream.getTracks().forEach(t=>t.stop());
+  } catch(e){}
+  mediaStream = null;
+  try {
+    if (audioCtx && audioCtx.state !== 'closed') await audioCtx.close();
+  } catch(e){}
+  audioCtx = null;
+  analyser = null;
+  drawGauge(0, 0, true);
+}
+
+startBtn.addEventListener('click', start);
+stopBtn.addEventListener('click', stop);
+
+/* ========= Pitch detection (autocorrelation) ========= */
+function detectPitch() {
+  if (!analyser) return null;
+  analyser.getFloatTimeDomainData(data);
+  // ACF
+  let SIZE = data.length;
+  let rms = 0;
+  for (let i=0;i<SIZE;i++) rms += data[i]*data[i];
+  rms = Math.sqrt(rms/SIZE);
+  if (rms < 0.01) return null; // too quiet
+
+  let r1 = 0, r2 = SIZE-1, thres = 0.2;
+  for (let i=0;i<SIZE/2;i++){ if (Math.abs(data[i])<thres){r1=i;break;} }
+  for (let i=1;i<SIZE/2;i++){ if (Math.abs(data[SIZE-i])<thres){r2=SIZE-i;break;} }
+  data = data.slice(r1, r2); SIZE = data.length;
+
+  const c = new Float32Array(SIZE);
+  for (let i=0;i<SIZE;i++){
+    let sum = 0;
+    for (let j=0;j<SIZE-i;j++) sum += data[j]*data[j+i];
+    c[i] = sum;
+  }
+  let d=0; while (c[d] > c[d+1]) d++;
+  let maxval=-1, maxpos=-1;
+  for (let i=d;i<SIZE;i++){ if (c[i] > maxval){ maxval=c[i]; maxpos=i; } }
+  if (maxpos <= 0) return null;
+
+  // parabolic interpolation
+  const x1 = c[maxpos-1], x2 = c[maxpos], x3 = c[maxpos+1] || x2;
+  const a = (x1 + x3 - 2*x2)/2, b = (x3 - x1)/2;
+  let shift = b/(2*a);
+  const period = (maxpos + (isFinite(shift)?shift:0));
+  const freq = audioCtx.sampleRate / period;
+  if (freq < 20 || freq > 5000) return null;
+  return freq;
+}
+
+/* ========= Note helpers ========= */
+function freqToNote(f){
+  const n = 12 * (Math.log2(f / (A4))) + 57; // 57 -> A4=69 minus 12
+  const midi = Math.round(n) + 12;           // convert back to MIDI number
+  const cents = Math.round(1200 * Math.log2(f / noteToFreq(midi)));
+  const names = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const noteName = names[midi % 12] + (Math.floor(midi/12)-1);
+  return { midi, noteName, cents };
+}
+function noteToFreq(midi){
+  return A4 * Math.pow(2, (midi-69)/12);
+}
+
+/* ========= Gauge drawing ========= */
+function drawGauge(cents, hz, idle=false){
+  const W = gauge.width, H = gauge.height;
+  g.clearRect(0,0,W,H);
+
+  const cx = W/2, cy = H*0.8;           // center bottom-ish
+  const r  = Math.min(W, H*1.2)/2.0;    // radius
+  const start = Math.PI*0.75, end = Math.PI*0.25; // 270° arc
+
+  // arc track
+  g.lineWidth = 18;
+  g.strokeStyle = '#1f2f4c';
+  g.beginPath(); g.arc(cx, cy, r-22, start, end, true); g.stroke();
+
+  // minor ticks
+  g.strokeStyle = '#2a3b5e';
   g.lineWidth = 2;
-  for(let i=-50;i<=50;i+=5){
-    const ang = Math.PI*(1 + i/100);
-    const len = (i%25===0)?18:10;
-    const x1=cx + r*Math.cos(ang), y1=cy + r*Math.sin(ang);
-    const x2=cx + (r-len)*Math.cos(ang), y2=cy + (r-len)*Math.sin(ang);
+  for(let i=-50;i<=50;i+=10){
+    const t = (i+50)/100; // 0..1
+    const ang = start + (end-start)*t;
+    const x1 = cx + (r-40)*Math.cos(ang);
+    const y1 = cy + (r-40)*Math.sin(ang);
+    const x2 = cx + (r-20)*Math.cos(ang);
+    const y2 = cy + (r-20)*Math.sin(ang);
     g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke();
   }
-  // center cap
-  g.fillStyle='#000'; g.beginPath(); g.arc(cx,cy,8,0,Math.PI*2); g.fill();
-  // needle (THICK, black)
-  const clamp = Math.max(-50, Math.min(50, cents||0));
-  const angle = Math.PI*(1 + clamp/100);
-  const nx=cx + (r-24)*Math.cos(angle), ny=cy + (r-24)*Math.sin(angle);
-  g.strokeStyle='#000'; g.lineWidth = 10;
-  g.beginPath(); g.moveTo(cx,cy); g.lineTo(nx,ny); g.stroke();
+
+  // center dot
+  g.fillStyle = '#95a8cc';
+  g.beginPath(); g.arc(cx, cy, 5, 0, Math.PI*2); g.fill();
+
+  // needle (white and thick)
+  const clamp = (v,min,max)=>Math.min(max,Math.max(min,v));
+  const c = clamp(cents||0, -50, 50);
+  const t = (c + 50)/100; // map -50..50 → 0..1
+  const ang = start + (end-start)*t;
+
+  g.save();
+  g.translate(cx, cy);
+  g.rotate(ang - Math.PI);
+  g.strokeStyle = '#ffffff';
+  g.lineCap = 'round';
+  g.lineWidth = 6; // THICK white needle
+  g.beginPath();
+  g.moveTo(0,0);
+  g.lineTo(r-28, 0);
+  g.stroke();
+  g.restore();
+
+  // in-tune band
+  g.strokeStyle = 'rgba(34,197,94,.9)'; // green
+  g.lineWidth = 10;
+  const mid = (start+end)/2;
+  g.beginPath(); g.arc(cx, cy, r-22, mid-0.04, mid+0.04, false); g.stroke();
+
+  // frequency label (large)
+  g.fillStyle = 'var(--ink)';
+  g.textAlign='center';
+  g.font = '700 26px system-ui, Segoe UI, Roboto';
+  g.fillText(idle ? '0.00 Hz' : `${hz.toFixed(2)} Hz`, cx, cy-26);
+
+  // cents label
+  g.font = '500 18px system-ui, Segoe UI, Roboto';
+  g.fillStyle = '#9fb0d0';
+  g.fillText(`${idle ? 0 : Math.round(c)} cents`, cx, cy+30);
 }
 
-/* ------------------- Pitch detection (auto-correlation) ------------------- */
-let audioCtx=null, analyser=null, stream=null, dataBuf=null, rafId=null;
-const freqEl = document.getElementById('freq');
-const noteEl = document.getElementById('note');
-const centsEl = document.getElementById('cents');
-const targetEl = document.getElementById('target');
-const hiddenAudio = document.getElementById('hiddenAudio');
+/* ========= Loop ========= */
+function tick(){
+  if (!running) return;
+  const f = detectPitch();
+  if (f){
+    const {noteName, cents} = freqToNote(f);
+    freqEl.textContent = `${f.toFixed(2)} Hz`;
+    noteEl.textContent = noteName;
+    centsEl.textContent = `${cents>0?'+':''}${cents} cents`;
+    statusEl.textContent = Math.abs(cents)<=3 ? 'In tune' : (cents<0?'Flat':'Sharp');
 
-async function start(){
-  // UI
-  document.getElementById('startBtn').classList.add('active');
-  document.getElementById('stopBtn').classList.remove('active');
+    // subtle glow on perfect hits
+    if (Math.abs(cents)<=2){
+      document.querySelector('.card').classList.remove('glow-ok');
+      // reflow to retrigger animation
+      void document.querySelector('.card').offsetWidth;
+      document.querySelector('.card').classList.add('glow-ok');
+    }
 
-  // audio
-  stream = await navigator.mediaDevices.getUserMedia({audio:{
-    echoCancellation:false, noiseSuppression:false, autoGainControl:false
-  }});
-  audioCtx = new (window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});
-  const src = audioCtx.createMediaStreamSource(stream);
-  analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 2048;
-  src.connect(analyser);
-  dataBuf = new Float32Array(analyser.fftSize);
-
-  // keep context “running” on some Androids
-  hiddenAudio.srcObject = stream;
-
-  loop();
-}
-function stop(){
-  cancelAnimationFrame(rafId);
-  if(stream){ stream.getTracks().forEach(t=>t.stop()); hiddenAudio.srcObject=null; }
-  if(audioCtx){ audioCtx.close(); }
-  stream=null; audioCtx=null; analyser=null; dataBuf=null;
-
-  document.getElementById('startBtn').classList.remove('active');
-  document.getElementById('stopBtn').classList.add('active');
-
-  // reset UI and art color
-  freqEl.textContent='—'; noteEl.textContent='—'; centsEl.textContent='—'; targetEl.textContent='—';
-  drawGauge(0);
-  document.querySelectorAll('.inst').forEach(d=> d._art && d._art.classList.remove('in-tune'));
-}
-function autoCorrelate(buf, sampleRate){
-  // basic YIN/ACF hybrid, good enough for tuners
-  let SIZE = buf.length;
-  // normalize and remove DC
-  let rms=0; for(let i=0;i<SIZE;i++){ let v=buf[i]; rms+=v*v; }
-  rms = Math.sqrt(rms/SIZE);
-  if(rms<0.008) return -1; // too quiet
-  let MAX_SAMPLES = Math.floor(SIZE/2);
-  let bestOffset=-1, bestCorr=0;
-  for(let offset=8; offset<MAX_SAMPLES; offset++){
-    let corr=0;
-    for(let i=0;i<MAX_SAMPLES; i++) corr += buf[i]*buf[i+offset];
-    corr = corr/MAX_SAMPLES;
-    if(corr>bestCorr){ bestCorr=corr; bestOffset=offset; }
+    drawGauge(cents, f, false);
+  } else {
+    statusEl.textContent = 'Listening…';
+    drawGauge(0, 0, true);
   }
-  if(bestCorr>0.01){
-    let freq = sampleRate/bestOffset;
-    return freq;
-  }
-  return -1;
-}
-function nearestTarget(freq){
-  if(!freq) return null;
-  const pool = selectedInstrument.strings.map(s=>({name:s, freq:noteNameToFreq(s)}));
-  // if a string is selected, force that target; else choose nearest instrument string
-  let candidates = pool;
-  if(selectedString){
-    const f = noteNameToFreq(selectedString);
-    candidates = [{name:selectedString, freq:f}];
-  }
-  let best=null, bestDiff=1e9;
-  for(const c of candidates){
-    const diff = Math.abs(1200*Math.log2(freq/c.freq)); // cents difference
-    if(diff<bestDiff){ bestDiff=diff; best=c; }
-  }
-  return {targetName:best.name, targetFreq:best.freq, centsOff:Math.round((1200*Math.log2(freq/best.freq))*10)/10};
-}
-function loop(){
-  analyser.getFloatTimeDomainData(dataBuf);
-  const freq = autoCorrelate(dataBuf, audioCtx.sampleRate);
-  if(freq>0){
-    const nd = freqToNoteData(freq);
-    const tgt = nearestTarget(freq);
-    const cents = Math.max(-50, Math.min(50, Math.round(nd.cents)));
-    drawGauge(cents);
-    freqEl.textContent = freq.toFixed(1);
-    noteEl.textContent = `${nd.name}${nd.octave}`;
-    centsEl.textContent = cents>0?`+${cents}`:`${cents}`;
-    targetEl.textContent = `${tgt.targetName} (${tgt.targetFreq.toFixed(1)} Hz)`;
-    // turn instrument art green only when within 5 cents of target
-    const inTune = Math.abs(tgt.centsOff) <= 5;
-    document.querySelectorAll('.inst').forEach((d)=>{
-      if(d.classList.contains('selected')){
-        if(d._art){ d._art.classList.toggle('in-tune', inTune); }
-      }else{
-        if(d._art){ d._art.classList.remove('in-tune'); }
-      }
-    });
-  }else{
-    drawGauge(0);
-    freqEl.textContent='…';
-    centsEl.textContent='—';
-  }
-  rafId = requestAnimationFrame(loop);
+  rafId = requestAnimationFrame(tick);
 }
 
-/* ------------------- Wire up buttons ------------------- */
-const startBtn=document.getElementById('startBtn');
-const stopBtn=document.getElementById('stopBtn');
-startBtn.onclick = async ()=>{
-  try{ await start(); }catch(e){ alert('Mic error: '+e.message); stop(); }
-};
-stopBtn.onclick = ()=> stop();
-
-// draw initial gauge
-drawGauge(0);
+/* initial paint */
+drawGauge(0,0,true);
 </script>
 </body>
 </html>
