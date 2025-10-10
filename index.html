@@ -1,12 +1,11 @@
-<!doctype html>
+ <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Chromatic Tuner (Dark, No Frequency)</title>
+<title>Ceol Gan Eagla — Chromatic Tuner (Dark, Tunings Visible)</title>
 <meta name="theme-color" content="#0b1220"/>
 <link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230b1220"/><path d="M12 32h40" stroke="%23a4b0c0" stroke-width="6" stroke-linecap="round"/><circle cx="32" cy="32" r="8" fill="%23a4f2b5"/></svg>'/>
-
 <style>
   :root{
     --bg:#0b1220; --panel:#0f172a; --card:#0c1324; --ink:#eaf2ff; --muted:#a4b0c0; --line:#1f2a44;
@@ -27,10 +26,6 @@
   .badge{padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:700;color:var(--muted)}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:var(--glow)}
   .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
-
-  /* Preserved logo space (image removed but space kept) */
-  .logo-space{height:52px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--line);border-radius:14px;background:var(--card);color:var(--muted);font-size:12px}
-
   /* Instrument chips */
   .tray{display:flex;flex-wrap:wrap;gap:8px}
   .instrument-btn{
@@ -39,8 +34,15 @@
   }
   .instrument-btn.active{outline:2px solid #3b82f6}
   .instrument-btn.tuned{background:#0e2919;border-color:#1f8a4e;}
-
-  /* Tuning bar */
+  /* Tuning readout + strings */
+  .tuning{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted)}
+  .string-row{display:flex;gap:6px;flex-wrap:wrap}
+  .string-chip{
+    padding:6px 10px;border:1px solid var(--line);background:var(--card);border-radius:999px;font-weight:800;color:var(--ink);min-width:44px;text-align:center
+  }
+  .string-chip.active{outline:2px solid #3b82f6}
+  .string-chip.tuned{background:#0e2919;border-color:#1f8a4e}
+  /* Bar */
   .bar-wrap{display:grid;gap:12px}
   .bar{
     position:relative;height:36px;border-radius:999px;background:var(--bar);
@@ -57,17 +59,15 @@
   }
   .readout{display:grid;gap:6px;justify-items:center;text-align:center}
   .note{font-size:clamp(28px,10vw,48px);font-weight:900;letter-spacing:1px}
-  /* removed .freq */
   .status{font-size:clamp(16px,4vw,22px);font-weight:900;padding:6px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);min-width:140px}
   .status.low{color:var(--low);box-shadow:0 0 0 2px rgba(255,138,31,.15) inset}
   .status.high{color:var(--high);box-shadow:0 0 0 2px rgba(239,68,68,.15) inset}
   .status.ok{color:var(--ok);box-shadow:0 0 0 2px rgba(34,197,94,.15) inset}
   .help{font-size:12px;color:var(--muted)}
-
   /* Background glow when tuned */
-  .wrap.tuned{background: radial-gradient(1200px 400px at 50% -200px, rgba(34,197,94,.12), transparent 60%), var(--bg);}
-
+  .wrap.tuned{ background: radial-gradient(1200px 400px at 50% -200px, rgba(34,197,94,.12), transparent 60%), var(--bg); }
   footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
+  .error{color:#fca5a5;font-size:13px}
 </style>
 </head>
 <body>
@@ -80,9 +80,7 @@
     </div>
   </header>
 
-  <!-- Space where <img src="logo.png"> used to be -->
-  <div class="logo-space" aria-hidden="true">Logo space preserved (image hidden)</div>
-
+  <!-- (Logo removed but layout unchanged) -->
   <div class="panel">
     <div class="row">
       <div class="tray" id="instrumentTray" aria-label="Choose instrument">
@@ -97,7 +95,16 @@
         <button class="instrument-btn" data-inst="viola" title="Viola (CGDA)">🎻<span>Viola</span></button>
         <button class="instrument-btn" data-inst="cello" title="Cello (CGDA)">🎻<span>Cello</span></button>
       </div>
-      <span class="badge">Mode: Auto string detect</span>
+      <span class="badge" id="modeBadge">Mode: Auto string detect</span>
+    </div>
+
+    <div class="row" style="margin-top:8px">
+      <div class="tuning"><strong>Tuning:</strong> <span id="tuningText">E A D G B E</span></div>
+      <div class="error" id="err"></div>
+    </div>
+
+    <div class="row">
+      <div class="string-row" id="stringRow"></div>
     </div>
   </div>
 
@@ -110,7 +117,6 @@
     </div>
     <div class="readout">
       <div class="note" id="note">—</div>
-      <!-- frequency display removed -->
       <div class="status" id="status">Listening…</div>
       <div class="help">Bar turns <b style="color:var(--ok)">green</b> when in tune; <span style="color:var(--low)">orange</span> = too low, <span style="color:var(--high)">red</span> = too high.</div>
     </div>
@@ -124,7 +130,7 @@
   const A4 = 440;
   const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
-  // Instruments
+  // Instruments + tunings
   const INSTRUMENTS = {
     guitar:       [{n:"E2",f:82.4069},{n:"A2",f:110.000},{n:"D3",f:146.832},{n:"G3",f:196.000},{n:"B3",f:246.942},{n:"E4",f:329.628}],
     violin:       [{n:"G3",f:196.000},{n:"D4",f:293.665},{n:"A4",f:440.000},{n:"E5",f:659.255}],
@@ -147,6 +153,9 @@
   const bar = document.getElementById('bar');
   const noteEl = document.getElementById('note');
   const statusEl = document.getElementById('status');
+  const tuningText = document.getElementById('tuningText');
+  const stringRow = document.getElementById('stringRow');
+  const errEl = document.getElementById('err');
 
   let currentInstrumentKey = 'guitar';
 
@@ -163,16 +172,32 @@
   let cand = {idx:-1, count:0};
 
   // Anti-wildness parameters
-  const LEVEL_GATE = 0.012;    // RMS gate (silence/noise)
-  const YIN_THRESH = 0.10;     // YIN absolute threshold (lower = stricter)
-  const CONF_GATE  = 0.6;      // confidence gate
+  const LEVEL_GATE = 0.012;
+  const YIN_THRESH = 0.10;
+  const CONF_GATE  = 0.6;
   const MIN_HZ=50, MAX_HZ=1200;
-  const SMOOTH_A = 0.92;       // needle smoothing (EMA)
-  const DEADBAND_CENTS = 1.5;  // ignore tiny jitter
-  const LOCK_NEED_FRAMES = 14; // frames to lock a string
-  const LOCK_TIME_MS = 6000;   // how long to hold lock
-  const C_HISTORY = 7;         // length of cents history for median
+  const SMOOTH_A = 0.92;
+  const DEADBAND_CENTS = 1.5;
+  const LOCK_NEED_FRAMES = 14;
+  const LOCK_TIME_MS = 6000;
+  const C_HISTORY = 7;
   const centsHistory = [];
+
+  // Init tuning UI
+  function renderTuningUI(){
+    const inst = INSTRUMENTS[currentInstrumentKey];
+    const names = inst.map(s => s.n.replace(/\d+$/,''));
+    tuningText.textContent = names.join(' ');
+    stringRow.innerHTML = '';
+    inst.forEach((s, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'string-chip';
+      chip.textContent = s.n.replace(/\d+$/,'');
+      chip.dataset.idx = i;
+      stringRow.appendChild(chip);
+    });
+  }
+  renderTuningUI();
 
   tray.addEventListener('click', (e)=>{
     const btn = e.target.closest('.instrument-btn');
@@ -182,6 +207,8 @@
     currentInstrumentKey = btn.dataset.inst;
     lock = {active:false,stringIdx:-1,expires:0};
     cand = {idx:-1,count:0};
+    [...stringRow.children].forEach(c=>c.className='string-chip');
+    renderTuningUI();
   });
 
   // Helpers
@@ -207,7 +234,7 @@
     return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
   }
 
-  // ----------- YIN pitch detection -----------
+  // YIN detector
   function yin(buf, sampleRate){
     const N = buf.length;
     const tauMax = Math.min(Math.floor(sampleRate / 50), N-1);
@@ -256,17 +283,49 @@
     pointer.style.left = (t*100) + "%";
   }
 
+  // Mic: robust start with fallbacks + clear errors
+  async function getMicStream() {
+    const tries = [
+      { audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false, channelCount:1 } },
+      { audio: { channelCount:1 } },
+      { audio: true }
+    ];
+    let lastErr;
+    for (const c of tries) {
+      try { return await navigator.mediaDevices.getUserMedia(c); }
+      catch (e) { lastErr = e; }
+    }
+    throw lastErr;
+  }
+
   async function start(){
+    errEl.textContent = "";
     if (running) return;
-    try{
-      mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio:{ echoCancellation:false, noiseSuppression:false, autoGainControl:false, channelCount:1, sampleRate:48000 }
-      });
-    }catch(err){ alert("Microphone permission denied or unavailable.\n"+err); return; }
+
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost'){
+      errEl.textContent = "Mic needs HTTPS. Open via GitHub Pages (https://USERNAME.github.io/REPO/).";
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      errEl.textContent = "This browser/page can’t open the mic. Try latest Chrome or Safari.";
+      return;
+    }
+    try {
+      mediaStream = await getMicStream();
+    } catch (err) {
+      const hint =
+        err.name === "NotAllowedError" ? "Permission blocked. Tap the padlock → Allow microphone and reload." :
+        err.name === "NotFoundError"   ? "No microphone found. Check system settings." :
+        err.name === "NotReadableError"? "Mic busy in another app. Close other apps using mic." :
+        err.name === "SecurityError"   ? "Needs HTTPS (use GitHub Pages URL)." :
+        ("Mic error: " + err.name);
+      errEl.textContent = hint;
+      return;
+    }
 
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state !== "running") { try{ await audioCtx.resume(); }catch(e){} }
 
-    // Band-pass filters to calm rumble/hiss
     hpFilter = audioCtx.createBiquadFilter(); hpFilter.type="highpass"; hpFilter.frequency.value=50;
     lpFilter = audioCtx.createBiquadFilter(); lpFilter.type="lowpass";  lpFilter.frequency.value=1800;
 
@@ -281,7 +340,6 @@
     toggleBtn.textContent = "Stop Mic";
     toggleBtn.classList.remove('start'); toggleBtn.classList.add('stop');
     micStatus.textContent = "Mic: On";
-
     loop();
   }
 
@@ -301,6 +359,7 @@
     centsHistory.length = 0;
     lock = {active:false,stringIdx:-1,expires:0};
     cand = {idx:-1,count:0};
+    [...stringRow.children].forEach(c=>c.className='string-chip');
   }
 
   toggleBtn.addEventListener('click', () => running ? stop() : start());
@@ -326,6 +385,7 @@
       const inst = INSTRUMENTS[currentInstrumentKey];
       let idx = nearestStringIdx(hz, inst);
 
+      // Lock logic
       if (!lock.active){
         if (cand.idx === idx) cand.count++; else { cand.idx=idx; cand.count=1; }
         if (cand.count > LOCK_NEED_FRAMES){ lock={active:true,stringIdx:idx,expires:performance.now()+LOCK_TIME_MS}; cand={idx:-1,count:0}; }
@@ -339,7 +399,7 @@
       centsHistory.push(cents); if (centsHistory.length > C_HISTORY) centsHistory.shift();
       cents = median(centsHistory);
 
-      setPointerByCents(cents);
+      // UI: pointer + note + status
       const note = freqToNote(hz);
       noteEl.textContent = `${note.name}${note.octave}`;
 
@@ -350,14 +410,29 @@
       else { cls+=" high"; txt="Too High"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(239,68,68,.25), var(--glow)"; }
       statusEl.className = cls; statusEl.textContent = txt;
 
-      // Chip highlight when the locked string is in tune
-      [...tray.children].forEach((btn,i)=> btn.classList.toggle('tuned', (lock.active && i === lock.stringIdx && abs <= 5)));
+      // Needle
+      const clamp = Math.max(-50, Math.min(50, cents));
+      const delta = clamp - displayCents;
+      if (Math.abs(delta) >= DEADBAND_CENTS) {
+        displayCents = displayCents * SMOOTH_A + clamp * (1 - SMOOTH_A);
+        const t = (displayCents + 50) / 100; pointer.style.left = (t*100) + "%";
+      }
+
+      // Update string chips
+      [...stringRow.children].forEach((chip,i)=>{
+        chip.className = 'string-chip' + (i===idx ? ' active' : '');
+      });
+      if (lock.active && abs <= 5){
+        stringRow.children[idx]?.classList.add('tuned');
+      }
 
     } else {
       statusEl.className = "status";
       statusEl.textContent = "Listening…";
       appEl.classList.remove('tuned');
-      setPointerByCents(displayCents * 0.95);
+      // relax pointer
+      displayCents = displayCents*0.95;
+      const t = (displayCents + 50) / 100; pointer.style.left = (t*100) + "%";
     }
 
     requestAnimationFrame(loop);
@@ -365,4 +440,4 @@
 })();
 </script>
 </body>
-</html>
+</html> 
