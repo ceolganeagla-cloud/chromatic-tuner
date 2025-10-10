@@ -1,166 +1,193 @@
- <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Chromatic Tuner</title>
+<title>Ceol Gan Eagla — Tuner</title>
 <meta name="theme-color" content="#0b1220"/>
+
+<!-- Irish-flag circular favicon -->
+<link rel="icon" href='data:image/svg+xml;utf8,
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<defs><clipPath id="c"><circle cx="32" cy="32" r="32"/></clipPath></defs>
+<g clip-path="url(#c)">
+<rect width="64" height="64" fill="%23fff"/>
+<rect width="21.34" height="64" x="0" fill="%2309a061"/>
+<rect width="21.33" height="64" x="42.67" fill="%23ff7f4d"/>
+</g>
+</svg>'/>
+
 <style>
 :root{
   --bg:#0b1220; --panel:#0f172a; --card:#0c1324; --ink:#eaf2ff; --muted:#a4b0c0; --line:#1f2a44;
   --ok:#22c55e; --low:#ff8a1f; --high:#ef4444; --bar:#111a2e; --bar-edge:#1a2744; --glow:0 10px 30px rgba(0,0,0,.45);
 }
+
+/* Reset + no scroll */
 *{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;overflow:hidden}
 
-/* Fullscreen layout (portrait + landscape) */
-html,body{
-  height:100%;
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
-  display:flex;
-  justify-content:center;
-}
-.wrap{
+/* Single-screen layout: fit exactly in the visible viewport */
+.app{
+  height:100svh;              /* visible viewport height (fixes mobile URL bar) */
+  width:100vw;
   display:grid;
-  grid-template-rows:auto auto auto 1fr auto;
-  gap:12px;
-  min-height:100svh;         /* key: use the visible viewport */
-  padding:clamp(10px,2.5vw,18px);
-  width:100%;
-  max-width:900px;           /* keeps it tidy on tablets/desktop */
-  margin:auto;
+  grid-template-rows:auto auto 1fr auto;  /* header / controls / bar / footer */
+  gap:0.9rem;
+  padding:clamp(10px,2.6vw,16px);
+  max-width:960px;
+  margin:0 auto;
 }
 
-/* Header + controls */
-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-h1{margin:0;font-size:clamp(20px,5.2vw,32px);letter-spacing:.3px}
-.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.title{
+  display:flex;align-items:center;gap:.55rem;font-weight:900;letter-spacing:.3px;
+  font-size:clamp(18px,5vw,28px)
+}
+.flag{
+  width:1.65em;height:1.65em;border-radius:50%;display:inline-grid;place-items:center;
+  background:conic-gradient(from 90deg,#09a061 0 120deg,#fff 0 240deg,#ff7f4d 0 1turn);
+  box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 2px 6px rgba(0,0,0,.35)
+}
+.controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
 button{
   appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);
-  padding:12px 16px;border-radius:16px;font-weight:800;cursor:pointer;box-shadow:var(--glow);
-  font-size:clamp(14px,3.8vw,16px)
+  padding:.6rem .9rem;border-radius:16px;font-weight:800;cursor:pointer;box-shadow:var(--glow);
+  font-size:clamp(13px,3.6vw,15px)
 }
 button.toggle.start{background:#16a34a;color:white;border-color:#106c31}
 button.toggle.stop{background:#b91c1c;color:white;border-color:#7f1212}
 .badge{
-  padding:10px 14px;border-radius:999px;background:var(--panel);border:1px solid var(--line);
-  font-weight:700;color:var(--muted);font-size:clamp(12px,3.4vw,14px)
+  padding:.45rem .7rem;border-radius:999px;background:var(--panel);border:1px solid var(--line);
+  font-weight:700;color:var(--muted);font-size:clamp(11px,3.2vw,13px)
 }
 
-/* Cards */
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:14px;box-shadow:var(--glow)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+/* Card that holds instruments + tuning + meter — compact to avoid scroll */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:.7rem;box-shadow:var(--glow)}
+.row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:space-between}
 
-/* Instrument chips */
-.tray{display:flex;flex-wrap:wrap;gap:10px}
+/* Instrument chips (wrap nicely) */
+.tray{display:flex;flex-wrap:wrap;gap:.5rem;max-height:28vh;overflow:auto} /* overflow just for chip row if too many */
 .instrument-btn{
-  display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:14px;
+  display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;border-radius:14px;
   background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:800;color:var(--ink);
-  font-size:clamp(14px,3.8vw,16px)
+  font-size:clamp(12px,3.4vw,14px)
 }
 .instrument-btn.active{outline:2px solid #3b82f6}
 .instrument-btn.tuned{background:#0e2919;border-color:#1f8a4e}
 
 /* Tuning readout + strings */
-.tuning{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:clamp(13px,3.6vw,15px)}
-.string-row{display:flex;gap:8px;flex-wrap:wrap}
+.tuning{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:clamp(12px,3.2vw,14px)}
+.string-row{display:flex;gap:.45rem;flex-wrap:wrap}
 .string-chip{
-  padding:8px 12px;border:1px solid var(--line);background:var(--card);border-radius:999px;
-  font-weight:900;color:var(--ink);min-width:48px;text-align:center;font-size:clamp(14px,3.8vw,16px)
+  padding:.4rem .6rem;border:1px solid var(--line);background:var(--card);border-radius:999px;
+  font-weight:900;color:var(--ink);min-width:2.3rem;text-align:center;font-size:clamp(12px,3.4vw,14px)
 }
 .string-chip.active{outline:2px solid #3b82f6}
 .string-chip.tuned{background:#0e2919;border-color:#1f8a4e}
 
-/* Bar */
-.bar-wrap{display:grid;gap:14px}
+/* Middle section: bar + readout — this grid area flexes to fill leftover space */
+.center{
+  display:grid;grid-template-rows:auto 1fr auto;gap:.7rem;min-height:0;
+}
+.bar-wrap{display:grid;gap:.6rem}
 .bar{
-  position:relative;height:46px;border-radius:999px;background:var(--bar);
+  position:relative;height:clamp(36px,7.5vh,56px);border-radius:999px;background:var(--bar);
   border:1px solid var(--bar-edge);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), var(--glow);
-  overflow:hidden;
+  overflow:hidden;min-height:34px
 }
 .bar .zone.low{position:absolute;left:0;top:0;bottom:0;width:50%;background:linear-gradient(90deg, rgba(255,138,31,.18), rgba(255,138,31,0));}
 .bar .zone.high{position:absolute;right:0;top:0;bottom:0;width:50%;background:linear-gradient(270deg, rgba(239,68,68,.18), rgba(239,68,68,0));}
 .bar .zone.ok{position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:12%;background:linear-gradient(90deg, rgba(34,197,94,.3), rgba(34,197,94,.0) 60%);}
 .pointer{
   position:absolute;top:50%;transform:translate(-50%,-50%);
-  width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:22px solid #eaf2ff;
+  width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:18px solid #eaf2ff;
   filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));
 }
 
-/* Readout */
-.readout{display:grid;gap:10px;justify-items:center;text-align:center}
-.note{font-size:clamp(34px,11vw,56px);font-weight:900;letter-spacing:1px}
-.status{font-size:clamp(18px,4.6vw,24px);font-weight:900;padding:8px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line);min-width:160px}
+.readout{display:grid;gap:.4rem;justify-items:center;text-align:center}
+.note{font-size:clamp(28px,10vw,44px);font-weight:900;letter-spacing:1px}
+.status{font-size:clamp(15px,4vw,20px);font-weight:900;padding:.4rem .7rem;border-radius:12px;background:var(--card);border:1px solid var(--line);min-width:130px;text-align:center}
 .status.low{color:var(--low);box-shadow:0 0 0 2px rgba(255,138,31,.15) inset}
 .status.high{color:var(--high);box-shadow:0 0 0 2px rgba(239,68,68,.15) inset}
 .status.ok{color:var(--ok);box-shadow:0 0 0 2px rgba(34,197,94,.15) inset}
-.help{font-size:clamp(12px,3.4vw,14px);color:var(--muted)}
+.help{font-size:clamp(11px,3vw,13px);color:var(--muted)}
 
 /* BG glow when tuned */
-.wrap.tuned{ background: radial-gradient(1200px 400px at 50% -200px, rgba(34,197,94,.12), transparent 60%), var(--bg); }
+.app.tuned{ background: radial-gradient(1200px 380px at 50% -180px, rgba(34,197,94,.10), transparent 60%), var(--bg); }
 
-footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
-.error{color:#fca5a5;font-size:13px}
+/* Footer stays tiny to preserve space */
+footer{text-align:center;color:var(--muted);font-size:11px}
 
-/* Mic level meter */
-.meter{height:10px;border-radius:999px;background:#1f2a44;overflow:hidden;width:200px;border:1px solid var(--line)}
+/* Error + mic meter */
+.error{color:#fca5a5;font-size:12px}
+.meter{height:8px;border-radius:999px;background:#1f2a44;overflow:hidden;width:150px;border:1px solid var(--line)}
 .meter > div{height:100%;width:0;background:#3b82f6;transition:width .1s linear}
+
+/* Safety: if the phone is very short, nudge sizes smaller so no scroll ever */
+@media (max-height: 620px){
+  .tray{max-height:24vh}
+  .note{font-size:clamp(24px,9.5vw,40px)}
+}
 </style>
 </head>
 <body>
-<div class="wrap" id="app">
+<div class="app" id="app">
   <header>
-    <h1>Ceol Gan Eagla — Chromatic Tuner</h1>
+    <div class="title"><span class="flag" aria-hidden="true"></span> <span>Ceol Gan Eagla — Chromatic Tuner</span></div>
     <div class="controls">
       <button id="toggleBtn" class="toggle start">Start Mic</button>
       <span class="badge" id="micStatus">Mic: Off</span>
     </div>
   </header>
 
+  <!-- Instruments + tuning + mic level -->
   <div class="panel">
     <div class="row">
       <div class="tray" id="instrumentTray" aria-label="Choose instrument">
-        <button class="instrument-btn active" data-inst="guitar">🎸<span>Guitar</span></button>
-        <button class="instrument-btn" data-inst="violin">🎻<span>Violin</span></button>
-        <button class="instrument-btn" data-inst="tenorbanjo">🪕<span>Tenor Banjo</span></button>
-        <button class="instrument-btn" data-inst="mandolin">🎶<span>Mandolin</span></button>
-        <button class="instrument-btn" data-inst="bouzouki_gdae">🎶<span>Bouzouki GDAE</span></button>
-        <button class="instrument-btn" data-inst="bouzouki_gdad">🎶<span>Bouzouki GDAD</span></button>
-        <button class="instrument-btn" data-inst="ukulele">🎵<span>Ukulele</span></button>
-        <button class="instrument-btn" data-inst="bass4">🎸<span>Bass</span></button>
-        <button class="instrument-btn" data-inst="viola">🎻<span>Viola</span></button>
-        <button class="instrument-btn" data-inst="cello">🎻<span>Cello</span></button>
+        <button class="instrument-btn active" data-inst="guitar">🎸 Guitar</button>
+        <button class="instrument-btn" data-inst="violin">🎻 Violin</button>
+        <button class="instrument-btn" data-inst="tenorbanjo">🪕 Tenor Banjo</button>
+        <button class="instrument-btn" data-inst="mandolin">🎶 Mandolin</button>
+        <button class="instrument-btn" data-inst="bouzouki_gdae">🎶 Bouzouki GDAE</button>
+        <button class="instrument-btn" data-inst="bouzouki_gdad">🎶 Bouzouki GDAD</button>
+        <button class="instrument-btn" data-inst="ukulele">🎵 Ukulele</button>
+        <button class="instrument-btn" data-inst="bass4">🎸 Bass</button>
+        <button class="instrument-btn" data-inst="viola">🎻 Viola</button>
+        <button class="instrument-btn" data-inst="cello">🎻 Cello</button>
       </div>
       <span class="badge" id="modeBadge">Mode: Auto string detect</span>
     </div>
 
-    <div class="row" style="margin-top:8px">
+    <div class="row" style="margin-top:.4rem">
       <div class="tuning"><strong>Tuning:</strong> <span id="tuningText">E A D G B E</span></div>
-      <div class="error" id="err"></div>
-    </div>
-
-    <div class="row">
-      <div class="string-row" id="stringRow"></div>
-      <div style="display:flex;align-items:center;gap:10px">
+      <div style="display:flex;align-items:center;gap:.5rem">
         <span class="badge">Mic Level</span>
         <div class="meter"><div id="levelBar"></div></div>
       </div>
     </div>
+
+    <div class="row">
+      <div class="string-row" id="stringRow"></div>
+      <div class="error" id="err"></div>
+    </div>
   </div>
 
-  <div class="panel bar-wrap">
-    <div class="bar" id="bar">
-      <div class="zone low"></div>
-      <div class="zone ok"></div>
-      <div class="zone high"></div>
-      <div class="pointer" id="pointer" style="left:50%"></div>
-    </div>
-    <div class="readout">
-      <div class="note" id="note">—</div>
-      <div class="status" id="status">Stopped</div>
-      <div class="help">Bar turns <b style="color:var(--ok)">green</b> when in tune; <span style="color:var(--low)">orange</span> = too low, <span style="color:var(--high)">red</span> = too high.</div>
+  <!-- Center section: bar + readout -->
+  <div class="center">
+    <div class="panel bar-wrap">
+      <div class="bar" id="bar">
+        <div class="zone low"></div>
+        <div class="zone ok"></div>
+        <div class="zone high"></div>
+        <div class="pointer" id="pointer" style="left:50%"></div>
+      </div>
+      <div class="readout">
+        <div class="note" id="note">—</div>
+        <div class="status" id="status">Stopped</div>
+        <div class="help">Bar turns <b style="color:var(--ok)">green</b> when in tune; <span style="color:var(--low)">orange</span> = too low, <span style="color:var(--high)">red</span> = too high.</div>
+      </div>
     </div>
   </div>
 
@@ -317,7 +344,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
     if (running) return;
 
     if (location.protocol !== 'https:' && location.hostname !== 'localhost'){
-      errEl.textContent = "Mic needs HTTPS. Open via GitHub Pages (https://USERNAME.github.io/REPO/).";
+      errEl.textContent = "Mic needs HTTPS. Open via GitHub Pages.";
       return;
     }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -443,7 +470,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
     requestAnimationFrame(loop);
   }
 
-  /* --- Chrome Android mic wake-up patch --- */
+  /* Chrome Android mic wake-up patch */
   document.addEventListener('click', async () => {
     if (audioCtx && audioCtx.state === 'suspended') {
       try { await audioCtx.resume(); } catch {}
