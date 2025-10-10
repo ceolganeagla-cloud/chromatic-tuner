@@ -1,9 +1,9 @@
- <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Chromatic Tuner (Dark, YIN Stable)</title>
+<title>Ceol Gan Eagla — Chromatic Tuner (Dark, No Frequency)</title>
 <meta name="theme-color" content="#0b1220"/>
 <link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230b1220"/><path d="M12 32h40" stroke="%23a4b0c0" stroke-width="6" stroke-linecap="round"/><circle cx="32" cy="32" r="8" fill="%23a4f2b5"/></svg>'/>
 
@@ -57,7 +57,7 @@
   }
   .readout{display:grid;gap:6px;justify-items:center;text-align:center}
   .note{font-size:clamp(28px,10vw,48px);font-weight:900;letter-spacing:1px}
-  .freq{font-size:clamp(14px,3.5vw,18px);color:var(--muted)}
+  /* removed .freq */
   .status{font-size:clamp(16px,4vw,22px);font-weight:900;padding:6px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);min-width:140px}
   .status.low{color:var(--low);box-shadow:0 0 0 2px rgba(255,138,31,.15) inset}
   .status.high{color:var(--high);box-shadow:0 0 0 2px rgba(239,68,68,.15) inset}
@@ -110,7 +110,7 @@
     </div>
     <div class="readout">
       <div class="note" id="note">—</div>
-      <div class="freq" id="freq">0.00 Hz</div>
+      <!-- frequency display removed -->
       <div class="status" id="status">Listening…</div>
       <div class="help">Bar turns <b style="color:var(--ok)">green</b> when in tune; <span style="color:var(--low)">orange</span> = too low, <span style="color:var(--high)">red</span> = too high.</div>
     </div>
@@ -146,7 +146,6 @@
   const pointer = document.getElementById('pointer');
   const bar = document.getElementById('bar');
   const noteEl = document.getElementById('note');
-  const freqEl = document.getElementById('freq');
   const statusEl = document.getElementById('status');
 
   let currentInstrumentKey = 'guitar';
@@ -163,10 +162,10 @@
   let lock = {active:false, stringIdx:-1, expires:0};
   let cand = {idx:-1, count:0};
 
-  // Anti-wildness parameters (tuned for mobile mics)
+  // Anti-wildness parameters
   const LEVEL_GATE = 0.012;    // RMS gate (silence/noise)
   const YIN_THRESH = 0.10;     // YIN absolute threshold (lower = stricter)
-  const CONF_GATE  = 0.6;      // extra guard using yin tau confidence proxy
+  const CONF_GATE  = 0.6;      // confidence gate
   const MIN_HZ=50, MAX_HZ=1200;
   const SMOOTH_A = 0.92;       // needle smoothing (EMA)
   const DEADBAND_CENTS = 1.5;  // ignore tiny jitter
@@ -185,7 +184,7 @@
     cand = {idx:-1,count:0};
   });
 
-  // Math helpers
+  // Helpers
   function rms(arr){ let s=0; for(let i=0;i<arr.length;i++){const v=arr[i]; s+=v*v;} return Math.sqrt(s/arr.length); }
   function centsOff(f, ref){ return 1200 * Math.log2(f / ref); }
   function freqToNote(f){
@@ -208,12 +207,11 @@
     return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
   }
 
-  // ----------- YIN pitch detection (robust and stable) -----------
+  // ----------- YIN pitch detection -----------
   function yin(buf, sampleRate){
     const N = buf.length;
-    // 1) Difference function d(tau)
-    const tauMax = Math.min(Math.floor(sampleRate / 50), N-1);   // ~50 Hz
-    const tauMin = Math.max(2, Math.floor(sampleRate / 1200));   // ~1200 Hz
+    const tauMax = Math.min(Math.floor(sampleRate / 50), N-1);
+    const tauMin = Math.max(2, Math.floor(sampleRate / 1200));
     const d = new Float32Array(tauMax+1);
     for (let tau=tauMin; tau<=tauMax; tau++){
       let sum = 0;
@@ -223,14 +221,12 @@
       }
       d[tau] = sum;
     }
-    // 2) Cumulative mean normalized difference CMND
     const cmnd = new Float32Array(tauMax+1);
     let runningSum = 0;
     for (let tau=tauMin; tau<=tauMax; tau++){
       runningSum += d[tau];
       cmnd[tau] = d[tau] * tau / (runningSum || 1);
     }
-    // 3) Absolute threshold
     let tau = -1;
     for (let t=tauMin+1; t<=tauMax; t++){
       if (cmnd[t] < YIN_THRESH && cmnd[t] < cmnd[t-1]){
@@ -240,25 +236,19 @@
       }
     }
     if (tau === -1) return {hz:-1, conf:0};
-
-    // 4) Parabolic interpolation around tau
     const t0 = Math.max(tau-1, tauMin), t1 = tau, t2 = Math.min(tau+1, tauMax);
     const s0 = cmnd[t0], s1 = cmnd[t1], s2 = cmnd[t2];
     const denom = (s0 - 2*s1 + s2);
     const shift = denom !== 0 ? (s0 - s2) / (2*denom) : 0;
     const tauEst = tau + shift;
-
-    // Confidence proxy: 1 - cmnd at tau
     const conf = Math.max(0, 1 - cmnd[tau]);
     const hz = sampleRate / tauEst;
     if (!isFinite(hz) || hz<MIN_HZ || hz>MAX_HZ) return {hz:-1, conf:0};
     return {hz, conf};
   }
 
-  // UI helpers
   function setPointerByCents(cents){
     const clamp = Math.max(-50, Math.min(50, cents));
-    // deadband to avoid micro-shake
     const delta = clamp - displayCents;
     if (Math.abs(delta) < DEADBAND_CENTS) return;
     displayCents = displayCents * SMOOTH_A + clamp * (1 - SMOOTH_A);
@@ -270,10 +260,7 @@
     if (running) return;
     try{
       mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio:{
-          echoCancellation:false, noiseSuppression:false, autoGainControl:false,
-          channelCount:1, sampleRate:48000 // hint; browser may adjust
-        }
+        audio:{ echoCancellation:false, noiseSuppression:false, autoGainControl:false, channelCount:1, sampleRate:48000 }
       });
     }catch(err){ alert("Microphone permission denied or unavailable.\n"+err); return; }
 
@@ -325,7 +312,6 @@
     analyser.getFloatTimeDomainData(buf);
     const sr = audioCtx.sampleRate || 48000;
 
-    // quick level gate before YIN
     if (rms(buf) < LEVEL_GATE){
       statusEl.className = "status";
       statusEl.textContent = "Listening…";
@@ -340,7 +326,6 @@
       const inst = INSTRUMENTS[currentInstrumentKey];
       let idx = nearestStringIdx(hz, inst);
 
-      // Lock logic to prevent bouncing between strings
       if (!lock.active){
         if (cand.idx === idx) cand.count++; else { cand.idx=idx; cand.count=1; }
         if (cand.count > LOCK_NEED_FRAMES){ lock={active:true,stringIdx:idx,expires:performance.now()+LOCK_TIME_MS}; cand={idx:-1,count:0}; }
@@ -351,16 +336,12 @@
 
       const ref = inst[idx].f;
       let cents = 1200 * Math.log2(hz / ref);
-
-      // Median smooth of cents to kill spikes
       centsHistory.push(cents); if (centsHistory.length > C_HISTORY) centsHistory.shift();
       cents = median(centsHistory);
 
-      // Pointer + labels
       setPointerByCents(cents);
       const note = freqToNote(hz);
       noteEl.textContent = `${note.name}${note.octave}`;
-      freqEl.textContent = `${hz.toFixed(2)} Hz`;
 
       const abs = Math.abs(cents);
       let cls = "status", txt = "";
@@ -371,12 +352,11 @@
 
       // Chip highlight when the locked string is in tune
       [...tray.children].forEach((btn,i)=> btn.classList.toggle('tuned', (lock.active && i === lock.stringIdx && abs <= 5)));
+
     } else {
-      // No solid pitch this frame
       statusEl.className = "status";
       statusEl.textContent = "Listening…";
       appEl.classList.remove('tuned');
-      // slowly relax pointer toward center without jitter
       setPointerByCents(displayCents * 0.95);
     }
 
