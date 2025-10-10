@@ -1,26 +1,16 @@
-<!doctype html>
+ <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Chromatic Tuner (Dark, Logo Hidden)</title>
+<title>Ceol Gan Eagla — Chromatic Tuner (Dark, YIN Stable)</title>
 <meta name="theme-color" content="#0b1220"/>
 <link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230b1220"/><path d="M12 32h40" stroke="%23a4b0c0" stroke-width="6" stroke-linecap="round"/><circle cx="32" cy="32" r="8" fill="%23a4f2b5"/></svg>'/>
 
 <style>
   :root{
-    --bg:#0b1220;
-    --panel:#0f172a;
-    --card:#0c1324;
-    --ink:#eaf2ff;
-    --muted:#a4b0c0;
-    --line:#1f2a44;
-    --ok:#22c55e;
-    --low:#ff8a1f;   /* too low (orange) */
-    --high:#ef4444;  /* too high (red) */
-    --bar:#111a2e;
-    --bar-edge:#1a2744;
-    --glow: 0 10px 30px rgba(0,0,0,.45);
+    --bg:#0b1220; --panel:#0f172a; --card:#0c1324; --ink:#eaf2ff; --muted:#a4b0c0; --line:#1f2a44;
+    --ok:#22c55e; --low:#ff8a1f; --high:#ef4444; --bar:#111a2e; --bar-edge:#1a2744; --glow:0 10px 30px rgba(0,0,0,.45);
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif}
@@ -39,14 +29,10 @@
   .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
 
   /* Preserved logo space (image removed but space kept) */
-  .logo-space{
-    height:52px; display:flex; align-items:center; justify-content:center;
-    border:1px dashed var(--line); border-radius:14px;
-    background:var(--card); color:var(--muted); font-size:12px;
-  }
+  .logo-space{height:52px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--line);border-radius:14px;background:var(--card);color:var(--muted);font-size:12px}
 
   /* Instrument chips */
-  .tray{display:flex;flex-wrap:wrap;gap:8px;max-width:100%;}
+  .tray{display:flex;flex-wrap:wrap;gap:8px}
   .instrument-btn{
     display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;
     background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:800;color:var(--ink)
@@ -54,7 +40,7 @@
   .instrument-btn.active{outline:2px solid #3b82f6}
   .instrument-btn.tuned{background:#0e2919;border-color:#1f8a4e;}
 
-  /* Bar */
+  /* Tuning bar */
   .bar-wrap{display:grid;gap:12px}
   .bar{
     position:relative;height:36px;border-radius:999px;background:var(--bar);
@@ -79,7 +65,7 @@
   .help{font-size:12px;color:var(--muted)}
 
   /* Background glow when tuned */
-  .wrap.tuned{ background: radial-gradient(1200px 400px at 50% -200px, rgba(34,197,94,.12), transparent 60%), var(--bg); }
+  .wrap.tuned{background: radial-gradient(1200px 400px at 50% -200px, rgba(34,197,94,.12), transparent 60%), var(--bg);}
 
   footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
 </style>
@@ -100,7 +86,6 @@
   <div class="panel">
     <div class="row">
       <div class="tray" id="instrumentTray" aria-label="Choose instrument">
-        <!-- Core set from earlier version + a few trad additions -->
         <button class="instrument-btn active" data-inst="guitar" title="Guitar (EADGBE)">🎸<span>Guitar</span></button>
         <button class="instrument-btn" data-inst="violin" title="Violin (GDAE)">🎻<span>Violin</span></button>
         <button class="instrument-btn" data-inst="tenorbanjo" title="Tenor Banjo (GDAE)">🪕<span>Tenor Banjo</span></button>
@@ -139,7 +124,7 @@
   const A4 = 440;
   const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
-  // Instruments (same feel as earlier version)
+  // Instruments
   const INSTRUMENTS = {
     guitar:       [{n:"E2",f:82.4069},{n:"A2",f:110.000},{n:"D3",f:146.832},{n:"G3",f:196.000},{n:"B3",f:246.942},{n:"E4",f:329.628}],
     violin:       [{n:"G3",f:196.000},{n:"D4",f:293.665},{n:"A4",f:440.000},{n:"E5",f:659.255}],
@@ -168,23 +153,27 @@
 
   // Audio chain
   let audioCtx=null, analyser=null, mediaStream=null;
-  let hpFilter=null, lpFilter=null;           // band-pass to reduce wild jumps
+  let hpFilter=null, lpFilter=null;
   const BUF_SIZE = 4096;
   let buf = new Float32Array(BUF_SIZE);
   let running=false;
 
-  // Stability helpers
+  // Stability & smoothing
   let displayCents = 0;
   let lock = {active:false, stringIdx:-1, expires:0};
   let cand = {idx:-1, count:0};
-  const FRAME_GATE = 0.012;    // min RMS gate
-  const CONF_GATE  = 0.55;     // corr confidence gate
-  const MIN_HZ=50, MAX_HZ=1200;// clamp unreasonable freqs
-  const SMOOTH_A = 0.90;       // needle smoothing
-  const LOCK_NEED_FRAMES = 12; // frames for pre-lock
-  const LOCK_TIME_MS = 5000;   // lock duration
-  const MEDIAN_N = 5;          // median smoothing of detected freqs
-  const freqHistory = [];
+
+  // Anti-wildness parameters (tuned for mobile mics)
+  const LEVEL_GATE = 0.012;    // RMS gate (silence/noise)
+  const YIN_THRESH = 0.10;     // YIN absolute threshold (lower = stricter)
+  const CONF_GATE  = 0.6;      // extra guard using yin tau confidence proxy
+  const MIN_HZ=50, MAX_HZ=1200;
+  const SMOOTH_A = 0.92;       // needle smoothing (EMA)
+  const DEADBAND_CENTS = 1.5;  // ignore tiny jitter
+  const LOCK_NEED_FRAMES = 14; // frames to lock a string
+  const LOCK_TIME_MS = 6000;   // how long to hold lock
+  const C_HISTORY = 7;         // length of cents history for median
+  const centsHistory = [];
 
   tray.addEventListener('click', (e)=>{
     const btn = e.target.closest('.instrument-btn');
@@ -219,47 +208,61 @@
     return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
   }
 
-  // Pitch detection (autocorrelation + parabolic refine)
-  function autoCorrelate(buf, sampleRate){
-    const SIZE = buf.length;
-    const level = rms(buf);
-    if (level < FRAME_GATE) return {hz:-1, conf:0, level};
-
-    // Remove DC
-    let mean=0; for(let i=0;i<SIZE;i++) mean+=buf[i]; mean/=SIZE;
-    for(let i=0;i<SIZE;i++) buf[i]-=mean;
-
-    let best=-1, bestCorr=0, lastCorr=1;
-    let minLag = Math.floor(sampleRate/1000), maxLag = Math.floor(sampleRate/50);
-    if (maxLag > SIZE-3) maxLag = SIZE-3;
-
-    for (let lag=minLag; lag<=maxLag; lag++){
-      let corr=0;
-      for (let i=0;i<SIZE-lag;i++) corr += buf[i]*buf[i+lag];
-      corr /= (SIZE - lag);
-      if (corr > 0.9 && corr > lastCorr){
-        if (corr > bestCorr){ bestCorr=corr; best=lag; }
+  // ----------- YIN pitch detection (robust and stable) -----------
+  function yin(buf, sampleRate){
+    const N = buf.length;
+    // 1) Difference function d(tau)
+    const tauMax = Math.min(Math.floor(sampleRate / 50), N-1);   // ~50 Hz
+    const tauMin = Math.max(2, Math.floor(sampleRate / 1200));   // ~1200 Hz
+    const d = new Float32Array(tauMax+1);
+    for (let tau=tauMin; tau<=tauMax; tau++){
+      let sum = 0;
+      for (let i=0; i<N - tau; i++){
+        const diff = buf[i] - buf[i+tau];
+        sum += diff*diff;
       }
-      lastCorr = corr;
+      d[tau] = sum;
     }
-    if (best < 0) return {hz:-1, conf:0, level};
+    // 2) Cumulative mean normalized difference CMND
+    const cmnd = new Float32Array(tauMax+1);
+    let runningSum = 0;
+    for (let tau=tauMin; tau<=tauMax; tau++){
+      runningSum += d[tau];
+      cmnd[tau] = d[tau] * tau / (runningSum || 1);
+    }
+    // 3) Absolute threshold
+    let tau = -1;
+    for (let t=tauMin+1; t<=tauMax; t++){
+      if (cmnd[t] < YIN_THRESH && cmnd[t] < cmnd[t-1]){
+        tau = t;
+        while (t+1 <= tauMax && cmnd[t+1] < cmnd[t]) { t++; tau = t; }
+        break;
+      }
+    }
+    if (tau === -1) return {hz:-1, conf:0};
 
-    // Parabolic
-    let y1=0,y2=0,y3=0;
-    for (let i=0;i<SIZE-best-1;i++) y2 += buf[i]*buf[i+best];
-    for (let i=0;i<SIZE-(best-1)-1;i++) y1 += buf[i]*buf[i+best-1];
-    for (let i=0;i<SIZE-(best+1)-1;i++) y3 += buf[i]*buf[i+best+1];
-    const shift = (y3 - y1) / (2*(2*y2 - y1 - y3));
-    const refined = best + (isFinite(shift) ? shift : 0);
+    // 4) Parabolic interpolation around tau
+    const t0 = Math.max(tau-1, tauMin), t1 = tau, t2 = Math.min(tau+1, tauMax);
+    const s0 = cmnd[t0], s1 = cmnd[t1], s2 = cmnd[t2];
+    const denom = (s0 - 2*s1 + s2);
+    const shift = denom !== 0 ? (s0 - s2) / (2*denom) : 0;
+    const tauEst = tau + shift;
 
-    let hz = sampleRate / refined;
-    if (!isFinite(hz) || hz<MIN_HZ || hz>MAX_HZ) return {hz:-1, conf:0, level};
-    return {hz, conf: Math.min(1,bestCorr), level};
+    // Confidence proxy: 1 - cmnd at tau
+    const conf = Math.max(0, 1 - cmnd[tau]);
+    const hz = sampleRate / tauEst;
+    if (!isFinite(hz) || hz<MIN_HZ || hz>MAX_HZ) return {hz:-1, conf:0};
+    return {hz, conf};
   }
 
+  // UI helpers
   function setPointerByCents(cents){
     const clamp = Math.max(-50, Math.min(50, cents));
-    const t = (clamp + 50) / 100;
+    // deadband to avoid micro-shake
+    const delta = clamp - displayCents;
+    if (Math.abs(delta) < DEADBAND_CENTS) return;
+    displayCents = displayCents * SMOOTH_A + clamp * (1 - SMOOTH_A);
+    const t = (displayCents + 50) / 100;
     pointer.style.left = (t*100) + "%";
   }
 
@@ -267,19 +270,22 @@
     if (running) return;
     try{
       mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio:{ echoCancellation:false, noiseSuppression:false, autoGainControl:false }
+        audio:{
+          echoCancellation:false, noiseSuppression:false, autoGainControl:false,
+          channelCount:1, sampleRate:48000 // hint; browser may adjust
+        }
       });
     }catch(err){ alert("Microphone permission denied or unavailable.\n"+err); return; }
 
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    // Band-pass: tame rumble & hiss (helps stop wild jumps)
+    // Band-pass filters to calm rumble/hiss
     hpFilter = audioCtx.createBiquadFilter(); hpFilter.type="highpass"; hpFilter.frequency.value=50;
     lpFilter = audioCtx.createBiquadFilter(); lpFilter.type="lowpass";  lpFilter.frequency.value=1800;
 
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = BUF_SIZE;
-    analyser.smoothingTimeConstant = 0.08;
+    analyser.smoothingTimeConstant = 0.06;
 
     const src = audioCtx.createMediaStreamSource(mediaStream);
     src.connect(hpFilter); hpFilter.connect(lpFilter); lpFilter.connect(analyser);
@@ -303,31 +309,38 @@
     statusEl.className = "status";
     statusEl.textContent = "Stopped";
     appEl.classList.remove('tuned');
-    setPointerByCents(0);
+    pointer.style.left = "50%";
+    displayCents = 0;
+    centsHistory.length = 0;
+    lock = {active:false,stringIdx:-1,expires:0};
+    cand = {idx:-1,count:0};
   }
 
   toggleBtn.addEventListener('click', () => running ? stop() : start());
   document.addEventListener('visibilitychange', () => { if (document.hidden && running) stop(); });
 
-  let lastUI = 0;
-  function loop(ts=0){
+  function loop(){
     if (!running || !analyser) return;
 
     analyser.getFloatTimeDomainData(buf);
     const sr = audioCtx.sampleRate || 48000;
-    const {hz, conf, level} = autoCorrelate(buf, sr);
 
-    let showStatus = "Listening…", cls="status";
+    // quick level gate before YIN
+    if (rms(buf) < LEVEL_GATE){
+      statusEl.className = "status";
+      statusEl.textContent = "Listening…";
+      appEl.classList.remove('tuned');
+      requestAnimationFrame(loop);
+      return;
+    }
 
-    if (hz > 0 && conf > CONF_GATE && level > FRAME_GATE){
-      // median smoothing over recent frames
-      freqHistory.push(hz); if (freqHistory.length > MEDIAN_N) freqHistory.shift();
-      const hzMed = median(freqHistory);
+    const {hz, conf} = yin(buf, sr);
 
+    if (hz > 0 && conf > CONF_GATE){
       const inst = INSTRUMENTS[currentInstrumentKey];
-      let idx = nearestStringIdx(hzMed, inst);
+      let idx = nearestStringIdx(hz, inst);
 
-      // lock logic
+      // Lock logic to prevent bouncing between strings
       if (!lock.active){
         if (cand.idx === idx) cand.count++; else { cand.idx=idx; cand.count=1; }
         if (cand.count > LOCK_NEED_FRAMES){ lock={active:true,stringIdx:idx,expires:performance.now()+LOCK_TIME_MS}; cand={idx:-1,count:0}; }
@@ -337,38 +350,36 @@
       }
 
       const ref = inst[idx].f;
-      const cents = 1200 * Math.log2(hzMed / ref);
+      let cents = 1200 * Math.log2(hz / ref);
 
-      // needle smoothing
-      displayCents = displayCents*SMOOTH_A + cents*(1-SMOOTH_A);
-      setPointerByCents(displayCents);
+      // Median smooth of cents to kill spikes
+      centsHistory.push(cents); if (centsHistory.length > C_HISTORY) centsHistory.shift();
+      cents = median(centsHistory);
 
-      const note = freqToNote(hzMed);
+      // Pointer + labels
+      setPointerByCents(cents);
+      const note = freqToNote(hz);
       noteEl.textContent = `${note.name}${note.octave}`;
-      freqEl.textContent = `${hzMed.toFixed(2)} Hz`;
+      freqEl.textContent = `${hz.toFixed(2)} Hz`;
 
       const abs = Math.abs(cents);
-      if (abs <= 5){ showStatus="In Tune"; cls+=" ok"; appEl.classList.add('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(34,197,94,.35), var(--glow)"; }
-      else if (cents < 0){ showStatus="Too Low"; cls+=" low"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(255,138,31,.25), var(--glow)"; }
-      else { showStatus="Too High"; cls+=" high"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(239,68,68,.25), var(--glow)"; }
+      let cls = "status", txt = "";
+      if (abs <= 5){ cls+=" ok"; txt="In Tune"; appEl.classList.add('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(34,197,94,.35), var(--glow)"; }
+      else if (cents < 0){ cls+=" low"; txt="Too Low"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(255,138,31,.25), var(--glow)"; }
+      else { cls+=" high"; txt="Too High"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(239,68,68,.25), var(--glow)"; }
+      statusEl.className = cls; statusEl.textContent = txt;
 
-      // chip highlight on tuned
+      // Chip highlight when the locked string is in tune
       [...tray.children].forEach((btn,i)=> btn.classList.toggle('tuned', (lock.active && i === lock.stringIdx && abs <= 5)));
     } else {
-      // relax pointer
-      displayCents = displayCents*0.93;
-      setPointerByCents(displayCents);
+      // No solid pitch this frame
+      statusEl.className = "status";
+      statusEl.textContent = "Listening…";
       appEl.classList.remove('tuned');
-      // release lock if silence
-      if (lock.active && performance.now() > lock.expires){ lock={active:false,stringIdx:-1,expires:0}; }
+      // slowly relax pointer toward center without jitter
+      setPointerByCents(displayCents * 0.95);
     }
 
-    // Throttle UI text updates (smoother look)
-    if (ts - lastUI > 33){ // ~30fps for labels
-      statusEl.className = cls;
-      statusEl.textContent = showStatus;
-      lastUI = ts;
-    }
     requestAnimationFrame(loop);
   }
 })();
