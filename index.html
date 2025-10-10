@@ -1,9 +1,9 @@
- <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Tuner (Dark)</title>
+<title>Ceol Gan Eagla — Chromatic Tuner (Dark, Logo Hidden)</title>
 <meta name="theme-color" content="#0b1220"/>
 <link rel="icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230b1220"/><path d="M12 32h40" stroke="%23a4b0c0" stroke-width="6" stroke-linecap="round"/><circle cx="32" cy="32" r="8" fill="%23a4f2b5"/></svg>'/>
 
@@ -24,11 +24,11 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif}
-  .wrap{display:grid;grid-template-rows:auto auto 1fr auto;gap:12px;min-height:100dvh;padding:14px}
+  .wrap{display:grid;grid-template-rows:auto auto auto 1fr auto;gap:12px;min-height:100dvh;padding:14px}
   header{display:flex;align-items:center;justify-content:space-between;gap:12px}
   h1{margin:0;font-size:clamp(18px,4.5vw,28px);letter-spacing:.3px}
   .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  button,select{
+  button{
     appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);
     padding:10px 14px;border-radius:14px;font-weight:700;cursor:pointer;box-shadow:var(--glow)
   }
@@ -37,6 +37,22 @@
   .badge{padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:700;color:var(--muted)}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:var(--glow)}
   .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+
+  /* Preserved logo space (image removed but space kept) */
+  .logo-space{
+    height:52px; display:flex; align-items:center; justify-content:center;
+    border:1px dashed var(--line); border-radius:14px;
+    background:var(--card); color:var(--muted); font-size:12px;
+  }
+
+  /* Instrument chips */
+  .tray{display:flex;flex-wrap:wrap;gap:8px;max-width:100%;}
+  .instrument-btn{
+    display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;
+    background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:800;color:var(--ink)
+  }
+  .instrument-btn.active{outline:2px solid #3b82f6}
+  .instrument-btn.tuned{background:#0e2919;border-color:#1f8a4e;}
 
   /* Bar */
   .bar-wrap{display:grid;gap:12px}
@@ -62,7 +78,7 @@
   .status.ok{color:var(--ok);box-shadow:0 0 0 2px rgba(34,197,94,.15) inset}
   .help{font-size:12px;color:var(--muted)}
 
-  /* Page background glow when tuned */
+  /* Background glow when tuned */
   .wrap.tuned{ background: radial-gradient(1200px 400px at 50% -200px, rgba(34,197,94,.12), transparent 60%), var(--bg); }
 
   footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
@@ -78,38 +94,25 @@
     </div>
   </header>
 
+  <!-- Space where <img src="logo.png"> used to be -->
+  <div class="logo-space" aria-hidden="true">Logo space preserved (image hidden)</div>
+
   <div class="panel">
     <div class="row">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <label for="instrument" class="badge" style="border-radius:10px">Instrument</label>
-        <select id="instrument">
-          <optgroup label="Guitars">
-            <option value="guitar_std" selected>🎸 Guitar — Standard (E A D G B E)</option>
-            <option value="guitar_dropd">🎸 Guitar — Drop D (D A D G B E)</option>
-            <option value="guitar_dadgad">🎸 Guitar — DADGAD</option>
-            <option value="bass_4">🎸 Bass Guitar — 4-String (E A D G)</option>
-          </optgroup>
-          <optgroup label="Fiddle family">
-            <option value="violin">🎻 Violin (G D A E)</option>
-            <option value="viola">🎻 Viola (C G D A)</option>
-            <option value="cello">🎻 Cello (C G D A)</option>
-            <option value="double_bass">🎻 Double Bass (E A D G)</option>
-          </optgroup>
-          <optgroup label="Banjo / Mandolin / Bouzouki">
-            <option value="tenor_banjo">🪕 Tenor Banjo (G D A E) — Irish</option>
-            <option value="banjo_5_openg">🪕 5-String Banjo (g D G B D) Open G</option>
-            <option value="mandolin">🎶 Mandolin (G D A E)</option>
-            <option value="bouzouki_gdae">🎶 Irish Bouzouki (G D A E)</option>
-            <option value="bouzouki_gdad">🎶 Irish Bouzouki (G D A D)</option>
-            <option value="octave_mandolin">🎶 Octave Mandolin (G D A E)</option>
-          </optgroup>
-          <optgroup label="Other">
-            <option value="ukulele">🎵 Ukulele (G C E A, re-entrant)</option>
-            <option value="chromatic">🎯 Chromatic (no strings)</option>
-          </optgroup>
-        </select>
+      <div class="tray" id="instrumentTray" aria-label="Choose instrument">
+        <!-- Core set from earlier version + a few trad additions -->
+        <button class="instrument-btn active" data-inst="guitar" title="Guitar (EADGBE)">🎸<span>Guitar</span></button>
+        <button class="instrument-btn" data-inst="violin" title="Violin (GDAE)">🎻<span>Violin</span></button>
+        <button class="instrument-btn" data-inst="tenorbanjo" title="Tenor Banjo (GDAE)">🪕<span>Tenor Banjo</span></button>
+        <button class="instrument-btn" data-inst="mandolin" title="Mandolin (GDAE)">🎶<span>Mandolin</span></button>
+        <button class="instrument-btn" data-inst="bouzouki_gdae" title="Irish Bouzouki (GDAE)">🎶<span>Bouzouki GDAE</span></button>
+        <button class="instrument-btn" data-inst="bouzouki_gdad" title="Irish Bouzouki (GDAD)">🎶<span>Bouzouki GDAD</span></button>
+        <button class="instrument-btn" data-inst="ukulele" title="Ukulele (GCEA re-entrant)">🎵<span>Ukulele</span></button>
+        <button class="instrument-btn" data-inst="bass4" title="Bass (EADG)">🎸<span>Bass</span></button>
+        <button class="instrument-btn" data-inst="viola" title="Viola (CGDA)">🎻<span>Viola</span></button>
+        <button class="instrument-btn" data-inst="cello" title="Cello (CGDA)">🎻<span>Cello</span></button>
       </div>
-      <span class="badge" id="modeBadge">Mode: Auto string detect</span>
+      <span class="badge">Mode: Auto string detect</span>
     </div>
   </div>
 
@@ -136,95 +139,72 @@
   const A4 = 440;
   const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 
-  // Equal-tempered frequency from note index (C0 = index 0)
-  function freqFromIndex(i){ return 440 * Math.pow(2, (i - 57)/12); }
-  function indexFromFreq(f){ return Math.round(12 * Math.log2(f / 440) + 57); }
-  function nameFromIndex(i){
-    const name = NOTE_NAMES[(i % 12 + 12) % 12];
-    const octave = Math.floor(i / 12) - 1;
-    return name + octave;
-  }
-
-  // Tunings
-  const T = {
-    guitar_std:   ["E2","A2","D3","G3","B3","E4"],
-    guitar_dropd: ["D2","A2","D3","G3","B3","E4"],
-    guitar_dadgad:["D2","A2","D3","G3","A3","D4"],
-    bass_4:       ["E1","A1","D2","G2"],
-
-    violin:       ["G3","D4","A4","E5"],
-    viola:        ["C3","G3","D4","A4"],
-    cello:        ["C2","G2","D3","A3"],
-    double_bass:  ["E1","A1","D2","G2"],
-
-    tenor_banjo:  ["G2","D3","A3","E4"],          // Irish
-    banjo_5_openg:["G4","D3","G3","B3","D4"],     // gDGBD (g4 is the 5th string)
-    mandolin:     ["G3","D4","A4","E5"],
-    bouzouki_gdae:["G2","D3","A3","E4"],
-    bouzouki_gdad:["G2","D3","A3","D4"],
-    octave_mandolin:["G2","D3","A3","E4"],
-
-    ukulele:      ["G4","C4","E4","A4"],
-
-    chromatic:    [] // special mode (no strings)
+  // Instruments (same feel as earlier version)
+  const INSTRUMENTS = {
+    guitar:       [{n:"E2",f:82.4069},{n:"A2",f:110.000},{n:"D3",f:146.832},{n:"G3",f:196.000},{n:"B3",f:246.942},{n:"E4",f:329.628}],
+    violin:       [{n:"G3",f:196.000},{n:"D4",f:293.665},{n:"A4",f:440.000},{n:"E5",f:659.255}],
+    tenorbanjo:   [{n:"G2",f:97.999},{n:"D3",f:146.832},{n:"A3",f:220.000},{n:"E4",f:329.628}],
+    mandolin:     [{n:"G3",f:196.000},{n:"D4",f:293.665},{n:"A4",f:440.000},{n:"E5",f:659.255}],
+    bouzouki_gdae:[{n:"G2",f:97.999},{n:"D3",f:146.832},{n:"A3",f:220.000},{n:"E4",f:329.628}],
+    bouzouki_gdad:[{n:"G2",f:97.999},{n:"D3",f:146.832},{n:"A3",f:220.000},{n:"D4",f:293.665}],
+    ukulele:      [{n:"G4",f:392.000},{n:"C4",f:261.626},{n:"E4",f:329.628},{n:"A4",f:440.000}],
+    bass4:        [{n:"E1",f:41.2034},{n:"A1",f:55.000},{n:"D2",f:73.4162},{n:"G2",f:97.999}],
+    viola:        [{n:"C3",f:130.813},{n:"G3",f:196.000},{n:"D4",f:293.665},{n:"A4",f:440.000}],
+    cello:        [{n:"C2",f:65.4064},{n:"G2",f:97.999},{n:"D3",f:146.832},{n:"A3",f:220.000}],
   };
 
-  // Parse note like "A4" -> Hz
-  function noteToHz(n){
-    const m = /^([A-G])(#?)(-?\d+)$/.exec(n);
-    if (!m) return null;
-    const base = {C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]];
-    const sharp = m[2] ? 1 : 0;
-    const oct = parseInt(m[3],10);
-    const index = base + sharp + (oct+1)*12; // C-1 index 0
-    return freqFromIndex(index);
-  }
-
-  // Build instrument map with frequencies
-  const INSTR = {};
-  for (const k in T){
-    INSTR[k] = T[k].map(n => ({ name:n, f: noteToHz(n) }));
-  }
-
-  // UI refs
+  // UI
   const appEl = document.getElementById('app');
   const toggleBtn = document.getElementById('toggleBtn');
   const micStatus = document.getElementById('micStatus');
-  const instrumentSel = document.getElementById('instrument');
-  const modeBadge = document.getElementById('modeBadge');
-
-  const bar = document.getElementById('bar');
+  const tray = document.getElementById('instrumentTray');
   const pointer = document.getElementById('pointer');
+  const bar = document.getElementById('bar');
   const noteEl = document.getElementById('note');
   const freqEl = document.getElementById('freq');
   const statusEl = document.getElementById('status');
 
-  let instKey = instrumentSel.value;
-  let chromaticMode = (instKey === 'chromatic');
+  let currentInstrumentKey = 'guitar';
 
-  instrumentSel.addEventListener('change', () => {
-    instKey = instrumentSel.value;
-    chromaticMode = (instKey === 'chromatic');
-    modeBadge.textContent = chromaticMode ? "Mode: Chromatic (no string lock)" : "Mode: Auto string detect";
-    // reset lock when changing instrument
-    lock = {active:false, stringIdx:-1, expires:0};
-    cand = {idx:-1, count:0};
-  });
+  // Audio chain
+  let audioCtx=null, analyser=null, mediaStream=null;
+  let hpFilter=null, lpFilter=null;           // band-pass to reduce wild jumps
+  const BUF_SIZE = 4096;
+  let buf = new Float32Array(BUF_SIZE);
+  let running=false;
 
-  // Audio vars
-  let audioCtx = null, analyser = null, mediaStream = null;
-  let buf = new Float32Array(4096);
-  let running = false;
+  // Stability helpers
   let displayCents = 0;
-
-  // String lock
   let lock = {active:false, stringIdx:-1, expires:0};
   let cand = {idx:-1, count:0};
+  const FRAME_GATE = 0.012;    // min RMS gate
+  const CONF_GATE  = 0.55;     // corr confidence gate
+  const MIN_HZ=50, MAX_HZ=1200;// clamp unreasonable freqs
+  const SMOOTH_A = 0.90;       // needle smoothing
+  const LOCK_NEED_FRAMES = 12; // frames for pre-lock
+  const LOCK_TIME_MS = 5000;   // lock duration
+  const MEDIAN_N = 5;          // median smoothing of detected freqs
+  const freqHistory = [];
 
-  // Helpers
+  tray.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.instrument-btn');
+    if(!btn) return;
+    [...tray.children].forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentInstrumentKey = btn.dataset.inst;
+    lock = {active:false,stringIdx:-1,expires:0};
+    cand = {idx:-1,count:0};
+  });
+
+  // Math helpers
   function rms(arr){ let s=0; for(let i=0;i<arr.length;i++){const v=arr[i]; s+=v*v;} return Math.sqrt(s/arr.length); }
   function centsOff(f, ref){ return 1200 * Math.log2(f / ref); }
-
+  function freqToNote(f){
+    const n = Math.round(12 * Math.log2(f / A4)) + 57;
+    const name = NOTE_NAMES[(n % 12 + 12) % 12];
+    const octave = Math.floor(n / 12) - 1;
+    return {name, octave};
+  }
   function nearestStringIdx(hz, inst){
     let best = {idx:0, cents:Infinity};
     for (let i=0;i<inst.length;i++){
@@ -233,13 +213,19 @@
     }
     return best.idx;
   }
+  function median(arr){
+    const a = arr.slice().sort((x,y)=>x-y);
+    const m = Math.floor(a.length/2);
+    return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
+  }
 
+  // Pitch detection (autocorrelation + parabolic refine)
   function autoCorrelate(buf, sampleRate){
-    let SIZE = buf.length;
-    let level = rms(buf);
-    if (level < 0.01) return {hz:-1, conf:0, level};
+    const SIZE = buf.length;
+    const level = rms(buf);
+    if (level < FRAME_GATE) return {hz:-1, conf:0, level};
 
-    // DC removal
+    // Remove DC
     let mean=0; for(let i=0;i<SIZE;i++) mean+=buf[i]; mean/=SIZE;
     for(let i=0;i<SIZE;i++) buf[i]-=mean;
 
@@ -258,36 +244,45 @@
     }
     if (best < 0) return {hz:-1, conf:0, level};
 
-    // Parabolic refine
+    // Parabolic
     let y1=0,y2=0,y3=0;
     for (let i=0;i<SIZE-best-1;i++) y2 += buf[i]*buf[i+best];
     for (let i=0;i<SIZE-(best-1)-1;i++) y1 += buf[i]*buf[i+best-1];
     for (let i=0;i<SIZE-(best+1)-1;i++) y3 += buf[i]*buf[i+best+1];
     const shift = (y3 - y1) / (2*(2*y2 - y1 - y3));
     const refined = best + (isFinite(shift) ? shift : 0);
-    const hz = sampleRate / refined;
+
+    let hz = sampleRate / refined;
+    if (!isFinite(hz) || hz<MIN_HZ || hz>MAX_HZ) return {hz:-1, conf:0, level};
     return {hz, conf: Math.min(1,bestCorr), level};
   }
 
   function setPointerByCents(cents){
     const clamp = Math.max(-50, Math.min(50, cents));
-    const t = (clamp + 50) / 100; // 0..1
+    const t = (clamp + 50) / 100;
     pointer.style.left = (t*100) + "%";
   }
 
   async function start(){
     if (running) return;
     try{
-      mediaStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
-    }catch(err){
-      alert("Microphone permission denied or unavailable.\n" + err);
-      return;
-    }
+      mediaStream = await navigator.mediaDevices.getUserMedia({
+        audio:{ echoCancellation:false, noiseSuppression:false, autoGainControl:false }
+      });
+    }catch(err){ alert("Microphone permission denied or unavailable.\n"+err); return; }
+
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Band-pass: tame rumble & hiss (helps stop wild jumps)
+    hpFilter = audioCtx.createBiquadFilter(); hpFilter.type="highpass"; hpFilter.frequency.value=50;
+    lpFilter = audioCtx.createBiquadFilter(); lpFilter.type="lowpass";  lpFilter.frequency.value=1800;
+
     analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 4096; analyser.smoothingTimeConstant = 0.1;
+    analyser.fftSize = BUF_SIZE;
+    analyser.smoothingTimeConstant = 0.08;
+
     const src = audioCtx.createMediaStreamSource(mediaStream);
-    src.connect(analyser);
+    src.connect(hpFilter); hpFilter.connect(lpFilter); lpFilter.connect(analyser);
 
     running = true;
     toggleBtn.textContent = "Stop Mic";
@@ -301,7 +296,7 @@
     running = false;
     if (mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
     if (audioCtx){ audioCtx.close().catch(()=>{}); audioCtx=null; }
-    analyser=null;
+    analyser = hpFilter = lpFilter = null;
     toggleBtn.textContent = "Start Mic";
     toggleBtn.classList.remove('stop'); toggleBtn.classList.add('start');
     micStatus.textContent = "Mic: Off";
@@ -314,67 +309,68 @@
   toggleBtn.addEventListener('click', () => running ? stop() : start());
   document.addEventListener('visibilitychange', () => { if (document.hidden && running) stop(); });
 
-  function loop(){
+  let lastUI = 0;
+  function loop(ts=0){
     if (!running || !analyser) return;
+
     analyser.getFloatTimeDomainData(buf);
     const sr = audioCtx.sampleRate || 48000;
     const {hz, conf, level} = autoCorrelate(buf, sr);
 
-    if (hz > 0 && conf > 0.5 && level > 0.01){
-      let refHz, displayNote, cents;
-      if (chromaticMode){
-        // Snap to nearest chromatic note (no string lock)
-        const idx = indexFromFreq(hz);
-        refHz = freqFromIndex(idx);
-        displayNote = nameFromIndex(idx);
-        cents = 1200 * Math.log2(hz / refHz);
+    let showStatus = "Listening…", cls="status";
+
+    if (hz > 0 && conf > CONF_GATE && level > FRAME_GATE){
+      // median smoothing over recent frames
+      freqHistory.push(hz); if (freqHistory.length > MEDIAN_N) freqHistory.shift();
+      const hzMed = median(freqHistory);
+
+      const inst = INSTRUMENTS[currentInstrumentKey];
+      let idx = nearestStringIdx(hzMed, inst);
+
+      // lock logic
+      if (!lock.active){
+        if (cand.idx === idx) cand.count++; else { cand.idx=idx; cand.count=1; }
+        if (cand.count > LOCK_NEED_FRAMES){ lock={active:true,stringIdx:idx,expires:performance.now()+LOCK_TIME_MS}; cand={idx:-1,count:0}; }
       } else {
-        const inst = INSTR[instKey];
-        let idx = nearestStringIdx(hz, inst);
-
-        // lock behaviour
-        if (!lock.active){
-          if (cand.idx === idx) cand.count++; else { cand.idx = idx; cand.count = 1; }
-          if (cand.count > 8){ lock = {active:true, stringIdx:idx, expires:performance.now()+4000}; cand={idx:-1,count:0}; }
-        } else {
-          if (performance.now() > lock.expires){ lock={active:false,stringIdx:-1,expires:0}; }
-          else { idx = lock.stringIdx; }
-        }
-
-        refHz = inst[idx].f;
-        // display note name near actual detected pitch (not just string name)
-        const nearestIndex = indexFromFreq(hz);
-        displayNote = nameFromIndex(nearestIndex);
-        cents = 1200 * Math.log2(hz / refHz);
+        if (performance.now() > lock.expires){ lock={active:false,stringIdx:-1,expires:0}; }
+        else { idx = lock.stringIdx; }
       }
 
-      // smooth motion
-      displayCents = displayCents*0.85 + cents*0.15;
+      const ref = inst[idx].f;
+      const cents = 1200 * Math.log2(hzMed / ref);
+
+      // needle smoothing
+      displayCents = displayCents*SMOOTH_A + cents*(1-SMOOTH_A);
       setPointerByCents(displayCents);
 
-      noteEl.textContent = displayNote;
-      freqEl.textContent = `${hz.toFixed(2)} Hz`;
+      const note = freqToNote(hzMed);
+      noteEl.textContent = `${note.name}${note.octave}`;
+      freqEl.textContent = `${hzMed.toFixed(2)} Hz`;
 
       const abs = Math.abs(cents);
-      let status = "Listening…", cls = "status";
-      if (abs <= 5){ status = "In Tune"; cls += " ok"; appEl.classList.add('tuned'); bar.style.boxShadow = "inset 0 0 0 2px rgba(34,197,94,.35), var(--glow)"; }
-      else if (cents < 0){ status = "Too Low"; cls += " low"; appEl.classList.remove('tuned'); bar.style.boxShadow = "inset 0 0 0 2px rgba(255,138,31,.25), var(--glow)"; }
-      else { status = "Too High"; cls += " high"; appEl.classList.remove('tuned'); bar.style.boxShadow = "inset 0 0 0 2px rgba(239,68,68,.25), var(--glow)"; }
-      statusEl.className = cls; statusEl.textContent = status;
+      if (abs <= 5){ showStatus="In Tune"; cls+=" ok"; appEl.classList.add('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(34,197,94,.35), var(--glow)"; }
+      else if (cents < 0){ showStatus="Too Low"; cls+=" low"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(255,138,31,.25), var(--glow)"; }
+      else { showStatus="Too High"; cls+=" high"; appEl.classList.remove('tuned'); bar.style.boxShadow="inset 0 0 0 2px rgba(239,68,68,.25), var(--glow)"; }
 
+      // chip highlight on tuned
+      [...tray.children].forEach((btn,i)=> btn.classList.toggle('tuned', (lock.active && i === lock.stringIdx && abs <= 5)));
     } else {
-      // Relax pointer
-      displayCents = displayCents*0.9;
+      // relax pointer
+      displayCents = displayCents*0.93;
       setPointerByCents(displayCents);
-      statusEl.className = "status";
-      statusEl.textContent = "Listening…";
       appEl.classList.remove('tuned');
+      // release lock if silence
+      if (lock.active && performance.now() > lock.expires){ lock={active:false,stringIdx:-1,expires:0}; }
+    }
+
+    // Throttle UI text updates (smoother look)
+    if (ts - lastUI > 33){ // ~30fps for labels
+      statusEl.className = cls;
+      statusEl.textContent = showStatus;
+      lastUI = ts;
     }
     requestAnimationFrame(loop);
   }
-
-  // initial
-  setPointerByCents(0);
 })();
 </script>
 </body>
