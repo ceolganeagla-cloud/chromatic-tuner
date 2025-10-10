@@ -1,21 +1,17 @@
 {
   "name": "Ceol Gan Eagla Tuner",
   "short_name": "CGE Tuner",
-  "description": "Fast, stable tuner with Irish trad tunings and metronome.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b1220",
   "theme_color": "#0b1220",
-  "categories": ["music", "audio", "education"],
+  "description": "Tuner and metronome for Irish Traditional Musicians.",
   "icons": [
-    { "src": "icons/icon-192.png",       "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png",       "sizes": "512x512", "type": "image/png" },
-    { "src": "icons/maskable-192.png",   "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icons/maskable-512.png",   "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ],
-  "shortcuts": [
-    { "name": "Start Tuner", "url": "./", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192"}] }
+    { "src": "logo-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "logo-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "logo-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
