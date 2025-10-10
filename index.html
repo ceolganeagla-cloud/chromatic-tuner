@@ -1,17 +1,20 @@
- <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>Ceol Gan Eagla — Tuner</title>
+<title>Ceol Gan Eagla — Chromatic Tuner</title>
 <meta name="theme-color" content="#0b1220"/>
 
-<!-- Irish tricolour favicon (rectangular, green-white-orange left→right) -->
+<!-- Correct Irish flag favicon (green-left, white, orange-right) -->
 <link rel="icon" href='data:image/svg+xml;utf8,
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48">
-<rect width="64" height="48" fill="%23fff"/>
-<rect x="0" y="0" width="21.333" height="48" fill="%2309a061"/>
-<rect x="42.666" y="0" width="21.334" height="48" fill="%23ff7f4d"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#0b1220"/>
+  <g transform="translate(8,12)">
+    <rect width="48" height="32" rx="6" fill="#fff"/>
+    <rect width="16" height="32" x="0"  rx="6" fill="#169B62"/>
+    <rect width="16" height="32" x="32" rx="6" fill="#FF883E"/>
+  </g>
 </svg>'/>
 
 <style>
@@ -19,22 +22,24 @@
   --bg:#0b1220; --panel:#0f172a; --card:#0c1324; --ink:#eaf2ff; --muted:#a4b0c0; --line:#1f2a44;
   --ok:#22c55e; --low:#ff8a1f; --high:#ef4444; --bar:#111a2e; --bar-edge:#1a2744; --glow:0 10px 30px rgba(0,0,0,.45);
 }
+/* No scroll – one screen */
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;overflow:hidden}
-
-/* One-screen layout */
 .app{
-  height:100svh; width:100vw; max-width:960px; margin:0 auto;
-  display:grid; gap:.9rem; padding:clamp(10px,2.6vw,16px);
-  grid-template-rows:auto auto 1fr auto; /* header / instruments / center / footer */
+  height:100svh;width:100vw;max-width:970px;margin:0 auto;
+  display:grid;grid-template-rows:auto auto 1fr auto;gap:.9rem;padding:clamp(10px,2.6vw,16px);
 }
+
+/* Header with real Irish flag (rounded rect) */
 header{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
 .title{display:flex;align-items:center;gap:.55rem;font-weight:900;letter-spacing:.3px;font-size:clamp(18px,5vw,28px)}
 .flag{
-  width:1.8em;height:1.2em;border-radius:4px;overflow:hidden;display:inline-block;box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 2px 6px rgba(0,0,0,.35);
-  background:
-    linear-gradient(90deg,#09a061 0 33.333%,white 33.333% 66.666%,#ff7f4d 66.666% 100%);
+  width:28px;height:20px;border-radius:4px;display:inline-block;position:relative;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 2px 6px rgba(0,0,0,.35); background:#fff;
 }
+.flag::before{content:"";position:absolute;left:0;top:0;bottom:0;width:33.33%;background:#169B62}
+.flag::after {content:"";position:absolute;right:0;top:0;bottom:0;width:33.33%;background:#FF883E}
+
 .controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
 button{
   appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);
@@ -43,18 +48,17 @@ button{
 }
 button.toggle.start{background:#16a34a;color:white;border-color:#106c31}
 button.toggle.stop{background:#b91c1c;color:white;border-color:#7f1212}
-.badge{padding:.45rem .7rem;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:700;color:var(--muted);font-size:clamp(11px,3.2vw,13px)}
-select, input[type="number"]{
-  background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:12px;
-  padding:.45rem .6rem; font-weight:700; font-size:clamp(12px,3.2vw,14px); outline:none
+.badge{
+  padding:.45rem .7rem;border-radius:999px;background:var(--panel);border:1px solid var(--line);
+  font-weight:700;color:var(--muted);font-size:clamp(11px,3.2vw,13px)
 }
 
-/* Cards */
+/* Compact cards */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:.7rem;box-shadow:var(--glow)}
 .row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:space-between}
 
-/* Instrument tray */
-.tray{display:flex;flex-wrap:wrap;gap:.5rem;max-height:24vh;overflow:auto}
+/* Instrument chips */
+.tray{display:flex;flex-wrap:wrap;gap:.5rem;max-height:26vh;overflow:auto}
 .instrument-btn{
   display:flex;align-items:center;gap:.4rem;padding:.5rem .65rem;border-radius:14px;
   background:var(--card);border:1px solid var(--line);cursor:pointer;font-weight:800;color:var(--ink);
@@ -63,18 +67,22 @@ select, input[type="number"]{
 .instrument-btn.active{outline:2px solid #3b82f6}
 .instrument-btn.tuned{background:#0e2919;border-color:#1f8a4e}
 
-/* Tuning + strings */
+/* Tuning presets + A4 + string chips */
+.controlsRow{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+select,input[type=number]{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:.45rem .6rem;font-weight:700}
+label{color:var(--muted);font-size:clamp(12px,3.2vw,14px)}
 .tuning{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:clamp(12px,3.2vw,14px)}
 .string-row{display:flex;gap:.45rem;flex-wrap:wrap}
-.string-chip{
-  padding:.4rem .6rem;border:1px solid var(--line);background:var(--card);border-radius:999px;
-  font-weight:900;color:var(--ink);min-width:2.3rem;text-align:center;font-size:clamp(12px,3.4vw,14px)
-}
+.string-chip{padding:.4rem .6rem;border:1px solid var(--line);background:var(--card);border-radius:999px;font-weight:900;color:var(--ink);min-width:2.3rem;text-align:center;font-size:clamp(12px,3.4vw,14px)}
 .string-chip.active{outline:2px solid #3b82f6}
 .string-chip.tuned{background:#0e2919;border-color:#1f8a4e}
 
-/* Center (bar + readout + metronome) */
-.center{display:grid;grid-template-rows:auto 1fr auto;gap:.7rem;min-height:0}
+.meter{height:8px;border-radius:999px;background:#1f2a44;overflow:hidden;width:150px;border:1px solid var(--line)}
+.meter > div{height:100%;width:0;background:#3b82f6;transition:width .1s linear}
+.error{color:#fca5a5;font-size:12px}
+
+/* Center: bar + readout */
+.center{display:grid;grid-template-rows:auto 1fr;gap:.7rem;min-height:0}
 .bar-wrap{display:grid;gap:.6rem}
 .bar{
   position:relative;height:clamp(36px,7.5vh,56px);border-radius:999px;background:var(--bar);
@@ -84,11 +92,7 @@ select, input[type="number"]{
 .bar .zone.low{position:absolute;left:0;top:0;bottom:0;width:50%;background:linear-gradient(90deg, rgba(255,138,31,.18), rgba(255,138,31,0));}
 .bar .zone.high{position:absolute;right:0;top:0;bottom:0;width:50%;background:linear-gradient(270deg, rgba(239,68,68,.18), rgba(239,68,68,0));}
 .bar .zone.ok{position:absolute;left:50%;transform:translateX(-50%);top:0;bottom:0;width:12%;background:linear-gradient(90deg, rgba(34,197,94,.3), rgba(34,197,94,.0) 60%);}
-.pointer{
-  position:absolute;top:50%;transform:translate(-50%,-50%);
-  width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:18px solid #eaf2ff;
-  filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));
-}
+.pointer{position:absolute;top:50%;transform:translate(-50%,-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:18px solid #eaf2ff;filter:drop-shadow(0 4px 8px rgba(0,0,0,.6));}
 
 .readout{display:grid;gap:.4rem;justify-items:center;text-align:center}
 .note{font-size:clamp(28px,10vw,44px);font-weight:900;letter-spacing:1px}
@@ -96,20 +100,12 @@ select, input[type="number"]{
 .status.low{color:var(--low);box-shadow:0 0 0 2px rgba(255,138,31,.15) inset}
 .status.high{color:var(--high);box-shadow:0 0 0 2px rgba(239,68,68,.15) inset}
 .status.ok{color:var(--ok);box-shadow:0 0 0 2px rgba(34,197,94,.15) inset}
-.help{font-size:clamp(11px,3vw,13px);color:var(--muted)}
 .app.tuned{ background: radial-gradient(1200px 380px at 50% -180px, rgba(34,197,94,.10), transparent 60%), var(--bg); }
 
-footer{text-align:center;color:var(--muted);font-size:11px}
-
-/* Error + meters */
-.error{color:#fca5a5;font-size:12px}
-.meter{height:8px;border-radius:999px;background:#1f2a44;overflow:hidden;width:150px;border:1px solid var(--line)}
-.meter > div{height:100%;width:0;background:#3b82f6;transition:width .1s linear}
-
-/* Metronome */
-.met-wrap{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;justify-content:center}
-.pulse{width:10px;height:10px;border-radius:50%;background:#2c3552;box-shadow:0 0 0 1px var(--line) inset}
-.pulse.on{background:#eaf2ff;box-shadow:0 0 12px rgba(255,255,255,.6)}
+/* Footer (metronome row) – compact */
+footer{display:flex;align-items:center;justify-content:center;gap:.6rem;color:var(--muted);font-size:12px}
+footer .ctl{display:flex;align-items:center;gap:.35rem}
+footer input[type=number], footer select{font-size:12px;padding:.35rem .5rem;border-radius:10px}
 </style>
 </head>
 <body>
@@ -130,35 +126,36 @@ footer{text-align:center;color:var(--muted);font-size:11px}
         <button class="instrument-btn" data-inst="violin">🎻 Violin</button>
         <button class="instrument-btn" data-inst="tenorbanjo">🪕 Tenor Banjo</button>
         <button class="instrument-btn" data-inst="mandolin">🎶 Mandolin</button>
-        <button class="instrument-btn" data-inst="bouzouki_gdae">🎶 Bouzouki GDAE</button>
-        <button class="instrument-btn" data-inst="bouzouki_gdad">🎶 Bouzouki GDAD</button>
+        <button class="instrument-btn" data-inst="bouzouki">🎶 Bouzouki</button>
         <button class="instrument-btn" data-inst="ukulele">🎵 Ukulele</button>
         <button class="instrument-btn" data-inst="bass4">🎸 Bass</button>
         <button class="instrument-btn" data-inst="viola">🎻 Viola</button>
         <button class="instrument-btn" data-inst="cello">🎻 Cello</button>
       </div>
-      <div style="display:flex;gap:.5rem;align-items:center">
-        <label class="badge" for="tuningSel">Tuning</label>
-        <select id="tuningSel" title="Select tuning"></select>
-        <label class="badge" for="a4">A4</label>
-        <input id="a4" type="number" min="430" max="450" step="1" value="440" title="A4 reference (Hz)" />
-        <span class="badge">Mic Level</span>
-        <div class="meter"><div id="levelBar"></div></div>
-      </div>
+      <span class="badge">Mode: Auto string detect</span>
     </div>
 
-    <div class="row" style="margin-top:.4rem">
-      <div class="tuning"><strong>Tuning notes:</strong> <span id="tuningText">E A D G B E</span></div>
-      <div class="error" id="err"></div>
+    <div class="row controlsRow" style="margin-top:.4rem">
+      <label for="tuningSelect">Tuning</label>
+      <select id="tuningSelect" title="Tuning preset"></select>
+
+      <label for="a4">A4</label>
+      <input id="a4" type="number" min="415" max="466" step="1" value="440" style="width:72px"/>
+      <span class="badge" id="a4label">A4 = 440</span>
+
+      <span class="badge">Mic Level</span>
+      <div class="meter"><div id="levelBar"></div></div>
+
+      <span class="error" id="err"></span>
     </div>
 
     <div class="row">
+      <div class="tuning"><strong>Tuning notes:</strong> <span id="tuningText">E A D G B E</span></div>
       <div class="string-row" id="stringRow"></div>
-      <span class="badge" id="modeBadge">Mode: Auto string detect</span>
     </div>
   </div>
 
-  <!-- Center: tuner bar + readout + metronome -->
+  <!-- Center: bar + readout -->
   <div class="center">
     <div class="panel bar-wrap">
       <div class="bar" id="bar">
@@ -173,183 +170,177 @@ footer{text-align:center;color:var(--muted);font-size:11px}
         <div class="help">Bar turns <b style="color:var(--ok)">green</b> when in tune; <span style="color:var(--low)">orange</span> = too low, <span style="color:var(--high)">red</span> = too high.</div>
       </div>
     </div>
-
-    <div class="panel">
-      <div class="met-wrap">
-        <label class="badge" for="metTime">Time</label>
-        <select id="metTime">
-          <option>2/4</option><option>3/4</option><option selected>4/4</option><option>6/8</option>
-        </select>
-        <label class="badge" for="metTempo">Tempo</label>
-        <input id="metTempo" type="number" min="30" max="240" step="1" value="100"/>
-        <button id="metToggle">Start Metronome</button>
-        <div class="pulse" id="metPulse" title="beat"></div>
-      </div>
-    </div>
   </div>
 
-  <footer>© 2025 Gearóid MacUaid — Ceol Gan Eagla</footer>
+  <!-- Footer: Metronome (compact, no scroll) -->
+  <footer>
+    <div class="ctl">
+      <label for="timeSel">Time</label>
+      <select id="timeSel">
+        <option>2/4</option><option>3/4</option><option selected>4/4</option>
+        <option>5/4</option><option>6/8</option><option>7/8</option><option>9/8</option><option>12/8</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label for="tempo">Tempo</label>
+      <input id="tempo" type="number" min="30" max="240" step="1" value="100" style="width:64px"/>
+    </div>
+    <button id="metroBtn">Start Metronome</button>
+  </footer>
 </div>
 
 <script>
 (() => {
-  let A4 = 440;
-  const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-
-  /* Tunings per instrument */
-  const TUNINGS = {
-    guitar: {
-      "Standard (E A D G B E)": ["E2","A2","D3","G3","B3","E4"],
-      "Drop D (D A D G B E)": ["D2","A2","D3","G3","B3","E4"],
-      "DADGAD (D A D G A D)": ["D2","A2","D3","G3","A3","D4"],
-      "Open G (D G D G B D)": ["D2","G2","D3","G3","B3","D4"],
-      "Open D (D A D F# A D)": ["D2","A2","D3","F#3","A3","D4"]
-    },
-    violin: { "Standard (G D A E)": ["G3","D4","A4","E5"] },
-    tenorbanjo: { "Standard (G D A E)": ["G2","D3","A3","E4"] },
-    mandolin: { "Standard (G D A E)": ["G3","D4","A4","E5"] },
-    bouzouki_gdae: { "GDAE (G D A E)": ["G2","D3","A3","E4"] },
-    bouzouki_gdad: { "GDAD (G D A D)": ["G2","D3","A3","D4"] },
-    ukulele: {
-      "Re-entrant (G C E A)": ["G4","C4","E4","A4"],
-      "Low G (G C E A)": ["G3","C4","E4","A4"]
-    },
-    bass4: { "Standard (E A D G)": ["E1","A1","D2","G2"] },
-    viola: { "Standard (C G D A)": ["C3","G3","D4","A4"] },
-    cello: { "Standard (C G D A)": ["C2","G2","D3","A3"] },
+  /* ----------------------- Tuning presets ----------------------- */
+  const PRESETS = {
+    guitar: [
+      {name:"Standard (E A D G B E)", notes:["E2","A2","D3","G3","B3","E4"]},
+      {name:"Drop D (D A D G B E)", notes:["D2","A2","D3","G3","B3","E4"]},
+      {name:"DADGAD (D A D G A D)", notes:["D2","A2","D3","G3","A3","D4"]},
+      {name:"Open G (D G D G B D)", notes:["D2","G2","D3","G3","B3","D4"]},
+      {name:"Open D (D A D F# A D)", notes:["D2","A2","D3","F#3","A3","D4"]},
+      {name:"Half-step down (Eb Ab Db Gb Bb Eb)", notes:["D#2","G#2","C#3","F#3","A#3","D#4"]}
+    ],
+    violin: [{name:"Standard (G D A E)", notes:["G3","D4","A4","E5"]}],
+    tenorbanjo: [
+      {name:"GDAE", notes:["G2","D3","A3","E4"]},
+      {name:"Chicago (D G B E)", notes:["D3","G3","B3","E4"]}
+    ],
+    mandolin: [{name:"GDAE", notes:["G3","D4","A4","E5"]}],
+    bouzouki: [
+      {name:"GDAE", notes:["G2","D3","A3","E4"]},
+      {name:"GDAD", notes:["G2","D3","A3","D4"]}
+    ],
+    ukulele: [
+      {name:"Standard re-entrant (G C E A)", notes:["G4","C4","E4","A4"]},
+      {name:"Low G (C E G A)", notes:["C4","E4","G4","A4"]},
+      {name:"D tuning (A D F# B)", notes:["A4","D4","F#4","B4"]}
+    ],
+    bass4: [
+      {name:"E A D G", notes:["E1","A1","D2","G2"]},
+      {name:"Drop D (D A D G)", notes:["D1","A1","D2","G2"]}
+    ],
+    viola: [{name:"C G D A", notes:["C3","G3","D4","A4"]}],
+    cello: [{name:"C G D A", notes:["C2","G2","D3","A3"]}],
   };
 
-  /* Frequency map from note name */
-  function noteToHz(note){
-    // Parse like "F#3"
-    const m = note.match(/^([A-G])(#?)(\d)$/); if(!m) return 0;
-    const base = "C C# D D# E F F# G G# A A# B".split(" ");
-    const name = m[1] + (m[2]||"");
-    const octave = parseInt(m[3],10);
-    // MIDI semantics: A4 = 440 is MIDI 69. C-1 => 0
-    const index = base.indexOf(name);
-    const midi = (octave+1)*12 + index;
-    const a4midi = 69;
-    return A4 * Math.pow(2, (midi - a4midi)/12);
-  }
-
-  /* Build instrument maps with Hz */
-  function buildInstrument(instKey){
-    const obj = {};
-    for (const [label, notes] of Object.entries(TUNINGS[instKey])) {
-      obj[label] = notes.map(n => ({ n, f: noteToHz(n) }));
-    }
-    return obj;
-  }
-
-  // UI refs
+  /* ----------------------- DOM refs ----------------------- */
   const appEl = document.getElementById('app');
   const toggleBtn = document.getElementById('toggleBtn');
   const micStatus = document.getElementById('micStatus');
   const tray = document.getElementById('instrumentTray');
+  const tuningSelect = document.getElementById('tuningSelect');
+  const tuningText = document.getElementById('tuningText');
+  const stringRow = document.getElementById('stringRow');
+  const a4Input = document.getElementById('a4');
+  const a4label = document.getElementById('a4label');
   const pointer = document.getElementById('pointer');
   const bar = document.getElementById('bar');
   const noteEl = document.getElementById('note');
   const statusEl = document.getElementById('status');
-  const tuningSel = document.getElementById('tuningSel');
-  const tuningText = document.getElementById('tuningText');
-  const stringRow = document.getElementById('stringRow');
   const errEl = document.getElementById('err');
   const levelBar = document.getElementById('levelBar');
-  const a4Input = document.getElementById('a4');
 
-  // Metronome refs
-  const metTime = document.getElementById('metTime');
-  const metTempo = document.getElementById('metTempo');
-  const metToggle = document.getElementById('metToggle');
-  const metPulse = document.getElementById('metPulse');
+  const timeSel = document.getElementById('timeSel');
+  const tempoInput = document.getElementById('tempo');
+  const metroBtn = document.getElementById('metroBtn');
 
-  /* State */
-  let currentInstrumentKey = 'guitar';
-  let INST = buildInstrument(currentInstrumentKey); // {label: [{n,f}..]}
-  let currentTuningLabel = Object.keys(INST)[0];
+  /* ----------------------- State ----------------------- */
+  let currentInstrument = 'guitar';
+  let currentPresetIdx = 0;
+  let A4 = 440;
 
-  function renderTuningSelector(){
-    tuningSel.innerHTML = '';
-    for (const label of Object.keys(INST)){
-      const opt = document.createElement('option');
-      opt.value = label; opt.textContent = label;
-      tuningSel.appendChild(opt);
-    }
-    tuningSel.value = currentTuningLabel;
+  /* ----------------------- Utilities ----------------------- */
+  const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  function noteToMidi(s){
+    // e.g. "F#3", "Eb4"
+    const m = s.match(/^([A-Ga-g])([#b]?)(-?\d)$/);
+    if (!m) return null;
+    let [ , ltr, acc, oct ] = m;
+    ltr = ltr.toUpperCase();
+    const base = {C:0,D:2,E:4,F:5,G:7,A:9,B:11}[ltr];
+    let semi = base + (acc==="#"?1:acc==="b"?-1:0);
+    const midi = (parseInt(oct,10)+1)*12 + semi;
+    return midi;
   }
-
-  function renderTuningUI(){
-    const inst = INST[currentTuningLabel];
-    const names = inst.map(s => s.n.replace(/\d+$/,''));
-    tuningText.textContent = names.join(' ');
-    stringRow.innerHTML = '';
-    inst.forEach((s, i) => {
-      const chip = document.createElement('div');
-      chip.className = 'string-chip';
-      chip.textContent = s.n.replace(/\d+$/,'');
-      chip.dataset.idx = i;
-      stringRow.appendChild(chip);
-    });
+  function midiToFreq(midi, A4ref=440){ return A4ref * Math.pow(2, (midi - 69)/12); }
+  function noteToFreq(s, A4ref=440){ const m = noteToMidi(s); return midiToFreq(m, A4ref); }
+  function freqToNoteName(f, A4ref=440){
+    const n = Math.round(12 * Math.log2(f / A4ref)) + 57; // 57 => A4 index to get A=440 -> A4
+    const name = NOTE_NAMES[(n % 12 + 12) % 12];
+    const octave = Math.floor(n / 12) - 1;
+    return `${name}${octave}`;
   }
-
-  function rebuildInstrument(){
-    INST = buildInstrument(currentInstrumentKey);
-    currentTuningLabel = Object.keys(INST)[0];
-    renderTuningSelector();
-    renderTuningUI();
-  }
-
-  renderTuningSelector();
-  renderTuningUI();
-
-  tray.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.instrument-btn');
-    if(!btn) return;
-    [...tray.children].forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    currentInstrumentKey = btn.dataset.inst;
-    rebuildInstrument();
-  });
-
-  tuningSel.addEventListener('change', ()=>{
-    currentTuningLabel = tuningSel.value;
-    renderTuningUI();
-  });
-
-  a4Input.addEventListener('change', ()=>{
-    A4 = Math.max(430, Math.min(450, parseInt(a4Input.value||440,10)));
-    rebuildInstrument();
-  });
-
-  /* ---------- Audio + Tuner ---------- */
-  let audioCtx=null, analyser=null, mediaStream=null, hpFilter=null, lpFilter=null;
-  const BUF_SIZE = 4096;
-  let buf = new Float32Array(BUF_SIZE);
-  let running=false;
-
-  let displayCents = 0, lock={active:false,stringIdx:-1,expires:0}, cand={idx:-1,count:0};
-  const LEVEL_GATE = 0.012, YIN_THRESH=0.10, CONF_GATE=0.6, MIN_HZ=50, MAX_HZ=1200;
-  const SMOOTH_A=0.92, DEADBAND_CENTS=1.5, LOCK_NEED_FRAMES=14, LOCK_TIME_MS=6000, C_HISTORY=7;
-  const centsHistory = [];
-
-  function rms(a){ let s=0; for(let i=0;i<a.length;i++){const v=a[i]; s+=v*v;} return Math.sqrt(s/a.length); }
   function centsOff(f, ref){ return 1200 * Math.log2(f / ref); }
-  function freqToNote(f){
-    const n = Math.round(12 * Math.log2(f / A4)) + 57;
-    const name = NOTE_NAMES[(n % 12 + 12) % 12]; const octave = Math.floor(n / 12) - 1;
-    return {name, octave};
-  }
-  function nearestStringIdx(hz, inst){
+  function nearestStringIdx(hz, notes){
     let best = {idx:0, cents:Infinity};
-    for (let i=0;i<inst.length;i++){
-      const c = Math.abs(centsOff(hz, inst[i].f));
+    for (let i=0;i<notes.length;i++){
+      const c = Math.abs(centsOff(hz, noteToFreq(notes[i], A4)));
       if (c < best.cents) best = {idx:i, cents:c};
     }
     return best.idx;
   }
   function median(arr){ const a = arr.slice().sort((x,y)=>x-y); const m = Math.floor(a.length/2); return a.length%2?a[m]:(a[m-1]+a[m])/2; }
 
+  /* ----------------------- Build tuning UI ----------------------- */
+  function populatePresets(){
+    const list = PRESETS[currentInstrument];
+    tuningSelect.innerHTML = '';
+    list.forEach((p,i)=>{
+      const opt = document.createElement('option');
+      opt.value = i; opt.textContent = p.name;
+      tuningSelect.appendChild(opt);
+    });
+    currentPresetIdx = 0;
+    tuningSelect.value = '0';
+    renderTuningNotes();
+  }
+  function renderTuningNotes(){
+    const notes = PRESETS[currentInstrument][currentPresetIdx].notes;
+    tuningText.textContent = notes.map(n=>n.replace(/\d+$/,'')).join(' ');
+    stringRow.innerHTML = '';
+    notes.forEach((s, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'string-chip';
+      chip.textContent = s.replace(/\d+$/,'');
+      chip.dataset.idx = i;
+      stringRow.appendChild(chip);
+    });
+  }
+
+  tray.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.instrument-btn');
+    if(!btn) return;
+    [...tray.children].forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentInstrument = btn.dataset.inst;
+    populatePresets();
+  });
+  tuningSelect.addEventListener('change', ()=>{
+    currentPresetIdx = parseInt(tuningSelect.value,10) || 0;
+    renderTuningNotes();
+  });
+
+  // A4 calibration
+  a4Input.addEventListener('input', ()=>{
+    const v = Math.max(415, Math.min(466, parseInt(a4Input.value || '440',10)));
+    A4 = v; a4label.textContent = `A4 = ${v}`;
+  });
+
+  // Init UI
+  populatePresets();
+
+  /* ----------------------- Audio chain (tuner) ----------------------- */
+  let audioCtx=null, analyser=null, mediaStream=null, hpFilter=null, lpFilter=null;
+  const BUF_SIZE = 4096; let buf = new Float32Array(BUF_SIZE); let running=false;
+
+  // Stability & smoothing
+  let displayCents = 0, lock={active:false,stringIdx:-1,expires:0}, cand={idx:-1,count:0};
+  const LEVEL_GATE = 0.012, YIN_THRESH=0.10, CONF_GATE=0.6, MIN_HZ=50, MAX_HZ=1200;
+  const SMOOTH_A=0.92, DEADBAND_CENTS=1.5, LOCK_NEED_FRAMES=14, LOCK_TIME_MS=6000, C_HISTORY=7;
+  const centsHistory = [];
+
+  function rms(a){ let s=0; for(let i=0;i<a.length;i++){const v=a[i]; s+=v*v;} return Math.sqrt(s/a.length); }
   function yin(buffer, sampleRate){
     const N = buffer.length;
     const tauMax = Math.min(Math.floor(sampleRate / 50), N-1);
@@ -402,25 +393,15 @@ footer{text-align:center;color:var(--muted);font-size:11px}
       { audio: true }
     ];
     let lastErr;
-    for (const c of tries) {
-      try { return await navigator.mediaDevices.getUserMedia(c); }
-      catch (e) { lastErr = e; }
-    }
+    for (const c of tries) { try { return await navigator.mediaDevices.getUserMedia(c); } catch (e) { lastErr = e; } }
     throw lastErr;
   }
 
   async function start(){
     errEl.textContent = "";
     if (running) return;
-
-    if (location.protocol !== 'https:' && location.hostname !== 'localhost'){
-      errEl.textContent = "Mic needs HTTPS. Open via GitHub Pages.";
-      return;
-    }
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      errEl.textContent = "This page cannot access the microphone.";
-      return;
-    }
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost'){ errEl.textContent = "Mic needs HTTPS. Open via GitHub Pages."; return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ errEl.textContent = "This page cannot access the microphone."; return; }
 
     try { mediaStream = await getMicStream(); }
     catch (err) {
@@ -461,24 +442,21 @@ footer{text-align:center;color:var(--muted);font-size:11px}
     if (mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
     if (audioCtx){ audioCtx.close().catch(()=>{}); audioCtx=null; }
     analyser = hpFilter = lpFilter = null;
-    toggleBtn.textContent = "Start Mic";
-    toggleBtn.classList.remove('stop'); toggleBtn.classList.add('start');
+    toggleBtn.textContent = "Start Mic"; toggleBtn.classList.remove('stop'); toggleBtn.classList.add('start');
     micStatus.textContent = "Mic: Off";
     statusEl.className = "status"; statusEl.textContent = "Stopped";
-    appEl.classList.remove('tuned');
-    pointer.style.left = "50%";
-    displayCents = 0; centsHistory.length = 0; lock = {active:false,stringIdx:-1,expires:0}; cand = {idx:-1,count:0};
-    [...stringRow.children].forEach(c=>c.className='string-chip');
-    levelBar.style.width = "0%";
+    appEl.classList.remove('tuned'); pointer.style.left = "50%";
+    displayCents = 0; centsHistory.length = 0; lock = {active:false,stringIdx:-1,expires:0}; cand={idx:-1,count:0};
+    [...stringRow.children].forEach(c=>c.className='string-chip'); levelBar.style.width = "0%";
   }
 
   toggleBtn.addEventListener('click', () => running ? stop() : start());
 
   function loop(){
     if (!running || !analyser) return;
-
     analyser.getFloatTimeDomainData(buf);
-    // Mic level meter
+
+    // mic level
     let lsum=0; for(let i=0;i<buf.length;i++){ const v=buf[i]; lsum += v*v; }
     const level = Math.sqrt(lsum/buf.length);
     levelBar.style.width = Math.min(100, (level*500)) + "%";
@@ -489,9 +467,10 @@ footer{text-align:center;color:var(--muted);font-size:11px}
     const {hz, conf} = yin(buf, sr);
     if (!(hz>0 && conf>CONF_GATE)){ statusEl.className="status"; statusEl.textContent="Listening…"; appEl.classList.remove('tuned'); return requestAnimationFrame(loop); }
 
-    const inst = INST[currentTuningLabel];
-    let idx = nearestStringIdx(hz, inst);
+    const notes = PRESETS[currentInstrument][currentPresetIdx].notes;
+    let idx = nearestStringIdx(hz, notes);
 
+    // lock behaviour
     if (!lock.active){
       if (cand.idx === idx) cand.count++; else { cand.idx=idx; cand.count=1; }
       if (cand.count > LOCK_NEED_FRAMES){ lock={active:true,stringIdx:idx,expires:performance.now()+LOCK_TIME_MS}; cand={idx:-1,count:0}; }
@@ -500,13 +479,12 @@ footer{text-align:center;color:var(--muted);font-size:11px}
       else { idx = lock.stringIdx; }
     }
 
-    const ref = inst[idx].f;
+    const ref = noteToFreq(notes[idx], A4);
     let cents = 1200 * Math.log2(hz / ref);
     centsHistory.push(cents); if (centsHistory.length > C_HISTORY) centsHistory.shift();
     cents = median(centsHistory);
 
-    const note = freqToNote(hz);
-    noteEl.textContent = `${note.name}${note.octave}`;
+    noteEl.textContent = freqToNoteName(hz, A4);
 
     const abs = Math.abs(cents);
     let cls="status", txt="";
@@ -529,7 +507,7 @@ footer{text-align:center;color:var(--muted);font-size:11px}
     requestAnimationFrame(loop);
   }
 
-  /* --- Chrome Android mic wake-up patch --- */
+  /* Chrome Android mic wake-up patch */
   document.addEventListener('click', async () => {
     if (audioCtx && audioCtx.state === 'suspended') { try { await audioCtx.resume(); } catch {} }
   }, { once: true });
@@ -537,61 +515,52 @@ footer{text-align:center;color:var(--muted);font-size:11px}
     if (running && (!mediaStream || mediaStream.getTracks().every(t=>!t.enabled))) { stop(); setTimeout(start, 600); }
   };
 
-  /* ---------- Metronome ---------- */
-  let metCtx=null, metGain=null, metTimer=null, metLook=25, metSchedAhead=0.1, metNext=0, metBeat=0, metBeatsPerBar=4;
-  const accentFreq = 1700, tickFreq = 1000;
-  function metEnsureCtx(){
-    if (!metCtx) {
-      metCtx = new (window.AudioContext || window.webkitAudioContext)();
-      metGain = metCtx.createGain(); metGain.gain.value = 0.2; metGain.connect(metCtx.destination);
-    }
+  /* ----------------------- Metronome ----------------------- */
+  let metCtx=null, metGain=null, metroTimer=null, nextNoteTime=0, currentBeat=0, beatsPerBar=4, beatUnit=4;
+  function parseTimeSel(){
+    const v = timeSel.value.trim(); const parts = v.split('/');
+    beatsPerBar = Math.max(1, parseInt(parts[0],10)||4);
+    beatUnit = Math.max(1, parseInt(parts[1],10)||4);
   }
-  function metClick(t, accent){
-    const osc = metCtx.createOscillator(); const g = metCtx.createGain();
-    osc.type = "square"; osc.frequency.value = accent ? accentFreq : tickFreq;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.linearRampToValueAtTime(accent?0.35:0.22, t+0.001);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+0.06);
+  function ensureMetCtx(){
+    if (!metCtx){ metCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+    if (!metGain){ metGain = metCtx.createGain(); metGain.gain.value = 0.15; metGain.connect(metCtx.destination); }
+  }
+  function scheduleClick(time, accent){
+    const osc = metCtx.createOscillator();
+    osc.frequency.value = accent ? 1000 : 700;
+    const g = metCtx.createGain();
+    g.gain.setValueAtTime(0, time);
+    g.gain.linearRampToValueAtTime(accent?0.45:0.28, time + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + 0.06);
     osc.connect(g); g.connect(metGain);
-    osc.start(t); osc.stop(t+0.07);
+    osc.start(time); osc.stop(time + 0.07);
   }
-  function metSchedule(){
-    const tempo = Math.max(30, Math.min(240, parseInt(metTempo.value||100,10)));
-    const secPerBeat = 60/tempo;
-    while (metNext < metCtx.currentTime + metSchedAhead){
-      const accent = (metBeat % metBeatsPerBar) === 0;
-      metClick(metNext, accent);
-      // tiny UI pulse
-      setTimeout(()=>{ metPulse.classList.add('on'); setTimeout(()=>metPulse.classList.remove('on'), 70); }, (metNext - metCtx.currentTime)*1000);
-      metNext += secPerBeat;
-      metBeat = (metBeat + 1) % metBeatsPerBar;
+  function scheduler(){
+    const tempo = Math.max(30, Math.min(240, parseInt(tempoInput.value||'100',10)));
+    const secondsPerBeat = 60.0 / tempo;
+    while (nextNoteTime < metCtx.currentTime + 0.12){
+      const accent = (currentBeat % beatsPerBar) === 0;
+      scheduleClick(nextNoteTime, accent);
+      nextNoteTime += secondsPerBeat;
+      currentBeat = (currentBeat + 1) % beatsPerBar;
     }
   }
-  function metTick(){
-    metSchedule();
-    metTimer = setTimeout(metTick, metLook);
+  function startMetronome(){
+    parseTimeSel(); ensureMetCtx();
+    metCtx.resume().catch(()=>{});
+    currentBeat = 0;
+    nextNoteTime = metCtx.currentTime + 0.06;
+    if (metroTimer) clearInterval(metroTimer);
+    metroTimer = setInterval(scheduler, 25);
+    metroBtn.textContent = "Stop Metronome";
   }
-  function metStart(){
-    metEnsureCtx();
-    metCtx.resume();
-    // beats per bar from time select
-    const ts = metTime.value;
-    metBeatsPerBar = (ts==="6/8") ? 6 : parseInt(ts,10) || 4;
-    const tempo = Math.max(30, Math.min(240, parseInt(metTempo.value||100,10)));
-    const secPerBeat = 60/tempo;
-    metNext = metCtx.currentTime + 0.05;
-    metBeat = 0;
-    metTick();
-    metToggle.textContent = "Stop Metronome";
+  function stopMetronome(){
+    if (metroTimer){ clearInterval(metroTimer); metroTimer=null; }
+    if (metCtx){ metCtx.suspend().catch(()=>{}); }
+    metroBtn.textContent = "Start Metronome";
   }
-  function metStop(){
-    if (metTimer) clearTimeout(metTimer); metTimer=null;
-    try{ metCtx && metCtx.suspend(); }catch(e){}
-    metToggle.textContent = "Start Metronome";
-  }
-  metToggle.addEventListener('click', ()=> (metTimer ? metStop() : metStart()));
-  metTime.addEventListener('change', ()=>{ if (metTimer){ metStop(); metStart(); }});
-  metTempo.addEventListener('change', ()=>{ if (metTimer){ metStop(); metStart(); }});
+  metroBtn.addEventListener('click', ()=> metroTimer ? stopMetronome() : startMetronome());
 })();
 </script>
 </body>
