@@ -656,6 +656,19 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
   sigSelect.addEventListener('change', ()=> { if (metroTimer){ stopMetronome(); startMetronome(); }});
 })();
 </script>
+   ...
+  <!-- register the service worker -->
+  <script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    });
+  }
+  </script>
 </body>
 </html>
+
+</body>
+</html>
+
 
