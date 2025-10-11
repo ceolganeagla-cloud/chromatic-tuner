@@ -154,8 +154,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
         <button class="instrument-btn" data-inst="bouzouki">🎶<span>Bouzouki</span></button>
         <button class="instrument-btn" data-inst="ukulele">🎵<span>Ukulele</span></button>
         <button class="instrument-btn" data-inst="bass4">🎸<span>Bass</span></button>
-        <button class="instrument-btn" data-inst="viola">🎻<span>Viola</span></button>
-        <button class="instrument-btn" data-inst="cello">🎻<span>Cello</span></button>
+
       </div>
 
       <div class="tuning-controls">
@@ -267,9 +266,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
     violin:      { "Standard (G D A E)": ["G3","D4","A4","E5"] },
     ukulele:     { "Re-entrant (G C E A)": ["G4","C4","E4","A4"] },
     bass4:       { "Standard (E A D G)": ["E1","A1","D2","G2"] },
-    viola:       { "Standard (C G D A)": ["C3","G3","D4","A4"] },
-    cello:       { "Standard (C G D A)": ["C2","G2","D3","A3"] }
-  };
+
 
   function noteToHz(n, A4=440){
     const m = /^([A-G])(#?)(-?\d+)$/.exec(n);
@@ -706,3 +703,4 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
+
