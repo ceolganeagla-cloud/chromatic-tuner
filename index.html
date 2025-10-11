@@ -1,8 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
+<!--
+  Ceol Gan Eagla Tuner
+  © 2025 Ceol Gan Eagla. All rights reserved.
+  Original work: no third-party libraries; uses Web Audio API.
+-->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 <!-- Favicon and App Icons -->
-<link rel="icon" type="image/png" sizes="16x16" href="icons/icon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=2">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=2">
@@ -10,15 +17,28 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#000000">
 
-
 <style>
 :root{
   --bg:#0b1220; --panel:#0f172a; --card:#0c1324; --ink:#eaf2ff; --muted:#a4b0c0; --line:#1f2a44;
   --ok:#22c55e; --low:#ff8a1f; --high:#ef4444; --bar:#111a2e; --bar-edge:#1a2744; --glow:0 10px 30px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif}
-.wrap{display:grid;grid-template-rows:auto auto auto auto 1fr auto;gap:12px;min-height:100dvh;padding:14px}
+html,body{
+  height:100%;
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+  overflow:hidden;             /* prevent page scroll */
+  overscroll-behavior:none;    /* avoid bounce on mobile */
+}
+.wrap{
+  display:grid;grid-template-rows:auto auto auto auto 1fr auto;gap:12px;
+  height:100svh;               /* fit to visible screen (no URL bar growth) */
+  max-height:100svh;
+  padding:14px;
+  overflow:hidden;
+}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 h1{margin:0;font-size:clamp(18px,4.5vw,28px);letter-spacing:.3px}
 .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -252,7 +272,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
     const sharp = m[2] ? 1 : 0;
     const oct = parseInt(m[3],10);
     const index = base + sharp + (oct+1)*12; // C-1 index 0
-    const a4Index = 9 + (4+1)*12; // A4 index with this mapping = 57
+    const a4Index = 9 + (4+1)*12; // A4 index with this mapping = 69
     return A4 * Math.pow(2, (index - a4Index)/12);
   }
 
@@ -351,7 +371,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
   function rms(arr){ let s=0; for(let i=0;i<arr.length;i++){const v=arr[i]; s+=v*v;} return Math.sqrt(s/arr.length); }
   function centsOff(f, ref){ return 1200 * Math.log2(f / ref); }
   function freqToNote(f){
-    const n = Math.round(12 * Math.log2(f / A4_REF)) + 57;
+    const n = Math.round(12 * Math.log2(f / A4_REF)) + 69;  // <-- fixed from 57 to 69
     const name = NOTE_NAMES[(n % 12 + 12) % 12];
     const octave = Math.floor(n / 12) - 1;
     return {name, octave};
@@ -547,8 +567,8 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
     centsHistory.push(cents); if (centsHistory.length > C_HISTORY) centsHistory.shift();
     cents = median(centsHistory);
 
-    // Note label (chromatic display, but header says Tuner only)
-    const n = Math.round(12 * Math.log2(hz / A4_REF)) + 57;
+    // Note label
+    const n = Math.round(12 * Math.log2(hz / A4_REF)) + 69; // <-- fixed
     const name = NOTE_NAMES[(n % 12 + 12) % 12];
     const octave = Math.floor(n / 12) - 1;
     noteEl.textContent = `${name}${octave}`;
@@ -657,22 +677,14 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
   sigSelect.addEventListener('change', ()=> { if (metroTimer){ stopMetronome(); startMetronome(); }});
 })();
 </script>
-   ...
-  <!-- register the service worker -->
-  <script>
+
+<!-- register the service worker -->
+<script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("./sw.js").catch(()=>{});
     });
   }
-  </script>
+</script>
 </body>
 </html>
-
-</body>
-</html>
-
-
-
-
-
