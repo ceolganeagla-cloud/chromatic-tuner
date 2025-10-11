@@ -121,6 +121,16 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
 .metro .dot{width:12px;height:12px;border-radius:50%;background:#2b3757;border:1px solid var(--line)}
 .metro .dot.active{background:#eaf2ff}
 .metro .dot.accent{background:#22c55e}
+
+/* Slightly tighter layout on short screens */
+@media (max-height: 740px) {
+  .wrap { padding:10px }
+  .panel { padding:10px }
+  .row { gap:8px }
+  .badge, button, select { padding:8px 10px }
+  .note { font-size:clamp(24px,9vw,42px) }
+  .status { font-size:clamp(14px,3.8vw,20px) }
+}
 </style>
 </head>
 <body>
@@ -215,6 +225,29 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
   <footer>© 2025 Gearóid MacUaid — Ceol Gan Eagla</footer>
 </div>
 
+<!-- Fit-to-screen auto-scaling (layout-only) -->
+<script>
+(function(){
+  const root = document.getElementById('app');
+  function fit(){
+    if(!root) return;
+    root.style.transform='none';
+    root.style.transformOrigin='top left';
+    root.style.width=''; root.style.height='';
+    const vw=window.innerWidth, vh=window.innerHeight;
+    const w=root.scrollWidth, h=root.scrollHeight;
+    const scale=Math.min(vw/w, vh/h, 1);
+    root.style.width=w+'px';
+    root.style.height=h+'px';
+    root.style.transform='scale('+scale+')';
+  }
+  addEventListener('load', fit, {once:true});
+  addEventListener('resize', fit);
+  addEventListener('orientationchange', fit);
+  setTimeout(fit, 0);
+})();
+</script>
+
 <script>
 (() => {
   // ======= Helpers & UI refs =======
@@ -285,7 +318,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
     for (let v=436; v<=446; v++){
       const o=document.createElement('option'); o.value=v; o.textContent=v; if (v===440) o.selected=true;
       a4Select.appendChild(o);
-    }
+    });
     a4Show.textContent = "A4="+A4_REF;
   }
 
@@ -334,7 +367,6 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
   a4Select.addEventListener('change', () => {
     A4_REF = parseInt(a4Select.value,10);
     a4Show.textContent = "A4="+A4_REF;
-    // force recompute refs by releasing lock
     resetLock();
   });
 
@@ -349,18 +381,18 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
   let lock = {active:false, stringIdx:-1, expires:0};
   let cand = {idx:-1, count:0};
 
-  // Sensitivity & smoothing (tweaked for quick response + creep + sustain)
-  let LEVEL_GATE = 0.006;      // lower so you don't have to pluck hard
+  // Sensitivity & smoothing
+  let LEVEL_GATE = 0.006;
   const YIN_THRESH = 0.10;
   const CONF_GATE  = 0.60;
   const MIN_HZ=50, MAX_HZ=1200;
 
-  const SMOOTH_A = 0.95;       // higher = slower/creepier motion
-  const DEADBAND_CENTS = 1.2;  // ignore tiny jitter
-  const LOCK_NEED_FRAMES = 10; // quicker to lock the string
-  const LOCK_TIME_MS = 8000;   // hold lock longer
-  const PERFECT_CENTS = 3;     // “perfect” zone width
-  const HOLD_MS = 900;         // sustain the perfect state briefly
+  const SMOOTH_A = 0.95;
+  const DEADBAND_CENTS = 1.2;
+  const LOCK_NEED_FRAMES = 10;
+  const LOCK_TIME_MS = 8000;
+  const PERFECT_CENTS = 3;
+  const HOLD_MS = 900;
   let lastPerfectUntil = 0;
 
   const C_HISTORY = 7;
@@ -368,14 +400,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
 
   function resetLock(){ lock={active:false,stringIdx:-1,expires:0}; cand={idx:-1,count:0}; }
 
-  function rms(arr){ let s=0; for(let i=0;i<arr.length;i++){const v=arr[i]; s+=v*v;} return Math.sqrt(s/arr.length); }
   function centsOff(f, ref){ return 1200 * Math.log2(f / ref); }
-  function freqToNote(f){
-    const n = Math.round(12 * Math.log2(f / A4_REF)) + 69;  // <-- fixed from 57 to 69
-    const name = NOTE_NAMES[(n % 12 + 12) % 12];
-    const octave = Math.floor(n / 12) - 1;
-    return {name, octave};
-  }
   function nearestStringIdx(hz){
     const setNotes = TUNINGS[currentInstrumentKey][currentTuningLabel];
     const setHz = setNotes.map(n => noteToHz(n, A4_REF));
@@ -425,7 +450,6 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
   }
 
   function setPointerByCents(cents){
-    // creep + deadband
     const clamp = Math.max(-50, Math.min(50, cents));
     const delta = clamp - displayCents;
     if (Math.abs(delta) < DEADBAND_CENTS) return;
@@ -515,7 +539,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
 
   toggleBtn.addEventListener('click', () => running ? stop() : start());
 
-  function loop(ts){
+  function loop(){
     if (!running || !analyser) return;
 
     analyser.getFloatTimeDomainData(buf);
@@ -527,7 +551,6 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
 
     const sr = audioCtx.sampleRate || 48000;
     if (level < LEVEL_GATE){
-      // gentle decay toward center when quiet
       displayCents = displayCents*0.985;
       pointer.style.left = ((displayCents+50)/100*100)+"%";
       if (performance.now() > lastPerfectUntil){
@@ -551,13 +574,12 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
     }
 
     const {idx, refs} = nearestStringIdx(hz);
-    // lock logic (prevents hopping)
+    // lock logic
     if (!lock.active){
       if (cand.idx === idx) cand.count++; else { cand.idx=idx; cand.count=1; }
       if (cand.count > LOCK_NEED_FRAMES){ lock={active:true,stringIdx:idx,expires:performance.now()+LOCK_TIME_MS}; cand={idx:-1,count:0}; }
     } else {
       if (performance.now() > lock.expires){ lock={active:false,stringIdx:-1,expires:0}; }
-      else { /* stick to locked string */ }
     }
     const useIdx = lock.active ? lock.stringIdx : idx;
     const ref = refs[useIdx];
@@ -568,7 +590,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
     cents = median(centsHistory);
 
     // Note label
-    const n = Math.round(12 * Math.log2(hz / A4_REF)) + 69; // <-- fixed
+    const n = Math.round(12 * Math.log2(hz / A4_REF)) + 69; // correct A4 index
     const name = NOTE_NAMES[(n % 12 + 12) % 12];
     const octave = Math.floor(n / 12) - 1;
     noteEl.textContent = `${name}${octave}`;
@@ -579,7 +601,7 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
       cls+=" ok"; txt="Perfect!";
       appEl.classList.add('tuned');
       bar.style.boxShadow="inset 0 0 0 2px rgba(34,197,94,.35), var(--glow)";
-      lastPerfectUntil = performance.now() + HOLD_MS; // brief sustain
+      lastPerfectUntil = performance.now() + HOLD_MS;
     } else if (cents < 0){
       cls+=" low"; txt="Too Low";
       appEl.classList.remove('tuned');
@@ -590,7 +612,6 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
       bar.style.boxShadow="inset 0 0 0 2px rgba(239,68,68,.25), var(--glow)";
     }
 
-    // sustain display if we just had a perfect lock
     if (performance.now() < lastPerfectUntil){ cls="status ok"; txt="Perfect!"; appEl.classList.add('tuned'); }
 
     statusEl.className = cls; statusEl.textContent = txt;
@@ -608,15 +629,12 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
   }
 
   // ======= Metronome (WebAudio) =======
-  let metroCtx=null, metroTimer=null, metroBeatCount=0, metroPattern=[];
+  let metroCtx=null, metroTimer=null, metroBeatCount=0;
   function makePattern(sig){
-    // Returns [beats per bar, subdivision, accents array indices]
-    if (sig==="6-8"){ // jig feel: 6 pulses, strong accents on 1 and 4
-      return {pulses:6, accents:new Set([0,3])};
-    }
+    if (sig==="6-8"){ return {pulses:6, accents:new Set([0,3])}; }
     if (sig==="3-4"){ return {pulses:3, accents:new Set([0])}; }
     if (sig==="2-4"){ return {pulses:2, accents:new Set([0])}; }
-    return {pulses:4, accents:new Set([0])}; // 4/4 default
+    return {pulses:4, accents:new Set([0])};
   }
   function buildDots(){
     metroDots.innerHTML = "";
@@ -647,15 +665,14 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
     if (!metroCtx) metroCtx = new (window.AudioContext||window.webkitAudioContext)();
     const pat = makePattern(sigSelect.value);
     const bpm = Math.max(30, Math.min(240, parseInt(bpmInput.value,10)||100));
-    // For 6/8: pulse = eighth-note; for others: quarter-note pulse
     const msPerPulse = sigSelect.value==="6-8" ? 60000/(bpm*1.5) : 60000/bpm;
 
     metroBeatCount = 0;
     metroTimer = setInterval(()=>{
-      const pulseIdx = metroBeatCount % pat.pulses;
-      const accent = pat.accents.has(pulseIdx);
+      const pulses = makePattern(sigSelect.value);
+      const pulseIdx = metroBeatCount % pulses.pulses;
+      const accent = pulses.accents.has(pulseIdx);
       tick(accent);
-      // visual
       [...metroDots.children].forEach((d,i)=>{
         d.className = "dot" + (i===pulseIdx ? " active" : "");
         if (accent && i===pulseIdx) d.className += " accent";
@@ -680,11 +697,11 @@ footer{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}
 
 <!-- register the service worker -->
 <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(()=>{});
-    });
-  }
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
